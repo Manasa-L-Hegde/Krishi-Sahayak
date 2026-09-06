@@ -24,6 +24,8 @@ The metrics below were generated from the downloaded dataset with seed 42. Each 
 
 The LSTM does **not** beat both baselines for any commodity. It beats the 7-day mean for tomato but loses to persistence; it loses to both baselines for onion and potato. It remains in the repository as a reproducible diagnose -> baseline -> model -> re-evaluate experiment, not as a claim of forecasting superiority. The training cost is higher than both naive baselines, and 84 test windows per commodity are not enough for strong generalization claims.
 
+Quick improvement attempt: per-commodity z-score normalization was retrained and evaluated with the same LSTM architecture, chronological split, seed, and inverse-transformed price metrics. It did not close the gap to both baselines; the results above are the normalized run, so no further DL architecture tuning is being pursued in this step.
+
 ## Permutation-style lag importance
 
 For each lag position, the trainer zeros that input across the test windows and measures the increase in LSTM MAE. The largest measured contributors are exported to `diagnostics/dl_permutation_importance.csv`. This is an ablation-based importance signal, not causal evidence. Because the model underperforms the baselines, these lag rankings should be treated as diagnostic rather than operational guidance.
