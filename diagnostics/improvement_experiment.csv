@@ -1,0 +1,2 @@
+experiment,baseline_macro_f1,improved_macro_f1,macro_f1_absolute_change,baseline_robustness_flip_rate,improved_robustness_flip_rate,robustness_absolute_change,training_cost
+RandomForest_700Trees_vs_RandomForest,0.9931775541531639,0.9931775541531639,0.0,0.01737012987012987,0.016233766233766232,-0.0011363636363636367,approximately 2x trees
