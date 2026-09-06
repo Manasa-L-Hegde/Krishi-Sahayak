@@ -50,3 +50,18 @@ def test_invalid_and_boundary_inputs():
 def test_frontend_and_docs():
     assert client.get("/").status_code == 200
     assert client.get("/docs").status_code == 200
+
+
+def test_dl_forecast_endpoint():
+    response = client.post("/dl/forecast", json={"commodity": "Onion", "recent_prices": [120.0] * 30})
+    assert response.status_code == 200
+    body = response.json()
+    assert body["commodity"] == "Onion"
+    assert body["horizon_days"] == 7
+    assert len(body["forecast_prices"]) == 7
+    assert body["model"] == "LSTM"
+
+
+def test_dl_forecast_validation():
+    assert client.post("/dl/forecast", json={"commodity": "Onion", "recent_prices": [120.0] * 29}).status_code == 422
+    assert client.post("/dl/forecast", json={"commodity": "Rice", "recent_prices": [120.0] * 30}).status_code == 422

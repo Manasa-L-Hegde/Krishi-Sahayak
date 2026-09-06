@@ -12,7 +12,7 @@ Krishi Sahayak is a multi-layer agriculture advisory platform combining Machine 
 | Layer | Status |
 | --- | --- |
 | ML | Implemented |
-| DL | Planned / Not started |
+| DL | Experimental forecasting slice implemented |
 | GenAI | Planned / Not started |
 | Azure deployment | Prepared / Not deployed |
 
@@ -28,9 +28,9 @@ Farmers need a compact way to inspect how soil and climate measurements resemble
 
 Crop recommendation, engineered agricultural risk assessment, Random Forest/XGBoost/Logistic Regression comparison, SHAP explainability, robustness analysis, diagnostics exports, and FastAPI serving.
 
-### Layer 2: Deep Learning (planned)
+### Layer 2: Deep Learning (experimental)
 
-Future time-series modelling for agricultural price and yield forecasting. No DL code or forecasting capability is implemented yet.
+An isolated PyTorch LSTM slice now forecasts 7-day prices for onion, tomato, and potato through `/dl/forecast`. It uses a chronological final-90-day holdout and is documented as experimental because it did not beat both naive baselines.
 
 ### Layer 3: Generative AI (planned)
 
@@ -95,16 +95,16 @@ Per-crop precision, recall, and F1 are exported in `diagnostics/per_crop_metrics
 
 ### Current
 
-Python, pandas, NumPy, scikit-learn, XGBoost, SHAP, FastAPI, Jinja2, pytest, joblib, and Power BI-compatible CSV exports.
+Python, pandas, NumPy, scikit-learn, XGBoost, SHAP, FastAPI, Jinja2, PyTorch, pytest, joblib, and Power BI-compatible CSV exports.
 
 ### Planned
 
-PyTorch or TensorFlow as appropriate for DL, an LLM/API provider for GenAI, vector search and RAG components, and Azure services for final deployment.
+An LLM/API provider for GenAI, vector search and RAG components, and Azure services for final deployment.
 
 ## Development roadmap
 
 1. **Phase 1 — ML:** Crop recommendation, risk assessment, SHAP explainability, and API/UI.
-2. **Phase 2 — DL:** Agricultural time-series forecasting.
+2. **Phase 2 — DL:** Agricultural time-series forecasting experiment started under `dl/`; improve only after stronger validation.
 3. **Phase 3 — GenAI:** RAG-based farmer advisory chatbot.
 4. **Phase 4 — Integration:** Unified platform and cloud deployment.
 

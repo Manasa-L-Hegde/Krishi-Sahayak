@@ -8,10 +8,12 @@ from fastapi import FastAPI, HTTPException, Request
 from fastapi.responses import HTMLResponse
 from fastapi.templating import Jinja2Templates
 
-from api.schemas import PredictionRequest, PredictionResponse, ShapContribution
+from api.schemas import ForecastRequest, ForecastResponse, PredictionRequest, PredictionResponse, ShapContribution
+from dl.forecast import forecast_from_artifact
 
 ROOT = Path(__file__).resolve().parents[1]
 ARTIFACT_PATH = ROOT / "models" / "krishi_sahayak.joblib"
+DL_ARTIFACT_PATH = ROOT / "models" / "dl_forecaster.joblib"
 TEMPLATES = Jinja2Templates(directory=str(ROOT / "api" / "templates"))
 app = FastAPI(title="Krishi Sahayak API", version="1.0.0", description="Crop recommendation with an engineered climate mismatch risk score.")
 
@@ -53,6 +55,21 @@ def predict(payload: PredictionRequest) -> PredictionResponse:
     return PredictionResponse(crop=str(crop), confidence=float(probabilities[class_index]),
                               risk_score=max(0.0, min(100.0, risk_score)),
                               shap_contributions=explain_prediction(artifacts, row, class_index))
+
+
+@app.post("/dl/forecast", response_model=ForecastResponse)
+def forecast(payload: ForecastRequest) -> ForecastResponse:
+    if not DL_ARTIFACT_PATH.exists():
+        raise HTTPException(status_code=503, detail="DL forecast artifact is unavailable. Run dl/train_forecaster.py first.")
+    artifact = joblib.load(DL_ARTIFACT_PATH)
+    commodity = next((item for item in artifact["commodities"] if item.casefold() == payload.commodity.casefold()), None)
+    if commodity is None:
+        allowed = ", ".join(artifact["commodities"])
+        raise HTTPException(status_code=422, detail=f"Unsupported commodity. Choose one of: {allowed}")
+    if any(price < 0 for price in payload.recent_prices):
+        raise HTTPException(status_code=422, detail="recent_prices must contain non-negative values")
+    forecast_prices = forecast_from_artifact(artifact["models"][commodity], payload.recent_prices)
+    return ForecastResponse(commodity=commodity, horizon_days=artifact["horizon"], forecast_prices=forecast_prices, model="LSTM")
 
 
 @app.get("/", response_class=HTMLResponse)

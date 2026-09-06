@@ -25,3 +25,15 @@ class PredictionResponse(BaseModel):
     confidence: float
     risk_score: float
     shap_contributions: list[ShapContribution]
+
+
+class ForecastRequest(BaseModel):
+    commodity: str = Field(..., examples=["Onion"])
+    recent_prices: list[float] = Field(..., min_length=30, examples=[[120.0] * 30])
+
+
+class ForecastResponse(BaseModel):
+    commodity: str
+    horizon_days: int
+    forecast_prices: list[float]
+    model: str
