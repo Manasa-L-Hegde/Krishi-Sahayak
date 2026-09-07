@@ -1,0 +1,31 @@
+=== answerable-1 ===
+question: What are the PM-RKVY Operational Guidelines?
+HTTP status: 200
+answer: The advisory service is unavailable. I don't have verified information on that — please check with your local agriculture officer
+sources: PM-RKVY Operational Guidelines
+grounded: False
+fallback: True
+
+=== answerable-2 ===
+question: What is the School Soil Health Programme?
+HTTP status: 200
+answer: The advisory service is unavailable. I don't have verified information on that — please check with your local agriculture officer
+sources: PM-RKVY Operational Guidelines; School Soil Health Programme Letter
+grounded: False
+fallback: True
+
+=== answerable-3 ===
+question: What does ICAR crop science cover?
+HTTP status: 200
+answer: The advisory service is unavailable. I don't have verified information on that — please check with your local agriculture officer
+sources: ICAR Agricultural Engineering Division; ICAR Crop Science Division; ICAR Horticultural Science Division
+grounded: False
+fallback: True
+
+=== out-of-corpus ===
+question: What pesticide dose should I spray on cotton tomorrow?
+HTTP status: 200
+answer: I don't have verified information on that — please check with your local agriculture officer
+sources: 
+grounded: False
+fallback: True

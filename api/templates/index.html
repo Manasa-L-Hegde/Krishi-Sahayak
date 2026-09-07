@@ -16,6 +16,13 @@
     <button type="submit">Recommend crop</button>
   </form>
   <h2>Result</h2><pre id="result">Submit the example values to see a prediction.</pre>
+  <h2>Government agricultural advisory</h2>
+  <form id="advisory-form">
+    <label>Question<input name="question" type="text" value="What is PM-KISAN?" required></label>
+    <label>Language<select name="language"><option>English</option><option>Kannada</option></select></label>
+    <button type="submit">Ask verified advisory</button>
+  </form>
+  <pre id="advisory-result">Ask a question to search the verified government corpus.</pre>
   <p><small>Limitation: this matches a fixed dataset; it is not live agronomic simulation.</small></p>
   <script>
     document.getElementById('prediction-form').addEventListener('submit', async function (event) {
@@ -24,6 +31,12 @@
       Object.keys(data).forEach(key => data[key] = Number(data[key]));
       const response = await fetch('/predict', {method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(data)});
       document.getElementById('result').textContent = JSON.stringify(await response.json(), null, 2);
+    });
+    document.getElementById('advisory-form').addEventListener('submit', async function (event) {
+      event.preventDefault();
+      const data = Object.fromEntries(new FormData(event.target).entries());
+      const response = await fetch('/genai/advise', {method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(data)});
+      document.getElementById('advisory-result').textContent = JSON.stringify(await response.json(), null, 2);
     });
   </script>
 </body>

@@ -14,6 +14,7 @@ Krishi Sahayak is a multi-layer agriculture advisory platform combining Machine 
 | ML | Implemented |
 | DL | Experimental forecasting slice implemented |
 | GenAI | Implemented with evaluated fallback safeguard |
+| Power BI diagnostics | Not built, decision pending |
 | Azure deployment | Prepared / Not deployed |
 
 ## Problem and solution
