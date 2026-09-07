@@ -65,3 +65,17 @@ def test_dl_forecast_endpoint():
 def test_dl_forecast_validation():
     assert client.post("/dl/forecast", json={"commodity": "Onion", "recent_prices": [120.0] * 29}).status_code == 422
     assert client.post("/dl/forecast", json={"commodity": "Rice", "recent_prices": [120.0] * 30}).status_code == 422
+
+
+def test_genai_out_of_corpus_uses_fallback():
+    response = client.post("/genai/advise", json={"question": "What pesticide dose should I spray on cotton tomorrow?", "language": "English"})
+    assert response.status_code == 200
+    body = response.json()
+    assert body["fallback"] is True
+    assert body["grounded"] is False
+    assert "don't have verified information" in body["answer"]
+
+
+def test_genai_rejects_unsupported_language():
+    response = client.post("/genai/advise", json={"question": "What is PM-KISAN?", "language": "Hindi"})
+    assert response.status_code == 422

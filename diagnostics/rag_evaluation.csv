@@ -1,0 +1,16 @@
+id,question,language,expected_source,top_source,top_similarity,retrieval_right_chunk,grounded_context,fallback_correct
+A01,What is the Agriculture Infrastructure Fund?,English,Agriculture Infrastructure Fund Operational Guidelines,Agriculture Infrastructure Fund Operational Guidelines,0.6598823070526123,True,True,False
+A02,What are the PM-RKVY Operational Guidelines?,English,PM-RKVY Operational Guidelines,PM-RKVY Operational Guidelines,0.7145022749900818,True,True,False
+A03,What does the ICAR Crop Science Division cover?,English,ICAR Crop Science Division,ICAR Crop Science Division,0.6721447706222534,True,True,False
+A04,What is agricultural extension?,English,ICAR Agricultural Extension Division,ICAR Agricultural Extension Division,0.6783504486083984,True,True,False
+A05,What is the School Soil Health Programme?,English,School Soil Health Programme Letter,School Soil Health Programme Letter,0.7318726181983948,True,True,False
+A06,What is the purpose of the school soil health programme?,English,School Soil Health Programme Letter,School Soil Health Programme Letter,0.7082846164703369,True,True,False
+A07,ಕೃಷಿ ವಿಜ್ಞಾನಕ್ಕೆ ಸಂಬಂಧಿಸಿದ ICAR ವಿಭಾಗ ಯಾವುದು?,Kannada,ICAR Crop Science Division,PM-RKVY Operational Guidelines,0.6871992945671082,False,True,False
+A08,ಶಾಲಾ ಮಣ್ಣಿನ ಆರೋಗ್ಯ ಕಾರ್ಯಕ್ರಮ,Kannada,School Soil Health Programme Letter,School Soil Health Programme Letter,0.6702319383621216,True,True,False
+A09,PM-RKVY ಮಾರ್ಗಸೂಚಿಗಳು,Kannada,PM-RKVY Operational Guidelines,PM-RKVY Operational Guidelines,0.7286142110824585,True,True,False
+A10,What does ICAR natural resource management cover?,English,ICAR Natural Resource Management Division,ICAR Natural Resource Management Division,0.6484106183052063,True,True,False
+O01,What pesticide dose should I spray on my cotton tomorrow?,English,OUT_OF_CORPUS,PM-RKVY Operational Guidelines,0.5093137621879578,False,False,True
+O02,What will onion prices be in my village next month?,English,OUT_OF_CORPUS,PM-RKVY Operational Guidelines,0.4523710310459137,False,False,True
+O03,ನನ್ನ ಜಮೀನಿನ ನಾಳೆಯ ಹವಾಮಾನ ಹೇಗಿರುತ್ತದೆ?,Kannada,OUT_OF_CORPUS,PM-RKVY Operational Guidelines,0.5054272413253784,False,False,True
+O04,Which tractor should I buy and what is its financing rate?,English,OUT_OF_CORPUS,PM-RKVY Operational Guidelines,0.5841386914253235,False,False,True
+O05,"ನನ್ನ ಬೆಳೆಗೆ ರೋಗ ಬಂದಿದೆ, ನಿಖರ ಔಷಧಿ ಯಾವುದು?",Kannada,OUT_OF_CORPUS,PM-RKVY Operational Guidelines,0.36305373907089233,False,False,True

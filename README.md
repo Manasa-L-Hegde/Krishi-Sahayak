@@ -13,7 +13,7 @@ Krishi Sahayak is a multi-layer agriculture advisory platform combining Machine 
 | --- | --- |
 | ML | Implemented |
 | DL | Experimental forecasting slice implemented |
-| GenAI | Planned / Not started |
+| GenAI | Implemented with evaluated fallback safeguard |
 | Azure deployment | Prepared / Not deployed |
 
 ## Problem and solution
@@ -32,9 +32,9 @@ Crop recommendation, engineered agricultural risk assessment, Random Forest/XGBo
 
 An isolated PyTorch LSTM slice now forecasts 7-day prices for onion, tomato, and potato through `/dl/forecast`. It uses a chronological final-90-day holdout and is documented as experimental because it did not beat both naive baselines.
 
-### Layer 3: Generative AI (planned)
+### Layer 3: Generative AI (implemented, grounded advisory slice)
 
-Future RAG-based farmer advisory grounded in reliable agricultural and government knowledge, with multilingual assistance. No LLM, vector search, RAG pipeline, or chatbot is implemented yet.
+The current slice provides English/Kannada RAG retrieval over official government/ICAR sources, a FAISS index, and optional Groq generation with a context-only prompt. It is not a multi-turn chatbot. The 15-case evaluation correctly triggered fallback for all 5 out-of-corpus questions, so this layer is marked implemented for this bounded advisory scope.
 
 The saved ML artifact contains the selected classifier, risk regressor, label encoder, feature order, and SHAP explainer. Requests only load this artifact; they never retrain. Power BI can import the CSV files in `diagnostics/` without becoming part of the Python serving process.
 

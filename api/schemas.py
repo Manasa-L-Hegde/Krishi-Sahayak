@@ -37,3 +37,15 @@ class ForecastResponse(BaseModel):
     horizon_days: int
     forecast_prices: list[float]
     model: str
+
+
+class AdvisoryRequest(BaseModel):
+    question: str = Field(..., min_length=3, examples=["What is PM-KISAN?"])
+    language: str | None = Field(default=None, pattern="(?i)^(english|kannada)$", examples=["English"])
+
+
+class AdvisoryResponse(BaseModel):
+    answer: str
+    sources: list[str]
+    grounded: bool
+    fallback: bool

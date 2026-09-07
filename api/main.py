@@ -8,12 +8,14 @@ from fastapi import FastAPI, HTTPException, Request
 from fastapi.responses import HTMLResponse
 from fastapi.templating import Jinja2Templates
 
-from api.schemas import ForecastRequest, ForecastResponse, PredictionRequest, PredictionResponse, ShapContribution
+from api.schemas import AdvisoryRequest, AdvisoryResponse, ForecastRequest, ForecastResponse, PredictionRequest, PredictionResponse, ShapContribution
 from dl.forecast import forecast_from_artifact
+from genai.rag import LocalRAG
 
 ROOT = Path(__file__).resolve().parents[1]
 ARTIFACT_PATH = ROOT / "models" / "krishi_sahayak.joblib"
 DL_ARTIFACT_PATH = ROOT / "models" / "dl_forecaster.joblib"
+RAG_INDEX_PATH = ROOT / "genai" / "index"
 TEMPLATES = Jinja2Templates(directory=str(ROOT / "api" / "templates"))
 app = FastAPI(title="Krishi Sahayak API", version="1.0.0", description="Crop recommendation with an engineered climate mismatch risk score.")
 
@@ -70,6 +72,19 @@ def forecast(payload: ForecastRequest) -> ForecastResponse:
         raise HTTPException(status_code=422, detail="recent_prices must contain non-negative values")
     forecast_prices = forecast_from_artifact(artifact["models"][commodity], payload.recent_prices)
     return ForecastResponse(commodity=commodity, horizon_days=artifact["horizon"], forecast_prices=forecast_prices, model="LSTM")
+
+
+@lru_cache(maxsize=1)
+def load_rag() -> LocalRAG:
+    if not (RAG_INDEX_PATH / "faiss.index").exists():
+        raise HTTPException(status_code=503, detail="RAG index is unavailable. Run python -m genai.build_index first.")
+    return LocalRAG(RAG_INDEX_PATH)
+
+
+@app.post("/genai/advise", response_model=AdvisoryResponse)
+def advise(payload: AdvisoryRequest) -> AdvisoryResponse:
+    result = load_rag().answer(payload.question, payload.language)
+    return AdvisoryResponse(**result)
 
 
 @app.get("/", response_class=HTMLResponse)
