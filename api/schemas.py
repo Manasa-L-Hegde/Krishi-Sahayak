@@ -49,3 +49,17 @@ class AdvisoryResponse(BaseModel):
     sources: list[str]
     grounded: bool
     fallback: bool
+
+
+class ChatAdvisoryRequest(BaseModel):
+    question: str = Field(..., min_length=2, examples=["How to prevent pests in rice?"])
+    language: str = Field(default="English", examples=["English"])
+
+
+class ChatAdvisoryResponse(BaseModel):
+    answer: str
+    sources: list[str]
+    grounded: bool
+    verified: bool
+    fallback: bool
+

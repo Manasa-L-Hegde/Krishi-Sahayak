@@ -39,6 +39,10 @@ The current slice provides English/Kannada RAG retrieval over official governmen
 
 The saved ML artifact contains the selected classifier, risk regressor, label encoder, feature order, and SHAP explainer. Requests only load this artifact; they never retrain. Power BI can import the CSV files in `diagnostics/` without becoming part of the Python serving process.
 
+### Vision Advisory (experimental)
+
+A minimal `/vision/advise` endpoint accepts a multipart upload (image, question, and language `en`/`kn`). It calls the Meta Model API (`muse-spark-1.1` via an OpenAI-compatible client at `https://api.meta.ai/v1`) using `MODEL_API_KEY` to describe visible plant symptoms in 2–3 sentences without diagnosing. The symptom description and user question are queried against the existing FAISS RAG retriever; if retrieval similarity meets the threshold (0.59), it returns the grounded answer with sources, otherwise returning the fail-closed fallback message.
+
 ## Run locally
 
 ```powershell
@@ -89,6 +93,7 @@ Per-crop precision, recall, and F1 are exported in `diagnostics/per_crop_metrics
 
 - `GET /health` reports artifact availability.
 - `POST /predict` accepts the seven numeric inputs and returns the crop, confidence, risk score, and top-three SHAP contributions.
+- `POST /vision/advise` (experimental) accepts multipart image, question, and language (`en`/`kn`) for symptom extraction and grounded RAG advisory.
 - `GET /` serves the plain farmer-facing HTML form.
 - `GET /docs` provides Swagger UI with example values pre-filled for Try it out.
 

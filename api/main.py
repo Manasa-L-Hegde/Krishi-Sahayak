@@ -1,14 +1,29 @@
+from dotenv import load_dotenv
+load_dotenv(override=True)
+
+import base64
+import os
 from pathlib import Path
 from functools import lru_cache
 from typing import Any
 
 import joblib
 import pandas as pd
-from fastapi import FastAPI, HTTPException, Request
+from fastapi import FastAPI, File, Form, HTTPException, Request, UploadFile
 from fastapi.responses import HTMLResponse
 from fastapi.templating import Jinja2Templates
 
-from api.schemas import AdvisoryRequest, AdvisoryResponse, ForecastRequest, ForecastResponse, PredictionRequest, PredictionResponse, ShapContribution
+from api.schemas import (
+    AdvisoryRequest,
+    AdvisoryResponse,
+    ChatAdvisoryRequest,
+    ChatAdvisoryResponse,
+    ForecastRequest,
+    ForecastResponse,
+    PredictionRequest,
+    PredictionResponse,
+    ShapContribution,
+)
 from dl.forecast import forecast_from_artifact
 from genai.rag import LocalRAG
 
@@ -74,6 +89,18 @@ def forecast(payload: ForecastRequest) -> ForecastResponse:
     return ForecastResponse(commodity=commodity, horizon_days=artifact["horizon"], forecast_prices=forecast_prices, model="LSTM")
 
 
+@app.get("/dl/commodities-data")
+def dl_commodities_data() -> dict[str, Any]:
+    if not DL_ARTIFACT_PATH.exists():
+        raise HTTPException(status_code=503, detail="DL forecaster is unavailable.")
+    artifact = joblib.load(DL_ARTIFACT_PATH)
+    return {
+        "commodities": list(artifact["commodities"]),
+        "default_prices": {c: artifact["models"][c]["last_prices"] for c in artifact["commodities"]},
+        "horizon": artifact["horizon"],
+    }
+
+
 @lru_cache(maxsize=1)
 def load_rag() -> LocalRAG:
     if not (RAG_INDEX_PATH / "faiss.index").exists():
@@ -87,6 +114,60 @@ def advise(payload: AdvisoryRequest) -> AdvisoryResponse:
     return AdvisoryResponse(**result)
 
 
+@app.post("/genai/ask", response_model=ChatAdvisoryResponse)
+def ask_expert(payload: ChatAdvisoryRequest) -> ChatAdvisoryResponse:
+    result = load_rag().ask_expert(payload.question, payload.language)
+    return ChatAdvisoryResponse(**result)
+
+
+def describe_plant_symptoms(image_bytes: bytes, content_type: str = "image/jpeg") -> str:
+    api_key = os.getenv("MODEL_API_KEY")
+    if not api_key:
+        raise HTTPException(status_code=500, detail="MODEL_API_KEY is not configured.")
+    from openai import OpenAI
+    client = OpenAI(base_url="https://api.meta.ai/v1", api_key=api_key)
+    model = os.getenv("META_MODEL", "muse-spark-1.1")
+    b64_image = base64.b64encode(image_bytes).decode("utf-8")
+    mime = content_type or "image/jpeg"
+    response = client.chat.completions.create(
+        model=model,
+        messages=[
+            {
+                "role": "user",
+                "content": [
+                    {
+                        "type": "text",
+                        "text": "Describe visible plant symptoms in 2-3 sentences. Don't diagnose.",
+                    },
+                    {
+                        "type": "image_url",
+                        "image_url": {"url": f"data:{mime};base64,{b64_image}"},
+                    },
+                ],
+            }
+        ],
+    )
+    return (response.choices[0].message.content or "").strip()
+
+
+@app.post("/vision/advise", response_model=AdvisoryResponse)
+async def vision_advise(
+    image: UploadFile = File(...),
+    question: str = Form(...),
+    language: str = Form("en"),
+) -> AdvisoryResponse:
+    norm_lang = language.strip().lower()
+    if norm_lang not in {"en", "kn", "english", "kannada"}:
+        raise HTTPException(status_code=422, detail="Unsupported language. Choose 'en' or 'kn'.")
+    image_bytes = await image.read()
+    symptoms = describe_plant_symptoms(image_bytes, image.content_type or "image/jpeg")
+    combined_query = f"{question}\n{symptoms}".strip()
+    target_language = "kannada" if norm_lang in {"kn", "kannada"} else "english"
+    result = load_rag().answer(combined_query, language=target_language)
+    return AdvisoryResponse(**result)
+
+
 @app.get("/", response_class=HTMLResponse)
 def home(request: Request):
     return TEMPLATES.TemplateResponse(request=request, name="index.html", context={"request": request})
+

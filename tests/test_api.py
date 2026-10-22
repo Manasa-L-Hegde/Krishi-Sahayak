@@ -79,3 +79,32 @@ def test_genai_out_of_corpus_uses_fallback():
 def test_genai_rejects_unsupported_language():
     response = client.post("/genai/advise", json={"question": "What is PM-KISAN?", "language": "Hindi"})
     assert response.status_code == 422
+
+
+def test_vision_advise_mocked_meta(monkeypatch):
+    from unittest.mock import MagicMock, patch
+
+    monkeypatch.setenv("MODEL_API_KEY", "mock-key")
+    mock_openai_module = MagicMock()
+    mock_client = MagicMock()
+    mock_completion = MagicMock()
+    mock_completion.choices = [
+        MagicMock(message=MagicMock(content="Visible yellow spots and blight on leaves."))
+    ]
+    mock_client.chat.completions.create.return_value = mock_completion
+    mock_openai_module.OpenAI.return_value = mock_client
+
+    with patch.dict("sys.modules", {"openai": mock_openai_module}):
+        response = client.post(
+            "/vision/advise",
+            data={"question": "What pesticide dose should I spray on cotton tomorrow?", "language": "en"},
+            files={"image": ("test.jpg", b"fake-image-bytes", "image/jpeg")},
+        )
+        assert response.status_code == 200
+        body = response.json()
+        assert body["fallback"] is True
+        assert body["grounded"] is False
+        assert "don't have verified information" in body["answer"]
+        mock_client.chat.completions.create.assert_called_once()
+        call_kwargs = mock_client.chat.completions.create.call_args[1]
+        assert call_kwargs["model"] == "muse-spark-1.1"
