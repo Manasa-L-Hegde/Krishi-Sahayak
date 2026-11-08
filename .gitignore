@@ -8,3 +8,5 @@ __pycache__/
 *.tmp
 *.log
 data/raw/*.csv
+genai/corpus/15.html
+genai/corpus/downloads/*.html

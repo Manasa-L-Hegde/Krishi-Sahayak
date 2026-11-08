@@ -45,9 +45,12 @@ A minimal `/vision/advise` endpoint accepts a multipart upload (image, question,
 
 ## Run locally
 
+> **Prerequisite:** **Python 3.11.x is strictly required** (pinned: `Python 3.11.9`). Python 3.14 on Windows causes anyio blocking portal deadlocks in Starlette's `TestClient` and DLL conflicts in C-extensions. Keep the virtual environment outside OneDrive (e.g., `C:\Users\<user>\venvs\krishi`) to avoid file lock and synchronization latencies.
+
 ```powershell
-python -m venv .venv
-.\.venv\Scripts\Activate.ps1
+# Create venv outside OneDrive (e.g. C:\Users\manas\venvs\krishi)
+py -3.11 -m venv C:\Users\manas\venvs\krishi
+C:\Users\manas\venvs\krishi\Scripts\Activate.ps1
 pip install -r requirements.txt
 python scripts/train_model.py
 uvicorn api.main:app --reload
