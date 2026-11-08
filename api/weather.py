@@ -65,10 +65,13 @@ def clear_weather_cache() -> None:
     _WEATHER_CACHE.clear()
 
 
-def _get_series(hourly_dict: Dict[str, List[Any]], base_name: str) -> List[Any]:
+def _get_series(hourly_dict: Dict[str, List[Any]], base_name: str, model_pref: str = "ecmwf_ifs025") -> List[Any]:
     """Helper to retrieve hourly series handling single-model and multi-model key suffixes."""
     if base_name in hourly_dict:
         return hourly_dict[base_name]
+    pref_key = f"{base_name}_{model_pref}"
+    if pref_key in hourly_dict:
+        return hourly_dict[pref_key]
     best_key = f"{base_name}_best_match"
     if best_key in hourly_dict:
         return hourly_dict[best_key]
@@ -78,20 +81,20 @@ def _get_series(hourly_dict: Dict[str, List[Any]], base_name: str) -> List[Any]:
     return []
 
 
-def parse_hourly_payload(hourly_dict: Dict[str, List[Any]]) -> List[HourlyDataPoint]:
+def parse_hourly_payload(hourly_dict: Dict[str, List[Any]], model_pref: str = "ecmwf_ifs025") -> List[HourlyDataPoint]:
     """
     Parse raw Open-Meteo hourly dictionary into typed HourlyDataPoint objects.
     Preserves None when values are missing (does not convert null to 0.0 or 25.0).
-    Handles both default variable names and multi-model suffixed names (e.g. temperature_2m_best_match).
+    Handles both default variable names and multi-model suffixed names.
     """
     times = hourly_dict.get("time", [])
-    precip = _get_series(hourly_dict, "precipitation")
-    precip_prob = _get_series(hourly_dict, "precipitation_probability")
-    rain = _get_series(hourly_dict, "rain")
-    temp = _get_series(hourly_dict, "temperature_2m")
-    rh = _get_series(hourly_dict, "relative_humidity_2m")
-    wind = _get_series(hourly_dict, "wind_speed_10m")
-    gusts = _get_series(hourly_dict, "wind_gusts_10m")
+    precip = _get_series(hourly_dict, "precipitation", model_pref)
+    precip_prob = _get_series(hourly_dict, "precipitation_probability", model_pref)
+    rain = _get_series(hourly_dict, "rain", model_pref)
+    temp = _get_series(hourly_dict, "temperature_2m", model_pref)
+    rh = _get_series(hourly_dict, "relative_humidity_2m", model_pref)
+    wind = _get_series(hourly_dict, "wind_speed_10m", model_pref)
+    gusts = _get_series(hourly_dict, "wind_gusts_10m", model_pref)
 
     points: List[HourlyDataPoint] = []
     n = len(times)
@@ -138,50 +141,48 @@ def compute_past_rain(hourly: List[HourlyDataPoint], current_index: int) -> Tupl
 
 
 def calculate_model_agreement(
-    primary_hourly: List[HourlyDataPoint],
-    secondary_rain_series: Optional[List[Optional[float]]],
+    forecast_primary: List[HourlyDataPoint],
+    forecast_secondary_rain: Optional[List[Optional[float]]],
+    wet_rain_threshold_mm: float = 0.1,
 ) -> Optional[float]:
     """
-    Compute agreement score (0.0 to 1.0) between primary model rain and secondary model rain.
-    Returns None if secondary model is not queried, empty, or if both series contain zero precipitation
-    (to prevent uninformative dry periods from reporting an artificial 1.0 score).
+    Compute agreement score (0.0 to 1.0) between primary model (ECMWF) and secondary model (GFS)
+    STRICTLY over future forecast hours (excluding past analysis/hindcast hours).
+
+    Evaluation dimensions:
+    1. Categorical hourly match: whether both models agree on wet (>=0.1mm) vs dry (<0.1mm) hours.
+    2. Rain volume agreement: relative agreement on total forecasted precipitation over the horizon.
     """
-    if not secondary_rain_series:
+    if not forecast_secondary_rain:
         return None
 
-    length = min(len(primary_hourly), len(secondary_rain_series))
+    length = min(len(forecast_primary), len(forecast_secondary_rain))
     if length == 0:
         return None
 
-    p_vals = [pt.rain_mm for pt in primary_hourly[:length] if pt.rain_mm is not None]
-    s_vals = [r for r in secondary_rain_series[:length] if r is not None]
+    p_rains = [(pt.rain_mm or 0.0) if pt.rain_mm is not None else 0.0 for pt in forecast_primary[:length]]
+    s_rains = [(r or 0.0) if r is not None else 0.0 for r in forecast_secondary_rain[:length]]
 
-    if not p_vals or not s_vals:
-        return None
+    total_p = sum(p_rains)
+    total_s = sum(s_rains)
 
-    total_p = sum(p_vals)
-    total_s = sum(s_vals)
+    # 1. Hourly categorical wet/dry agreement
+    wet_p = [r >= wet_rain_threshold_mm for r in p_rains]
+    wet_s = [r >= wet_rain_threshold_mm for r in s_rains]
 
-    # If both models predict zero rain across the entire period, model agreement on rain is uninformative
+    agree_hours = sum(1 for a, b in zip(wet_p, wet_s) if a == b)
+    cat_match = agree_hours / length
+
+    # 2. Total precipitation volume agreement
     if total_p == 0.0 and total_s == 0.0:
-        return None
+        vol_match = 1.0
+    else:
+        vol_diff = abs(total_p - total_s)
+        vol_match = max(0.0, 1.0 - (vol_diff / max(total_p, total_s, 1.0)))
 
-    total_diff = 0.0
-    comparable_hours = 0
-    for i in range(length):
-        p_val = primary_hourly[i].rain_mm
-        s_val = secondary_rain_series[i]
-        if p_val is not None and s_val is not None:
-            diff = abs(p_val - s_val)
-            total_diff += min(5.0, diff)
-            comparable_hours += 1
-
-    if comparable_hours == 0:
-        return None
-
-    mean_diff = total_diff / comparable_hours
-    agreement = max(0.0, 1.0 - (mean_diff / 5.0))
-    return round(agreement, 2)
+    # Composite: 50% categorical hourly match + 50% volume match
+    score = 0.5 * cat_match + 0.5 * vol_match
+    return round(score, 2)
 
 
 def fetch_weather_forecast(
@@ -211,7 +212,7 @@ def fetch_weather_forecast(
         "past_days": past_days,
         "forecast_days": forecast_days,
         "timezone": "auto",
-        "models": "best_match,ecmwf_ifs025",
+        "models": "ecmwf_ifs025,gfs_seamless",
     }
 
     own_client = False
@@ -233,9 +234,9 @@ def fetch_weather_forecast(
             sec_model_name = None
         else:
             data = response.json()
-            sec_model_name = "ecmwf_ifs025"
+            sec_model_name = "gfs_seamless"
             h = data.get("hourly", {})
-            secondary_rain = h.get("rain_ecmwf_ifs025") or h.get("precipitation_ecmwf_ifs025") or (data.get("hourly_ecmwf_ifs025") or {}).get("rain")
+            secondary_rain = h.get("rain_gfs_seamless") or h.get("precipitation_gfs_seamless")
 
     except httpx.RequestError as exc:
         logger.error(f"Network error communicating with Open-Meteo: {exc}")
@@ -248,13 +249,17 @@ def fetch_weather_forecast(
     if not hourly_dict or "time" not in hourly_dict:
         raise WeatherServiceError("Weather response missing hourly forecast data.")
 
-    hourly_points = parse_hourly_payload(hourly_dict)
+    hourly_points = parse_hourly_payload(hourly_dict, model_pref="ecmwf_ifs025")
     if not hourly_points:
         raise WeatherServiceError("Parsed zero hourly weather datapoints.")
 
     current_index = min(past_days * 24, len(hourly_points) - 1)
     rain_24, rain_48, rain_7d = compute_past_rain(hourly_points, current_index)
-    agreement_score = calculate_model_agreement(hourly_points, secondary_rain)
+
+    # STRICT: Evaluate model agreement ONLY over future forecast hours (exclude past analysis/hindcast)
+    future_hourly = hourly_points[current_index:]
+    future_sec_rain = secondary_rain[current_index:] if secondary_rain else None
+    agreement_score = calculate_model_agreement(future_hourly, future_sec_rain)
 
     forecast = WeatherForecast(
         latitude=data.get("latitude", key[0]),

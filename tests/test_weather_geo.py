@@ -101,33 +101,29 @@ def test_calculate_model_agreement():
     identical = [pt.rain_mm for pt in points]
     assert calculate_model_agreement(points, identical) == 1.0
 
-    slight = [pt.rain_mm + 0.5 for pt in points]
+    # Slight variation in rain amount during rain events
+    slight = [(pt.rain_mm * 1.1 if (pt.rain_mm or 0) > 0 else 0.0) for pt in points]
     score_slight = calculate_model_agreement(points, slight)
-    assert score_slight is not None and 0.8 <= score_slight < 1.0
+    assert score_slight is not None and score_slight >= 0.85
 
-    heavy = [pt.rain_mm + 10.0 for pt in points]
-    assert calculate_model_agreement(points, heavy) == 0.0
+    # Completely opposing (heavy rain vs dry)
+    heavy_rain = [10.0] * 24
+    assert calculate_model_agreement(points, heavy_rain) < 0.2
 
     # Missing secondary model returns None
     assert calculate_model_agreement(points, None) is None
 
-    # Two all-zero precipitation series return None (not false 1.0 agreement)
-    all_zero_pts = [HourlyDataPoint(time=f"2026-06-15T{i:02d}:00", rain_mm=0.0) for i in range(24)]
-    all_zero_sec = [0.0] * 24
-    assert calculate_model_agreement(all_zero_pts, all_zero_sec) is None
-
 
 def test_fetch_weather_forecast_success():
     hourly = sample_hourly_dict(336)
+    # Add gfs_seamless rain key to mock payload
+    hourly["rain_gfs_seamless"] = [0.0] * 336
     mock_payload = {
         "latitude": 14.17,
         "longitude": 75.04,
         "elevation": 580.0,
         "timezone": "Asia/Kolkata",
         "hourly": hourly,
-        "hourly_ecmwf_ifs025": {
-            "rain": [0.0] * 336
-        }
     }
 
     def handler(request: httpx.Request) -> httpx.Response:
