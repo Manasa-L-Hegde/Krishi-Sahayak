@@ -24,8 +24,6 @@ from api.schemas import (
     PredictionResponse,
     ShapContribution,
 )
-from dl.forecast import forecast_from_artifact
-from genai.rag import LocalRAG
 
 ROOT = Path(__file__).resolve().parents[1]
 ARTIFACT_PATH = ROOT / "models" / "krishi_sahayak.joblib"
@@ -85,6 +83,7 @@ def forecast(payload: ForecastRequest) -> ForecastResponse:
         raise HTTPException(status_code=422, detail=f"Unsupported commodity. Choose one of: {allowed}")
     if any(price < 0 for price in payload.recent_prices):
         raise HTTPException(status_code=422, detail="recent_prices must contain non-negative values")
+    from dl.forecast import forecast_from_artifact
     forecast_prices = forecast_from_artifact(artifact["models"][commodity], payload.recent_prices)
     return ForecastResponse(commodity=commodity, horizon_days=artifact["horizon"], forecast_prices=forecast_prices, model="LSTM")
 
@@ -102,9 +101,10 @@ def dl_commodities_data() -> dict[str, Any]:
 
 
 @lru_cache(maxsize=1)
-def load_rag() -> LocalRAG:
+def load_rag():
     if not (RAG_INDEX_PATH / "faiss.index").exists():
         raise HTTPException(status_code=503, detail="RAG index is unavailable. Run python -m genai.build_index first.")
+    from genai.rag import LocalRAG
     return LocalRAG(RAG_INDEX_PATH)
 
 
