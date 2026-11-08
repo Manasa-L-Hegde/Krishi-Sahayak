@@ -3,7 +3,8 @@ Krishi Sahayak - Hand-curated Agronomic Spray Rules for Arecanut Koleroga (Fruit
 
 STRICT GROUNDING POLICY:
 - No values are hallucinated or copied blindly from noisy OCR.
-- Every rule parameter maps to a cited document with exact page number and verbatim passage.
+- Every rule parameter maps to a cited document with exact publication year, page number,
+  and verbatim passage checked against the original document.
 - Parameters not explicitly stated in ICAR/CPCRI publications (e.g. calendar start dates,
   exact minimum dry rainfast hours) are strictly set to None, with fail-closed fallback
   to the local Krishi Vigyan Kendra (KVK) or Raitha Samparka Kendra (RSK).
@@ -21,6 +22,7 @@ class ProvenanceRecord:
     source_id: str
     source_type: str  # e.g. "ICAR-CPCRI Official Publication", "News report of a CPCRI release"
     title: str
+    publication_year: int
     page: Optional[int]
     url: str
     verbatim_text: str
@@ -78,6 +80,7 @@ PROVENANCE_EXT17 = ProvenanceRecord(
     source_id="ext17_pdf",
     source_type="ICAR-CPCRI Official Publication",
     title="Koleroga (Mahali) of Arecanut (Extension Folder No. 17)",
+    publication_year=1989,
     page=2,
     url="https://cpcri.gov.in/filemgr/webfs/publication/ext17.pdf",
     verbatim_text=(
@@ -94,12 +97,14 @@ PROVENANCE_EXT17 = ProvenanceRecord(
         "may be used for preparation of this mixture. Do not use other metallic vessels."
     ),
     verification_status="VERIFIED",
+    notes="Extension Folder No. 17, published August 1989 by CPCRI Kasaragod.",
 )
 
 PROVENANCE_LEAFLET_P2 = ProvenanceRecord(
     source_id="cpcri_vittal_leaflet_pdf",
     source_type="ICAR-CPCRI Official Publication",
-    title="Disease Management Strategies in Arecanut and Cocoa",
+    title="Disease Management Strategies in Arecanut and Cocoa (Extension Publication No. 69)",
+    publication_year=1999,
     page=2,
     url="https://cpcri.gov.in/filemgr/webfs/publication/disease_management_strategies_in_arecanut_and_cocoa(eng)_1.pdf",
     verbatim_text=(
@@ -110,13 +115,14 @@ PROVENANCE_LEAFLET_P2 = ProvenanceRecord(
         "has been found to be very effective in checking the disease by acting as mechanical barrier."
     ),
     verification_status="VERIFIED",
-    notes="The vernacular term 'kotte' is absent from this ICAR technical text; the official term is polythene covers (125 gauge, 75 x 60 cm).",
+    notes="Extension Publication No. 69, published December 1999 by CPCRI Regional Station Vittal. Polythene 125 gauge, 75x60 cm verified on Page 2.",
 )
 
 PROVENANCE_THE_HINDU_2024 = ProvenanceRecord(
     source_id="cpcri_advisory_2024_thehindu",
     source_type="News report of a CPCRI release",
     title="CPCRI issues advisory to control koleroga disease in arecanut plantations (The Hindu, Aug 9, 2024)",
+    publication_year=2024,
     page=None,
     url="https://www.thehindu.com/news/cities/Mangalore/cpcri-issues-advisory-to-control-koleroga-disease-in-arecanut-plantations/article68506079.ece",
     verbatim_text=(
@@ -128,29 +134,31 @@ PROVENANCE_THE_HINDU_2024 = ProvenanceRecord(
         "to add a sticker cum spreader @1 ml per litre for spray preparation. Ensure proper mist spray of the fungicide."
     ),
     verification_status="VERIFIED",
-    notes="News report citing CPCRI media release; copyright held by The Hindu. Only cited verbatim excerpts are used.",
+    notes="Verbatim text in downloaded article body (Line 3). Third-party news coverage of ICAR-CPCRI advisory, August 9, 2024.",
 )
 
 PROVENANCE_UNVERIFIED_MIN_DRY_HOURS = ProvenanceRecord(
     source_id="none",
     source_type="Agronomic Absence",
     title="Minimum Rainfast Dry Hours Threshold",
+    publication_year=2026,
     page=None,
     url="",
     verbatim_text="None of the cited ICAR-CPCRI publications specify a numeric minimum dry hours threshold for Bordeaux mixture or Mandipropamid.",
     verification_status="UNVERIFIED_NULL",
-    notes="Set to None in agronomic rule. An advisory default (e.g. 4.0 h) may be configured in the engine, but must be explicitly labeled as an advisory default, not an ICAR rule.",
+    notes="Set to None in agronomic rule. An advisory default (e.g. 4.0 h) is configured in engine defaults and explicitly labeled as an advisory default, not an ICAR rule.",
 )
 
 PROVENANCE_UNVERIFIED_CALENDAR_DATES = ProvenanceRecord(
     source_id="none",
     source_type="Agronomic Absence",
     title="Fixed Calendar Spray Dates (e.g. late May / early June)",
+    publication_year=2026,
     page=None,
     url="",
     verbatim_text="Official publications state 'after the premonsoon showers' or 'pre-monsoon', but do not prescribe fixed calendar dates.",
     verification_status="UNVERIFIED_NULL",
-    notes="Set to None in agronomic rule. Microclimatic onset of monsoon determines timing, not fixed calendar days.",
+    notes="Set to None in agronomic rule. Microclimatic onset of monsoon determines timing, not calendar dates.",
 )
 
 
@@ -178,7 +186,7 @@ ARECANUT_KOLEROGA_RULE = AgronomicSprayRule(
             "ಪ್ರತ್ಯೇಕವಾಗಿ ಕರಗಿಸಿ, ಸಿಂಪಡಿಸುವ ಮುನ್ನವೇ ಎರಡನ್ನೂ ಒಟ್ಟಿಗೆ ಬೆರೆಸಿ. ತಾಮ್ರ, ಮರ ಅಥವಾ ಪ್ಲಾಸ್ಟಿಕ್ ಪಾತ್ರೆಗಳನ್ನು ಬಳಸಿ; "
             "ಇತರ ಲೋಹದ ಪಾತ್ರೆಗಳನ್ನು ಬಳಸಬೇಡಿ."
         ),
-        "source": "ext17_pdf (Page 2)",
+        "source": "ext17_pdf (Page 2, 1989)",
     },
     neutrality_test={
         "method": "Polished iron knife or nail test",
@@ -191,7 +199,7 @@ ARECANUT_KOLEROGA_RULE = AgronomicSprayRule(
             "ದ್ರಾವಣವು ಆಮ್ಲೀಯವಾಗಿದೆ ಎಂದು ತಿಳಿಯಿರಿ; ಕಂದು ಬಣ್ಣ ಮಾಯವಾಗುವವರೆಗೆ ಇನ್ನಷ್ಟು ಸುಣ್ಣದ ತಿಳಿನೀರನ್ನು ಸೇರಿಸಿ."
         ),
         "required_ph": 7.0,  # Stated in The Hindu / CPCRI 2024 advisory
-        "source": "ext17_pdf (Page 2) & The Hindu CPCRI advisory (Aug 2024)",
+        "source": "ext17_pdf (Page 2, 1989) & The Hindu CPCRI advisory (Aug 2024)",
     },
     adjuvant={
         "type": "Sticker cum spreader",
@@ -201,10 +209,10 @@ ARECANUT_KOLEROGA_RULE = AgronomicSprayRule(
         "source": "The Hindu / CPCRI advisory (Aug 2024)",
     },
     timing_relative_to_rain="Whenever there is a break in rainfall (The Hindu / CPCRI advisory, Aug 2024)",
-    first_spray_timing="Prophylactic pre-monsoon / after premonsoon showers (ext17_pdf, Page 2)",
+    first_spray_timing="Prophylactic pre-monsoon / after premonsoon showers (ext17_pdf, Page 2, 1989)",
     repeat_interval_days_min=40,
     repeat_interval_days_max=45,
-    third_spray_condition="Necessary if the monsoon is prolonged (ext17_pdf, Page 2; Leaflet, Page 2)",
+    third_spray_condition="Necessary if the monsoon is prolonged (ext17_pdf, Page 2, 1989; Leaflet, Page 2, 1999)",
     bunch_covering={
         "recommended": True,
         "material": "Polythene covers (125 gauge, 75 x 60 cm)",
@@ -215,7 +223,7 @@ ARECANUT_KOLEROGA_RULE = AgronomicSprayRule(
         "instruction_kn": (
             "ಮಳೆಯ ನೀರು ಮತ್ತು ರೋಗಾಣು ತಾಗದಂತೆ 125 ಗೇಜ್ (75 x 60 ಸೆಂ.ಮೀ) ಅಳತೆಯ ಪಾಲಿಥಿನ್ ಚೀಲಗಳಿಂದ ಅಡಿಕೆ ಗೊಂಚಲುಗಳನ್ನು ಮುಚ್ಚಿ."
         ),
-        "source": "cpcri_vittal_leaflet_pdf (Page 2)",
+        "source": "cpcri_vittal_leaflet_pdf (Page 2, 1999)",
     },
     alternative_fungicide={
         "fungicide_name": "Mandipropamid 23.4% SC",
@@ -254,4 +262,3 @@ def get_spray_rule(crop: str, disease: str) -> Optional[AgronomicSprayRule]:
     if c == "arecanut" and any(k in d for k in ["koleroga", "mahali", "fruit rot", "fruit_rot"]):
         return ARECANUT_KOLEROGA_RULE
     return None
-

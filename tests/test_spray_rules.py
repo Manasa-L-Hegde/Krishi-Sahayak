@@ -63,14 +63,17 @@ def test_provenance_integrity():
 
     # Ext17 checks
     assert prov["ext17"].page == 2
+    assert prov["ext17"].publication_year == 1989
     assert "cpcri.gov.in" in prov["ext17"].url
     assert "1 % Bordeaux mixture" in prov["ext17"].verbatim_text
 
     # Leaflet checks
     assert prov["leaflet_p2"].page == 2
+    assert prov["leaflet_p2"].publication_year == 1999
     assert "125 gauge, 75 x 60 cm" in prov["leaflet_p2"].verbatim_text
 
     # The Hindu checks
+    assert prov["the_hindu_2024"].publication_year == 2024
     assert prov["the_hindu_2024"].source_type == "News report of a CPCRI release"
     assert "Mandipropamid 23.4% SC (1 ml per litre)" in prov["the_hindu_2024"].verbatim_text
 
