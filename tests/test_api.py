@@ -1,13 +1,30 @@
+from __future__ import annotations
+
+import inspect
 import json
+import os
 from pathlib import Path
+from typing import Any
+import pytest
+from pydantic import ValidationError
 
 from fastapi.testclient import TestClient
 
-from api.main import ARTIFACT_PATH, app, load_artifacts
-from api.schemas import PredictionResponse
+from api.main import (
+    ARTIFACT_PATH,
+    app,
+    load_artifacts,
+)
+from api.schemas import (
+    PredictionRequest,
+    PredictionResponse,
+    ForecastRequest,
+    AdvisoryRequest,
+)
+
+EXAMPLE = {"N": 90, "P": 42, "K": 43, "temperature": 25, "humidity": 80, "ph": 6.5, "rainfall": 200}
 
 client = TestClient(app)
-EXAMPLE = {"N": 90, "P": 42, "K": 43, "temperature": 25, "humidity": 80, "ph": 6.5, "rainfall": 200}
 
 
 def test_health():
@@ -82,7 +99,7 @@ def test_genai_rejects_unsupported_language():
 
 
 def test_vision_advise_mocked_meta(monkeypatch):
-    from unittest.mock import MagicMock, patch
+    from unittest.mock import MagicMock, AsyncMock, patch
 
     monkeypatch.setenv("MODEL_API_KEY", "mock-key")
     mock_openai_module = MagicMock()

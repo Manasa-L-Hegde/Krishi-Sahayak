@@ -63,6 +63,26 @@ def test_parse_hourly_payload():
     assert points[0].precipitation_probability == 40.0
     assert points[1].precipitation_mm == 0.0
 
+    # Verify null values are preserved and not coerced to 0.0 or 25.0
+    raw_with_nulls = {
+        "time": ["2026-06-15T00:00"],
+        "precipitation": [None],
+        "precipitation_probability": [None],
+        "rain": [None],
+        "temperature_2m": [None],
+        "relative_humidity_2m": [None],
+        "wind_speed_10m": [None],
+        "wind_gusts_10m": [None],
+    }
+    null_pts = parse_hourly_payload(raw_with_nulls)
+    assert null_pts[0].precipitation_mm is None
+    assert null_pts[0].precipitation_probability is None
+    assert null_pts[0].rain_mm is None
+    assert null_pts[0].temperature_c is None
+    assert null_pts[0].relative_humidity is None
+    assert null_pts[0].wind_speed_kmh is None
+    assert null_pts[0].wind_gusts_kmh is None
+
 
 def test_compute_past_rain():
     raw = sample_hourly_dict(180)
@@ -83,10 +103,18 @@ def test_calculate_model_agreement():
 
     slight = [pt.rain_mm + 0.5 for pt in points]
     score_slight = calculate_model_agreement(points, slight)
-    assert 0.8 <= score_slight < 1.0
+    assert score_slight is not None and 0.8 <= score_slight < 1.0
 
     heavy = [pt.rain_mm + 10.0 for pt in points]
     assert calculate_model_agreement(points, heavy) == 0.0
+
+    # Missing secondary model returns None
+    assert calculate_model_agreement(points, None) is None
+
+    # Two all-zero precipitation series return None (not false 1.0 agreement)
+    all_zero_pts = [HourlyDataPoint(time=f"2026-06-15T{i:02d}:00", rain_mm=0.0) for i in range(24)]
+    all_zero_sec = [0.0] * 24
+    assert calculate_model_agreement(all_zero_pts, all_zero_sec) is None
 
 
 def test_fetch_weather_forecast_success():
@@ -207,7 +235,8 @@ def test_live_weather_open_meteo_karnataka():
     assert 13.5 <= forecast.latitude <= 15.0
     assert 74.0 <= forecast.longitude <= 76.0
     assert len(forecast.hourly) >= 168  # 7 days * 24h
-    assert 0.0 <= forecast.model_agreement_score <= 1.0
+    # In dry season, both models predicting 0.0 rain returns None rather than false 1.0
+    assert forecast.model_agreement_score is None or 0.0 <= forecast.model_agreement_score <= 1.0
     print(f"\n[LIVE SMOKE TEST OUTPUT]")
     print(f"Location: ({forecast.latitude}, {forecast.longitude}), Elevation: {forecast.elevation}m")
     print(f"Timezone: {forecast.timezone}, Current timestamp: {forecast.current_time}")
