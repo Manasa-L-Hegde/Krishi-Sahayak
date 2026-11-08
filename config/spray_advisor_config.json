@@ -9,6 +9,10 @@
   "temperature_max_c": 32.0,
   "default_min_dry_hours": 4.0,
   "min_dry_hours_label": "Advisory default: 4 hours dry weather needed for rainfastness (not defined in ICAR corpus; consult local KVK/RSK)",
+  "daylight_start_hour": 6,
+  "daylight_end_hour": 18,
+  "wash_off_rain_threshold_mm": 5.0,
+  "wash_off_window_hours": 48,
   "immediate_window_max_lead_hours": 2,
   "near_term_lead_hours_threshold": 48
 }
