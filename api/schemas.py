@@ -63,3 +63,32 @@ class ChatAdvisoryResponse(BaseModel):
     verified: bool
     fallback: bool
 
+
+class SprayAdvisoryRequest(BaseModel):
+    crop: str = Field(..., examples=["arecanut"])
+    disease: str = Field(..., examples=["koleroga"])
+    latitude: float = Field(..., ge=6.0, le=38.0, examples=[14.167])
+    longitude: float = Field(..., ge=68.0, le=98.0, examples=[75.043])
+    spray_intent: str = Field(default="first", pattern="(?i)^(first|repeat|unsure)$", examples=["first"])
+    last_spray_date: str | None = Field(default=None, pattern=r"^\d{4}-\d{2}-\d{2}$", examples=["2026-06-01"])
+    language: str = Field(default="en", pattern="(?i)^(en|kn)$", examples=["en"])
+
+
+class SprayAdvisoryResponse(BaseModel):
+    crop: str
+    disease: str
+    spray_intent: str
+    decision: str
+    decision_label: str
+    reason: str
+    confidence_score: float
+    confidence_factors: dict
+    best_window: dict | None
+    agronomy: dict
+    wash_off_alert: str | None
+    seasonal_context_note: str | None
+    disclaimer: str
+    kvk_guidance: str
+    citations: list[dict]
+
+

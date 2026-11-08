@@ -9,7 +9,7 @@ from typing import Any
 
 import joblib
 import pandas as pd
-from fastapi import FastAPI, File, Form, HTTPException, Request, UploadFile
+from fastapi import FastAPI, File, Form, HTTPException, Query, Request, UploadFile
 from fastapi.responses import HTMLResponse
 from fastapi.templating import Jinja2Templates
 
@@ -23,6 +23,8 @@ from api.schemas import (
     PredictionRequest,
     PredictionResponse,
     ShapContribution,
+    SprayAdvisoryRequest,
+    SprayAdvisoryResponse,
 )
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -170,4 +172,102 @@ async def vision_advise(
 @app.get("/", response_class=HTMLResponse)
 def home(request: Request):
     return TEMPLATES.TemplateResponse(request=request, name="index.html", context={"request": request})
+
+
+# ----------------- Spray Timing Advisor Endpoints -----------------
+
+@app.get("/geo/search")
+def geo_search(q: str = Query(..., min_length=2)):
+    from api.geo import search_places
+    results = search_places(q)
+    return {"query": q, "count": len(results), "results": [r.__dict__ for r in results]}
+
+
+@app.get("/geo/reverse")
+def geo_reverse(lat: float = Query(..., ge=6.0, le=38.0), lon: float = Query(..., ge=68.0, le=98.0)):
+    from api.geo import reverse_geocode
+    loc = reverse_geocode(lat, lon)
+    if not loc:
+        raise HTTPException(status_code=404, detail="Location not found or outside India envelope.")
+    return loc.__dict__
+
+
+@app.get("/weather/forecast")
+def weather_forecast_endpoint(
+    lat: float = Query(..., ge=6.0, le=38.0),
+    lon: float = Query(..., ge=68.0, le=98.0),
+):
+    from api.weather import fetch_weather_forecast, WeatherServiceError
+    from api.geo import is_within_india
+
+    if not is_within_india(lat, lon):
+        raise HTTPException(status_code=400, detail="Coordinates must be within India boundary.")
+    try:
+        fc = fetch_weather_forecast(lat, lon)
+        return {
+            "latitude": fc.latitude,
+            "longitude": fc.longitude,
+            "elevation_m": fc.elevation,
+            "timezone": fc.timezone,
+            "grid_resolution_desc": fc.grid_resolution_desc,
+            "grid_resolution_km_range": [fc.grid_resolution_min_km, fc.grid_resolution_max_km],
+            "current_time": fc.current_time,
+            "past_24h_rain_mm": fc.past_24h_rain_mm,
+            "past_48h_rain_mm": fc.past_48h_rain_mm,
+            "past_7d_rain_mm": fc.past_7d_rain_mm,
+            "model_agreement_score": fc.model_agreement_score,
+            "secondary_model_used": fc.secondary_model_used,
+            "hourly_count": len(fc.hourly),
+        }
+    except WeatherServiceError as exc:
+        raise HTTPException(status_code=502, detail=str(exc))
+
+
+@app.get("/spray/diseases")
+def list_spray_diseases():
+    return [
+        {
+            "crop": "arecanut",
+            "crop_kn": "ಅಡಿಕೆ",
+            "disease": "koleroga",
+            "disease_aliases": ["mahali", "fruit rot"],
+            "disease_kn": "ಕೊಳೆರೋಗ (ಮಹಾಲಿ)",
+            "causal_organism": "Phytophthora meadii",
+            "primary_chemical": "1% Neutral Bordeaux Mixture",
+            "alternative_chemical": "Mandipropamid 23.4% SC (1 ml/L)",
+            "status": "grounded_icar_cpcri",
+        }
+    ]
+
+
+@app.post("/spray/advise", response_model=SprayAdvisoryResponse)
+def spray_advise(request: SprayAdvisoryRequest):
+    from api.geo import is_within_india
+    from api.weather import fetch_weather_forecast, WeatherServiceError
+    from api.spray_engine import evaluate_spray_decision, log_spray_decision, SprayIntent
+    from genai.spray_explainer import build_spray_explanation
+
+    if not is_within_india(request.latitude, request.longitude):
+        raise HTTPException(status_code=400, detail="Coordinates must be within India boundary.")
+
+    try:
+        forecast = fetch_weather_forecast(request.latitude, request.longitude)
+    except WeatherServiceError as exc:
+        raise HTTPException(status_code=502, detail=f"Weather service unavailable: {exc}")
+
+    try:
+        result = evaluate_spray_decision(
+            crop=request.crop,
+            disease=request.disease,
+            forecast=forecast,
+            spray_intent=request.spray_intent,
+            last_spray_date=request.last_spray_date,
+        )
+    except ValueError as exc:
+        raise HTTPException(status_code=422, detail=str(exc))
+
+    log_spray_decision(result, lat=request.latitude, lon=request.longitude)
+    explanation = build_spray_explanation(result, language=request.language)
+    return SprayAdvisoryResponse(**explanation)
+
 
