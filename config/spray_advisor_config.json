@@ -3,7 +3,7 @@
   "disclaimer_en": "Advisory defaults, not ICAR rules. These parameters are heuristic weather safety thresholds for spray application.",
   "disclaimer_kn": "ಇವು ಸಲಹಾತ್ಮಕ ಡೀಫಾಲ್ಟ್ ಮಿತಿಗಳು, ಐಸಿಎಆರ್ ನಿಯಮಗಳಲ್ಲ. ಇವು ಸಿಂಪರಣೆ ಸುರಕ್ಷತೆಯ ಅಂದಾಜು ಹವಾಮಾನ ಮಿತಿಗಳಾಗಿವೆ.",
   "safety_footer_en": "Safety advisory: Always wear personal protective equipment (PPE: gloves, face mask, eye protection), follow manufacturer instructions on the chemical label, strictly observe the pre-harvest interval (PHI) before harvest, and consult your local Krishi Vigyan Kendra (KVK) or Raitha Samparka Kendra (RSK) for localized guidance.",
-  "safety_footer_kn": "ಸುರಕ್ಷತಾ ಸಲಹೆ: ಸಿಂಪಡಿಸುವಾಗ ಯಾವಾಗಲೂ ವೈಯಕ್ತಿಕ ಸುರಕ್ಷತಾ ಸಾಧನಗಳನ್ನು (ಪಿಪಿಇ: ಕೈಗವಸು, ಮುಖಗವಸು, ಕಣ್ಣಿನ ರಕ್ಷಣೆ) ಧರಿಸಿ, ಕೀಟನಾಶಕ ಲೇಬಲ್ ಮೇಲಿನ ಸೂಚನೆಗಳನ್ನು ಕಟ್ಟುನಿಟ್ಟಾಗಿ ಪಾಲಿಸಿ, ಕಟಾವಿಗೆ ಮುನ್ನ ಕಾಯುವ ಅವಧಿಯನ್ನು (PHI) ಗಮನಿಸಿ, ಮತ್ತು ಸ್ಥಳೀಯ ಮಾರ್ಗದರ್ಶನಕ್ಕಾಗಿ ಹತ್ತಿರದ ಕೃಷಿ ವಿಜ್ಞಾನ ಕೇಂದ್ರ (ಕೆವಿಕೆ) ಅಥವಾ ರೈತ ಸಂಪರ್ಕ ಕೇಂದ್ರವನ್ನು (ಆರ್‌ಎಸ್‌ಕೆ) ಸಂಪರ್ಕಿಸಿ.",
+  "safety_footer_kn": "ಸುರಕ್ಷತಾ ಸಲಹೆ: ಸಿಂಪಡಿಸುವಾಗ ಯಾವಾಗಲೂ ವೈಯಕ್ತಿಕ ಸುರಕ್ಷತಾ ಸಾಧನಗಳನ್ನು (ಪಿಪಿಇ: ಕೈಗವಸು, ಮುಖಗವಸು, ಕಣ್ಣಿನ ರಕ್ಷಣೆ) ಧರಿಸಿ, ಉತ್ಪನ್ನದ ಲೇಬಲ್ ಮೇಲಿನ ಸೂಚನೆಗಳನ್ನು ಕಟ್ಟುನಿಟ್ಟಾಗಿ ಪಾಲಿಸಿ, ಕಟಾವಿಗೆ ಮುನ್ನ ಕಾಯುವ ಅವಧಿಯನ್ನು (PHI) ಗಮನಿಸಿ, ಮತ್ತು ಸ್ಥಳೀಯ ಮಾರ್ಗದರ್ಶನಕ್ಕಾಗಿ ಹತ್ತಿರದ ಕೃಷಿ ವಿಜ್ಞಾನ ಕೇಂದ್ರ (ಕೆವಿಕೆ) ಅಥವಾ ರೈತ ಸಂಪರ್ಕ ಕೇಂದ್ರವನ್ನು (ಆರ್‌ಎಸ್‌ಕೆ) ಸಂಪರ್ಕಿಸಿ.",
   "rain_threshold_mm": 0.5,
   "precipitation_probability_threshold_pct": 35.0,
   "wind_speed_max_kmh": 15.0,

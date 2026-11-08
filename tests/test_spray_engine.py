@@ -189,8 +189,9 @@ def test_fixed_clock_at_20_00_never_returns_past_daylight_windows():
     # Must NOT be SPRAY_NOW because 20:00 is night
     assert res.decision == SprayDecision.WAIT
     assert res.next_dry_window is not None
-    # Next dry window MUST be tomorrow June 16 at 06:00
+    # Next dry window MUST be tomorrow June 16 at 06:00 and end at 18:00
     assert res.next_dry_window.start_time == "2026-06-16T06:00"
+    assert res.next_dry_window.end_time == "2026-06-16T18:00"
     assert res.next_dry_window.lead_time_hours == 10.0  # 20:00 to 06:00 next day
     # None of the upcoming windows can start on June 15
     for win in res.upcoming_windows:
@@ -229,7 +230,7 @@ def test_seasonal_context_note_when_completely_dry():
 
     res = evaluate_spray_decision("arecanut", "koleroga", forecast, spray_intent=SprayIntent.FIRST)
     assert res.seasonal_context_en is not None
-    assert "pre-monsoon showers" in res.seasonal_context_en
+    assert "premonsoon showers" in res.seasonal_context_en
     assert "ಮುಂಗಾರು ಪೂರ್ವ ಮಳೆ" in res.seasonal_context_kn
 
 

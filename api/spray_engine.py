@@ -106,7 +106,7 @@ def load_engine_config() -> Dict[str, Any]:
         "disclaimer_en": "Advisory defaults, not ICAR rules. These parameters are heuristic weather safety thresholds for spray application.",
         "disclaimer_kn": "ಇವು ಸಲಹಾತ್ಮಕ ಡೀಫಾಲ್ಟ್ ಮಿತಿಗಳು, ಐಸಿಎಆರ್ ನಿಯಮಗಳಲ್ಲ. ಇವು ಸಿಂಪರಣೆ ಸುರಕ್ಷತೆಯ ಅಂದಾಜು ಹವಾಮಾನ ಮಿತಿಗಳಾಗಿವೆ.",
         "safety_footer_en": "Safety advisory: Always wear personal protective equipment (PPE: gloves, face mask, eye protection), follow manufacturer instructions on the chemical label, strictly observe the pre-harvest interval (PHI) before harvest, and consult your local Krishi Vigyan Kendra (KVK) or Raitha Samparka Kendra (RSK) for localized guidance.",
-        "safety_footer_kn": "ಸುರಕ್ಷತಾ ಸಲಹೆ: ಸಿಂಪಡಿಸುವಾಗ ಯಾವಾಗಲೂ ವೈಯಕ್ತಿಕ ಸುರಕ್ಷತಾ ಸಾಧನಗಳನ್ನು (ಪಿಪಿಇ: ಕೈಗವಸು, ಮುಖಗವಸು, ಕಣ್ಣಿನ ರಕ್ಷಣೆ) ಧರಿಸಿ, ಕೀಟನಾಶಕ ಲೇಬಲ್ ಮೇಲಿನ ಸೂಚನೆಗಳನ್ನು ಕಟ್ಟುನಿಟ್ಟಾಗಿ ಪಾಲಿಸಿ, ಕಟಾವಿಗೆ ಮುನ್ನ ಕಾಯುವ ಅವಧಿಯನ್ನು (PHI) ಗಮನಿಸಿ, ಮತ್ತು ಸ್ಥಳೀಯ ಮಾರ್ಗದರ್ಶನಕ್ಕಾಗಿ ಹತ್ತಿರದ ಕೃಷಿ ವಿಜ್ಞಾನ ಕೇಂದ್ರ (ಕೆವಿಕೆ) ಅಥವಾ ರೈತ ಸಂಪರ್ಕ ಕೇಂದ್ರವನ್ನು (ಆರ್‌ಎಸ್‌ಕೆ) ಸಂಪರ್ಕಿಸಿ.",
+        "safety_footer_kn": "ಸುರಕ್ಷತಾ ಸಲಹೆ: ಸಿಂಪಡಿಸುವಾಗ ಯಾವಾಗಲೂ ವೈಯಕ್ತಿಕ ಸುರಕ್ಷತಾ ಸಾಧನಗಳನ್ನು (ಪಿಪಿಇ: ಕೈಗವಸು, ಮುಖಗವಸು, ಕಣ್ಣಿನ ರಕ್ಷಣೆ) ಧರಿಸಿ, ಉತ್ಪನ್ನದ ಲೇಬಲ್ ಮೇಲಿನ ಸೂಚನೆಗಳನ್ನು ಕಟ್ಟುನಿಟ್ಟಾಗಿ ಪಾಲಿಸಿ, ಕಟಾವಿಗೆ ಮುನ್ನ ಕಾಯುವ ಅವಧಿಯನ್ನು (PHI) ಗಮನಿಸಿ, ಮತ್ತು ಸ್ಥಳೀಯ ಮಾರ್ಗದರ್ಶನಕ್ಕಾಗಿ ಹತ್ತಿರದ ಕೃಷಿ ವಿಜ್ಞಾನ ಕೇಂದ್ರ (ಕೆವಿಕೆ) ಅಥವಾ ರೈತ ಸಂಪರ್ಕ ಕೇಂದ್ರವನ್ನು (ಆರ್‌ಎಸ್‌ಕೆ) ಸಂಪರ್ಕಿಸಿ.",
     }
 
 
@@ -199,9 +199,21 @@ def build_window_record(block: List[HourlyDataPoint], lead_time_hours: float) ->
     probs = [pt.precipitation_probability for pt in block if pt.precipitation_probability is not None]
     rains = [pt.rain_mm for pt in block if pt.rain_mm is not None]
 
+    # Calculate end of the window: end of the last safe hour (+1 hour from block[-1].time)
+    last_time_str = block[-1].time
+    end_time_str = last_time_str
+    if "T" in last_time_str:
+        try:
+            from datetime import timedelta
+            last_dt = datetime.strptime(last_time_str, "%Y-%m-%dT%H:00")
+            end_dt = last_dt + timedelta(hours=1)
+            end_time_str = end_dt.strftime("%Y-%m-%dT%H:00")
+        except ValueError:
+            pass
+
     return SprayWindow(
         start_time=block[0].time,
-        end_time=block[-1].time,
+        end_time=end_time_str,
         duration_hours=float(len(block)),
         lead_time_hours=lead_time_hours,
         avg_temperature_c=round(sum(temps) / len(temps), 1) if temps else 25.0,
@@ -214,31 +226,53 @@ def build_window_record(block: List[HourlyDataPoint], lead_time_hours: float) ->
 def calculate_decision_confidence(
     window: Optional[SprayWindow],
     model_agreement: Optional[float],
+    config: Optional[Dict[str, Any]] = None,
 ) -> Tuple[float, Dict[str, Any]]:
     """
-    Weigh forecast lead time (hour 6 is more reliable than hour 60)
-    and Open-Meteo multi-model agreement score.
+    Weigh forecast lead time (hour 6 is more reliable than hour 60),
+    Open-Meteo multi-model agreement score, and threshold safety margin
+    (lowering confidence when a critical parameter such as wind is near its boundary).
     """
     if window is None:
         return 0.85, {"reason": "no_dry_window_in_horizon"}
 
+    cfg = config or load_engine_config()
+    wind_limit = cfg.get("wind_speed_max_kmh", 15.0)
+    prob_limit = cfg.get("precipitation_probability_threshold_pct", 35.0)
+
+    # 1. Lead time reliability factor
     lead = window.lead_time_hours
     lead_factor = max(0.5, 1.0 - (lead / 168.0) * 0.5)
+
+    # 2. Model agreement factor
+    if model_agreement is not None:
+        agreement_factor = 0.7 + (0.3 * model_agreement)
+    else:
+        agreement_factor = 0.85
+
+    # 3. Threshold safety margin factor:
+    # If the deciding variable (e.g. wind at 14.5 km/h vs 15.0 km/h limit) is within 10-20%
+    # of the boundary, scale down confidence since slight forecast variance could breach limits.
+    wind_margin = max(0.0, (wind_limit - window.max_wind_kmh) / wind_limit) if wind_limit > 0 else 1.0
+    prob_margin = max(0.0, (prob_limit - window.max_precipitation_probability) / prob_limit) if prob_limit > 0 else 1.0
+    limiting_margin = min(wind_margin, prob_margin)
+
+    # If margin is below 20% (0.20), scale down factor between 0.75 and 1.0
+    if limiting_margin < 0.20:
+        margin_factor = max(0.75, 0.75 + (limiting_margin / 0.20) * 0.25)
+    else:
+        margin_factor = 1.0
+
+    score = lead_factor * agreement_factor * margin_factor
 
     factors: Dict[str, Any] = {
         "lead_time_hours": lead,
         "lead_time_reliability_factor": round(lead_factor, 2),
+        "model_agreement_score": model_agreement,
+        "model_agreement_factor": round(agreement_factor, 2),
+        "threshold_margin_pct": round(limiting_margin * 100, 1),
+        "threshold_margin_factor": round(margin_factor, 2),
     }
-
-    if model_agreement is not None:
-        agreement_factor = 0.7 + (0.3 * model_agreement)
-        factors["model_agreement_score"] = model_agreement
-        factors["model_agreement_factor"] = round(agreement_factor, 2)
-        score = lead_factor * agreement_factor
-    else:
-        factors["model_agreement_score"] = None
-        factors["model_agreement_factor"] = 0.85
-        score = lead_factor * 0.85
 
     return round(score, 2), factors
 
@@ -373,11 +407,13 @@ def evaluate_spray_decision(
     # 3. Seasonal context note: Sources tie Koleroga sprays strictly to pre-monsoon showers or monsoon rain breaks
     if spray_intent in {SprayIntent.FIRST, SprayIntent.UNSURE}:
         seasonal_en = (
-            "Seasonal context: ICAR-CPCRI recommends applying the first prophylactic spray after the premonsoon showers and before the onset of regular southwest monsoon rains (Ext. Folder No. 17, 1989). "
+            "Seasonal context: ICAR-CPCRI recommends applying the first prophylactic spray after the premonsoon showers (Ext. Folder No. 17, 1989) "
+            "or as a pre-monsoon application (Ext. Pub. No. 69, 1999). "
             "If pre-monsoon showers have not commenced in your locality, consult your local KVK or Raitha Samparka Kendra before spraying."
         )
         seasonal_kn = (
-            "ಋತುಮಾನದ ಮಾಹಿತಿ: ಐಸಿಎಆರ್-ಸಿಪಿಸಿಆರ್‌ಐ ಪ್ರಕಾರ ಮೊದಲ ಮುನ್ನೆಚ್ಚರಿಕೆ ಸಿಂಪರಣೆಯನ್ನು ಮುಂಗಾರು ಪೂರ್ವ ಮಳೆಯ ನಂತರ ಮತ್ತು ನೈಋತ್ಯ ಮುಂಗಾರು ಆರಂಭವಾಗುವ ಮೊದಲು ಕೈಗೊಳ್ಳಬೇಕು (ವಿಸ್ತರಣಾ ಪತ್ರಿಕೆ 17, 1989). "
+            "ಋತುಮಾನದ ಮಾಹಿತಿ: ಐಸಿಎಆರ್-ಸಿಪಿಸಿಆರ್‌ಐ ಪ್ರಕಾರ ಮೊದಲ ಮುನ್ನೆಚ್ಚರಿಕೆ ಸಿಂಪರಣೆಯನ್ನು ಮುಂಗಾರು ಪೂರ್ವ ಮಳೆಯ ನಂತರ (ವಿಸ್ತರಣಾ ಪತ್ರಿಕೆ 17, 1989) "
+            "ಅಥವಾ ಮುಂಗಾರು ಪೂರ್ವದಲ್ಲಿ (ವಿಸ್ತರಣಾ ಪ್ರಕಟಣೆ 69, 1999) ಕೈಗೊಳ್ಳಬೇಕು. "
             "ನಿಮ್ಮ ಭಾಗದಲ್ಲಿ ಮುಂಗಾರು ಪೂರ್ವ ಮಳೆಯಾಗಿರದಿದ್ದರೆ ಸಿಂಪಡಿಸುವ ಮುನ್ನ ಸ್ಥಳೀಯ ಕೆವಿಕೆ ಅಥವಾ ರೈತ ಸಂಪರ್ಕ ಕೇಂದ್ರವನ್ನು ಸಂಪರ್ಕಿಸಿ."
         )
     elif spray_intent == SprayIntent.REPEAT:
@@ -391,7 +427,7 @@ def evaluate_spray_decision(
     windows = find_dry_windows(forecast, cfg, min_duration_hours=min_dry_hours)
 
     if not windows:
-        conf_score, conf_factors = calculate_decision_confidence(None, forecast.model_agreement_score)
+        conf_score, conf_factors = calculate_decision_confidence(None, forecast.model_agreement_score, cfg)
         return SprayAdvisorResult(
             crop=crop,
             disease=disease,
@@ -426,7 +462,7 @@ def evaluate_spray_decision(
         )
 
     first_win = windows[0]
-    conf_score, conf_factors = calculate_decision_confidence(first_win, forecast.model_agreement_score)
+    conf_score, conf_factors = calculate_decision_confidence(first_win, forecast.model_agreement_score, cfg)
 
     if first_win.lead_time_hours <= immediate_lead_max:
         decision = SprayDecision.SPRAY_NOW

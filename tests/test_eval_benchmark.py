@@ -132,3 +132,38 @@ def test_eval_benchmark_refusal_and_safety_rates():
 
     refusal_rate = refusal_count / total_refusal_tests
     assert refusal_rate == 1.0, f"Refusal rate must be 100%, got {refusal_rate*100}%"
+
+
+def test_rag_retrieval_and_refusal_eval():
+    """
+    RAG Benchmark on official corpus:
+    - Out-of-corpus query (minimum dry hours) triggers fail-closed fallback (100% refusal rate).
+    - In-corpus queries (125-gauge polythene covers, Bordeaux 1% preparation) retrieve exact ICAR chunks (100% hit rate).
+    """
+    from fastapi.testclient import TestClient
+    from api.main import app, load_rag
+
+    rag = load_rag()
+    client = TestClient(app)
+
+    # 1. Out-of-corpus refusal test
+    out_of_corpus_q = "How many hours after spraying Bordeaux mixture must it stay dry according to ICAR?"
+    resp_out = client.post("/genai/advise", json={"question": out_of_corpus_q, "language": "English"})
+    assert resp_out.status_code == 200
+    data_out = resp_out.json()
+    assert data_out["fallback"] is True
+    assert data_out["grounded"] is False
+    assert "don't have verified information" in data_out["answer"]
+
+    # 2. In-corpus retrieval hit tests
+    # Query A: 125-gauge polythene bunch covers
+    q_bunch = "What gauge polythene covers are recommended for arecanut bunches?"
+    hits_bunch = rag.retrieve(q_bunch, k=4)
+    bunch_hit = any("Disease Management Strategies in Arecanut and Cocoa" in h["source"] for h in hits_bunch)
+    assert bunch_hit, "Expected to retrieve chunk from Disease Management Strategies (Pub. 69)"
+
+    # Query B: 1% Bordeaux mixture preparation
+    q_bordeaux = "How is 1% Bordeaux mixture prepared for arecanut koleroga?"
+    hits_bordeaux = rag.retrieve(q_bordeaux, k=4)
+    bordeaux_hit = any("Bordeaux" in h["text"] or "Copper" in h["text"] for h in hits_bordeaux)
+    assert bordeaux_hit, "Expected to retrieve Bordeaux preparation chunk"

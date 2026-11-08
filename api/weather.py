@@ -46,6 +46,7 @@ class WeatherForecast:
     hourly: List[HourlyDataPoint]
     model_agreement_score: Optional[float] = None  # 0.0 to 1.0; None if secondary model unavailable or all-zero
     secondary_model_used: Optional[str] = None
+    secondary_hourly_wind: Optional[List[Optional[float]]] = None
     past_24h_rain_mm: float = 0.0
     past_48h_rain_mm: float = 0.0
     past_7d_rain_mm: float = 0.0
@@ -143,16 +144,25 @@ def compute_past_rain(hourly: List[HourlyDataPoint], current_index: int) -> Tupl
 def calculate_model_agreement(
     forecast_primary: List[HourlyDataPoint],
     forecast_secondary_rain: Optional[List[Optional[float]]],
+    forecast_secondary_wind: Optional[List[Optional[float]]] = None,
     rain_threshold_mm: float = 0.5,
+    wind_threshold_kmh: float = 15.0,
 ) -> Optional[float]:
     """
     Compute agreement score (0.0 to 1.0) between primary model (ECMWF) and secondary model (GFS)
     STRICTLY over future forecast hours (excluding past analysis/hindcast hours).
 
-    Evaluation dimensions (heuristic advisory weights: 50% categorical match, 50% volume match):
-    1. Categorical hourly match: whether both models agree on spray-critical wet (>=rain_threshold_mm)
+    Evaluation dimensions:
+    1. Categorical hourly rain match: whether both models agree on spray-critical wet (>=rain_threshold_mm)
        vs dry (<rain_threshold_mm) hours. Sub-threshold trace rain (<0.5mm) is classified as dry.
     2. Rain volume agreement: relative agreement on total forecasted precipitation from significant hours.
+       Rule for both-models-dry: If both forecast 0.0 mm significant rain, volume agreement is 1.0 (consistent dry forecast).
+    3. Categorical hourly wind match (when secondary wind is available): whether both models agree on
+       spray-safe wind (<= wind_threshold_kmh) vs excessive wind (> wind_threshold_kmh).
+
+    Composite weights:
+    - If wind is compared: 40% rain categorical + 30% rain volume + 30% wind categorical match.
+    - If only rain is compared: 50% rain categorical + 50% rain volume match.
     """
     if not forecast_secondary_rain:
         return None
@@ -168,8 +178,8 @@ def calculate_model_agreement(
     wet_p = [r >= rain_threshold_mm for r in p_rains]
     wet_s = [r >= rain_threshold_mm for r in s_rains]
 
-    agree_hours = sum(1 for a, b in zip(wet_p, wet_s) if a == b)
-    cat_match = agree_hours / length
+    agree_rain_hours = sum(1 for a, b in zip(wet_p, wet_s) if a == b)
+    cat_rain_match = agree_rain_hours / length
 
     # 2. Total precipitation volume agreement for significant rainfall (>= rain_threshold_mm)
     p_sig = sum(r for r in p_rains if r >= rain_threshold_mm)
@@ -181,8 +191,20 @@ def calculate_model_agreement(
         vol_diff = abs(p_sig - s_sig)
         vol_match = max(0.0, 1.0 - (vol_diff / max(p_sig, s_sig, 2.0)))
 
-    # Composite heuristic: 50% categorical hourly match + 50% volume match
-    score = 0.5 * cat_match + 0.5 * vol_match
+    # 3. Categorical wind agreement if secondary wind provided
+    if forecast_secondary_wind:
+        w_len = min(length, len(forecast_secondary_wind))
+        p_winds = [(pt.wind_speed_kmh or 0.0) if pt.wind_speed_kmh is not None else 0.0 for pt in forecast_primary[:w_len]]
+        s_winds = [(w or 0.0) if w is not None else 0.0 for w in forecast_secondary_wind[:w_len]]
+        safe_p = [w <= wind_threshold_kmh for w in p_winds]
+        safe_s = [w <= wind_threshold_kmh for w in s_winds]
+        agree_wind_hours = sum(1 for a, b in zip(safe_p, safe_s) if a == b)
+        wind_match = agree_wind_hours / w_len if w_len > 0 else 1.0
+
+        score = 0.40 * cat_rain_match + 0.30 * vol_match + 0.30 * wind_match
+    else:
+        score = 0.50 * cat_rain_match + 0.50 * vol_match
+
     return round(score, 2)
 
 
@@ -238,6 +260,7 @@ def fetch_weather_forecast(
             sec_model_name = "gfs_seamless"
             h = data.get("hourly", {})
             secondary_rain = h.get("rain_gfs_seamless") or h.get("precipitation_gfs_seamless")
+            secondary_wind = h.get("wind_speed_10m_gfs_seamless")
 
     except httpx.RequestError as exc:
         logger.error(f"Network error communicating with Open-Meteo: {exc}")
@@ -276,7 +299,8 @@ def fetch_weather_forecast(
     # STRICT: Evaluate model agreement ONLY over future forecast hours (exclude past analysis/hindcast)
     future_hourly = hourly_points[current_index:]
     future_sec_rain = secondary_rain[current_index:] if secondary_rain else None
-    agreement_score = calculate_model_agreement(future_hourly, future_sec_rain)
+    future_sec_wind = secondary_wind[current_index:] if secondary_wind else None
+    agreement_score = calculate_model_agreement(future_hourly, future_sec_rain, future_sec_wind)
 
     forecast = WeatherForecast(
         latitude=data.get("latitude", key[0]),
@@ -290,6 +314,7 @@ def fetch_weather_forecast(
         hourly=hourly_points,
         model_agreement_score=agreement_score,
         secondary_model_used=sec_model_name if secondary_rain is not None else None,
+        secondary_hourly_wind=secondary_wind,
         past_24h_rain_mm=rain_24,
         past_48h_rain_mm=rain_48,
         past_7d_rain_mm=rain_7d,

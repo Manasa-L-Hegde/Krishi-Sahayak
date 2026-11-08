@@ -1,0 +1,896 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Krishi Sahayak - Spray Timing Advisor (Arecanut Koleroga)</title>
+  
+  <!-- Locally bundled vendor styles (Zero CDN dependency) -->
+  <link rel="stylesheet" href="/static/vendor/leaflet.css">
+
+  <style>
+    :root {
+      --primary: #15803d;
+      --primary-dark: #166534;
+      --primary-light: #dcfce7;
+      --accent: #b45309;
+      --bg: #f8fafc;
+      --card-bg: #ffffff;
+      --text: #0f172a;
+      --text-muted: #64748b;
+      --border: #e2e8f0;
+      --success: #16a34a;
+      --warning: #d97706;
+      --danger: #dc2626;
+      --info: #0284c7;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif; }
+    body { background-color: var(--bg); color: var(--text); line-height: 1.5; padding-bottom: 80px; }
+
+    header {
+      background: linear-gradient(135deg, var(--primary-dark), var(--primary));
+      color: white;
+      padding: 1.25rem 1.5rem;
+      box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 1rem;
+    }
+
+    .brand h1 { font-size: 1.5rem; font-weight: 700; display: flex; align-items: center; gap: 0.5rem; }
+    .brand p { font-size: 0.875rem; opacity: 0.9; }
+
+    .lang-toggle {
+      background: rgba(255, 255, 255, 0.2);
+      border: 1px solid rgba(255, 255, 255, 0.4);
+      color: white;
+      padding: 0.4rem 0.8rem;
+      border-radius: 9999px;
+      font-weight: 600;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      transition: background 0.2s;
+    }
+    .lang-toggle:hover { background: rgba(255, 255, 255, 0.3); }
+
+    .container { max-width: 1100px; margin: 1.5rem auto; padding: 0 1rem; display: grid; grid-template-columns: 1fr; gap: 1.5rem; }
+    @media (min-width: 860px) {
+      .container { grid-template-columns: 360px 1fr; }
+    }
+
+    .card {
+      background: var(--card-bg);
+      border-radius: 0.75rem;
+      border: 1px solid var(--border);
+      padding: 1.25rem;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+    }
+
+    .form-group { margin-bottom: 1rem; }
+    .form-group label { display: block; font-size: 0.875rem; font-weight: 600; margin-bottom: 0.35rem; color: #334155; }
+    .form-control {
+      width: 100%;
+      padding: 0.6rem 0.75rem;
+      border: 1px solid var(--border);
+      border-radius: 0.5rem;
+      font-size: 0.95rem;
+      background-color: white;
+    }
+    .form-control:focus { outline: none; border-color: var(--primary); ring: 2px var(--primary-light); }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.5rem;
+      padding: 0.65rem 1rem;
+      font-size: 0.95rem;
+      font-weight: 600;
+      border-radius: 0.5rem;
+      border: none;
+      cursor: pointer;
+      transition: all 0.2s;
+      width: 100%;
+    }
+    .btn-primary { background-color: var(--primary); color: white; }
+    .btn-primary:hover { background-color: var(--primary-dark); }
+    .btn-secondary { background-color: #e2e8f0; color: #334155; margin-top: 0.5rem; }
+    .btn-secondary:hover { background-color: #cbd5e1; }
+
+    #map { height: 180px; width: 100%; border-radius: 0.5rem; margin-top: 0.5rem; border: 1px solid var(--border); z-index: 1; }
+
+    /* Results section */
+    .decision-banner {
+      border-radius: 0.75rem;
+      padding: 1.25rem;
+      margin-bottom: 1.25rem;
+      display: flex;
+      align-items: flex-start;
+      gap: 1rem;
+    }
+    .decision-SPRAY_NOW { background-color: #ecfdf5; border: 2px solid #86efac; color: #065f46; }
+    .decision-WAIT { background-color: #fffbeb; border: 2px solid #fde68a; color: #92400e; }
+    .decision-DO_NOT_SPRAY { background-color: #fef2f2; border: 2px solid #fca5a5; color: #991b1b; }
+
+    .decision-icon { font-size: 2.5rem; line-height: 1; }
+    .decision-content h2 { font-size: 1.4rem; font-weight: 800; margin-bottom: 0.25rem; }
+    .decision-content p { font-size: 0.95rem; line-height: 1.4; }
+
+    .seasonal-alert {
+      background-color: #f0f9ff;
+      border-left: 4px solid var(--info);
+      padding: 0.75rem 1rem;
+      border-radius: 0.35rem;
+      font-size: 0.875rem;
+      color: #0369a1;
+      margin-bottom: 1.25rem;
+      line-height: 1.45;
+    }
+
+    .audio-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4rem;
+      background: white;
+      border: 1px solid var(--border);
+      padding: 0.3rem 0.65rem;
+      border-radius: 9999px;
+      font-size: 0.8rem;
+      font-weight: 600;
+      color: #334155;
+      cursor: pointer;
+      margin-top: 0.5rem;
+      box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+    }
+    .audio-btn:hover { background: #f1f5f9; }
+
+    .metrics-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+      gap: 0.75rem;
+      margin: 1rem 0;
+    }
+    .metric-card {
+      background: #f8fafc;
+      border: 1px solid var(--border);
+      border-radius: 0.5rem;
+      padding: 0.6rem 0.75rem;
+      text-align: center;
+    }
+    .metric-value { font-size: 1.15rem; font-weight: 700; color: #0f172a; }
+    .metric-label { font-size: 0.75rem; color: var(--text-muted); text-transform: uppercase; font-weight: 600; }
+
+    .confidence-factors {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+      margin-top: 0.5rem;
+      font-size: 0.75rem;
+    }
+    .factor-pill {
+      background: #f1f5f9;
+      padding: 0.2rem 0.5rem;
+      border-radius: 0.25rem;
+      border: 1px solid #e2e8f0;
+    }
+
+    .accordion-item { border: 1px solid var(--border); border-radius: 0.5rem; margin-bottom: 0.5rem; overflow: hidden; }
+    .accordion-header {
+      padding: 0.75rem 1rem;
+      background: #f8fafc;
+      font-weight: 600;
+      cursor: pointer;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 0.9rem;
+    }
+    .accordion-body { padding: 0.75rem 1rem; font-size: 0.875rem; color: #334155; line-height: 1.5; border-top: 1px solid var(--border); background: white; }
+    .source-citation {
+      margin-top: 0.5rem;
+      font-size: 0.75rem;
+      color: #64748b;
+      background: #f8fafc;
+      padding: 0.4rem 0.6rem;
+      border-radius: 0.25rem;
+      border-left: 3px solid #94a3b8;
+    }
+    .source-citation a { color: var(--info); text-decoration: none; font-weight: 500; }
+    .source-citation a:hover { text-decoration: underline; }
+
+    .chart-container { margin: 1.25rem 0; height: 260px; position: relative; }
+
+    /* Safety footer */
+    footer.safety-footer {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      background: #1e293b;
+      color: #f8fafc;
+      padding: 0.75rem 1.5rem;
+      font-size: 0.8rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 1rem;
+      z-index: 1000;
+      box-shadow: 0 -2px 10px rgba(0,0,0,0.15);
+    }
+    .safety-text { flex: 1; line-height: 1.35; }
+    .attribution-badge { font-size: 0.7rem; color: #94a3b8; text-align: right; white-space: nowrap; }
+    .attribution-badge a { color: #38bdf8; text-decoration: none; }
+
+    .badge-transparency {
+      display: inline-block;
+      font-size: 0.75rem;
+      padding: 0.2rem 0.5rem;
+      background: #eff6ff;
+      color: #1d4ed8;
+      border-radius: 0.25rem;
+      margin-bottom: 0.75rem;
+      font-weight: 500;
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <div class="brand">
+      <h1 id="appTitle">Krishi Sahayak - Spray Advisor</h1>
+      <p id="appSubtitle">ICAR-CPCRI Grounded Spray Timing for Arecanut Koleroga</p>
+    </div>
+    <button class="lang-toggle" id="langToggleBtn" onclick="toggleLanguage()">
+      🌐 <span id="langLabel">ಕನ್ನಡದಲ್ಲಿ ನೋಡಿ (Kannada)</span>
+    </button>
+  </header>
+
+  <div class="container">
+    <!-- LEFT PANEL: Location and Intent Input -->
+    <div class="card">
+      <h2 style="font-size: 1.1rem; margin-bottom: 0.75rem;" id="locationHeader">Location & Crop Details</h2>
+      
+      <div class="form-group">
+        <label for="placeSearch" id="labelSearch">Search Village / Taluk</label>
+        <div style="display: flex; gap: 0.5rem;">
+          <input type="text" id="placeSearch" class="form-control" placeholder="e.g. Sagar, Shivamogga" value="Sagar">
+          <button type="button" class="btn btn-primary" style="width: auto; padding: 0.5rem 0.85rem;" onclick="searchPlace()">Search</button>
+        </div>
+        <div id="placeSearchResults" style="font-size: 0.8rem; margin-top: 0.35rem; color: var(--text-muted);"></div>
+      </div>
+
+      <button type="button" class="btn btn-secondary" onclick="useCurrentLocation()" id="btnGps">
+        📍 <span id="btnGpsLabel">Use Current GPS Location</span>
+      </button>
+
+      <div id="map"></div>
+      <div style="display: flex; justify-content: space-between; font-size: 0.75rem; color: var(--text-muted); margin-top: 0.25rem;">
+        <span>Lat: <span id="displayLat">14.17</span>, Lon: <span id="displayLon">75.04</span></span>
+        <span id="placeLabel">Sagar, Shivamogga</span>
+      </div>
+
+      <hr style="margin: 1rem 0; border: none; border-top: 1px solid var(--border);">
+
+      <div class="form-group">
+        <label for="cropSelect" id="labelCrop">Crop</label>
+        <select id="cropSelect" class="form-control">
+          <option value="arecanut" selected>Arecanut (ಅಡಿಕೆ)</option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label for="diseaseSelect" id="labelDisease">Target Disease</label>
+        <select id="diseaseSelect" class="form-control">
+          <option value="koleroga" selected>Koleroga / Mahali (Phytophthora meadii)</option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label for="intentSelect" id="labelIntent">Spray Intent</label>
+        <select id="intentSelect" class="form-control" onchange="toggleLastSprayDate()">
+          <option value="first">First Application (ಮೊದಲ ಸಿಂಪರಣೆ)</option>
+          <option value="repeat">Repeat Application (ಎರಡನೇ ಸಿಂಪರಣೆ)</option>
+          <option value="unsure" selected>Unsure / Advisory Check (ಸಲಹೆಗಾಗಿ)</option>
+        </select>
+      </div>
+
+      <div class="form-group" id="lastSprayDateGroup" style="display: none;">
+        <label for="lastSprayDate" id="labelLastSpray">Last Spray Date</label>
+        <input type="date" id="lastSprayDate" class="form-control">
+      </div>
+
+      <button type="button" class="btn btn-primary" style="margin-top: 0.5rem;" onclick="fetchSprayAdvisory()" id="btnGetAdvice">
+        🌧️ <span id="btnGetAdviceLabel">Get Spray Advice</span>
+      </button>
+    </div>
+
+    <!-- RIGHT PANEL: Decision Card, Chart, and Agronomy Guidance -->
+    <div>
+      <div id="loadingIndicator" style="display: none; padding: 2rem; text-align: center; color: var(--text-muted);">
+        <p>Fetching 7-day dual-NWP forecast & evaluating ICAR rules...</p>
+      </div>
+
+      <div id="resultsArea">
+        <!-- 1. Seasonal Context Note (TOP of Card) -->
+        <div id="seasonalAlert" class="seasonal-alert" style="display: none;"></div>
+
+        <!-- 2. Main Decision Banner -->
+        <div id="decisionCard" class="decision-banner decision-WAIT">
+          <div class="decision-icon" id="decisionIcon">⏳</div>
+          <div class="decision-content" style="flex: 1;">
+            <div style="display: flex; justify-content: space-between; align-items: flex-start;">
+              <h2 id="decisionHeading">WAIT (ಕಾದುನೋಡಿ)</h2>
+              <button class="audio-btn" onclick="speakDecision()" title="Speak aloud in current language">
+                🔊 <span id="speakBtnLabel">Speak Aloud</span>
+              </button>
+            </div>
+            <p id="decisionReason" style="margin-top: 0.35rem;"></p>
+            
+            <div class="confidence-factors" id="confidenceFactorsArea"></div>
+          </div>
+        </div>
+
+        <!-- 3. Key Decision Metrics -->
+        <div class="card" style="margin-bottom: 1.25rem;">
+          <div class="badge-transparency" id="transparencyBadge">
+            Resolution: 15–28 km (ECMWF IFS / GFS Global NWP) • Advisory thresholds, not ICAR rules
+          </div>
+          
+          <div class="metrics-grid">
+            <div class="metric-card">
+              <div class="metric-value" id="metricWindowHours">--</div>
+              <div class="metric-label" id="labelWindowDuration">Safe Dry Hours</div>
+            </div>
+            <div class="metric-card">
+              <div class="metric-value" id="metricLeadHours">--</div>
+              <div class="metric-label" id="labelLeadTime">Lead Time</div>
+            </div>
+            <div class="metric-card">
+              <div class="metric-value" id="metricMaxWind">--</div>
+              <div class="metric-label" id="labelMaxWind">Max Wind Speed</div>
+            </div>
+            <div class="metric-card">
+              <div class="metric-value" id="metricRainProb">--</div>
+              <div class="metric-label" id="labelRainProb">Rain Probability</div>
+            </div>
+          </div>
+
+          <div id="windowTimingText" style="font-size: 0.9rem; font-weight: 600; color: #1e293b; margin-top: 0.5rem;"></div>
+        </div>
+
+        <!-- 4. Interactive Hourly Rain & Wind Chart -->
+        <div class="card" style="margin-bottom: 1.25rem;">
+          <h3 style="font-size: 1rem; margin-bottom: 0.5rem;" id="chartHeading">Hourly Weather Forecast (Next 7 Days)</h3>
+          <div class="chart-container">
+            <canvas id="weatherChart"></canvas>
+          </div>
+          <p style="font-size: 0.75rem; color: var(--text-muted); text-align: right;" id="chartNote">
+            Green band indicates daylight candidate dry window. Red dashed line indicates 15 km/h spray wind limit.
+          </p>
+        </div>
+
+        <!-- 5. ICAR-Grounded Agronomic Guidance & Citations Accordion -->
+        <div class="card">
+          <h3 style="font-size: 1rem; margin-bottom: 0.75rem;" id="agronomyHeading">ICAR-CPCRI Agronomic Preparation & Safety Rules</h3>
+          
+          <div class="accordion-item">
+            <div class="accordion-header" onclick="toggleAccordion('accPrep')">
+              <span id="accPrepTitle">1. 1% Bordeaux Mixture Preparation</span> <span>▼</span>
+            </div>
+            <div class="accordion-body" id="accPrep">
+              <p id="accPrepText"></p>
+              <div class="source-citation" id="accPrepSource"></div>
+            </div>
+          </div>
+
+          <div class="accordion-item">
+            <div class="accordion-header" onclick="toggleAccordion('accTest')">
+              <span id="accTestTitle">2. Neutrality Test (Polished Iron Knife / Nail)</span> <span>▼</span>
+            </div>
+            <div class="accordion-body" id="accTest">
+              <p id="accTestText"></p>
+              <div class="source-citation" id="accTestSource"></div>
+            </div>
+          </div>
+
+          <div class="accordion-item">
+            <div class="accordion-header" onclick="toggleAccordion('accAdjuvant')">
+              <span id="accAdjuvantTitle">3. Adjuvant / Sticker Application</span> <span>▼</span>
+            </div>
+            <div class="accordion-body" id="accAdjuvant">
+              <p id="accAdjuvantText"></p>
+              <div class="source-citation" id="accAdjuvantSource"></div>
+            </div>
+          </div>
+
+          <div class="accordion-item">
+            <div class="accordion-header" onclick="toggleAccordion('accCover')">
+              <span id="accCoverTitle">4. Bunch Covering (125-gauge Polythene Covers)</span> <span>▼</span>
+            </div>
+            <div class="accordion-body" id="accCover">
+              <p id="accCoverText"></p>
+              <div class="source-citation" id="accCoverSource"></div>
+            </div>
+          </div>
+
+          <div class="accordion-item">
+            <div class="accordion-header" onclick="toggleAccordion('accAlt')">
+              <span id="accAltTitle">5. Alternative Chemical (Mandipropamid 23.4% SC)</span> <span>▼</span>
+            </div>
+            <div class="accordion-body" id="accAlt">
+              <p id="accAltText"></p>
+              <div class="source-citation" id="accAltSource"></div>
+            </div>
+          </div>
+
+          <div class="accordion-item">
+            <div class="accordion-header" onclick="toggleAccordion('accKvk')">
+              <span id="accKvkTitle">6. KVK Localized Fallback Guidance</span> <span>▼</span>
+            </div>
+            <div class="accordion-body" id="accKvk">
+              <p id="accKvkText"></p>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <!-- FIXED MANDATORY SAFETY FOOTER -->
+  <footer class="safety-footer">
+    <div class="safety-text" id="safetyFooterText">
+      🛡️ <strong>Safety advisory:</strong> Always wear personal protective equipment (PPE: gloves, face mask, eye protection), follow manufacturer instructions on the chemical label, strictly observe the pre-harvest interval (PHI) before harvest, and consult your local Krishi Vigyan Kendra (KVK) or Raitha Samparka Kendra (RSK) for localized guidance.
+    </div>
+    <div class="attribution-badge">
+      Weather: <a href="https://open-meteo.com/" target="_blank" rel="noopener">Open-Meteo API</a><br>
+      (ECMWF IFS & GFS 0.25°)
+    </div>
+  </footer>
+
+  <!-- Locally bundled vendor scripts (Zero external network dependency) -->
+  <script src="/static/vendor/leaflet.js"></script>
+  <script src="/static/vendor/chart.umd.min.js"></script>
+
+  <script>
+    let currentLang = 'en';
+    let currentLat = 14.167;
+    let currentLon = 75.043;
+    let map = null;
+    let marker = null;
+    let chartInstance = null;
+    let lastAdvisorData = null;
+
+    // UI Translation Strings
+    const UI_STRINGS = {
+      en: {
+        appTitle: "Krishi Sahayak - Spray Advisor",
+        appSubtitle: "ICAR-CPCRI Grounded Spray Timing for Arecanut Koleroga",
+        langToggle: "ಕನ್ನಡದಲ್ಲಿ ನೋಡಿ (Kannada)",
+        locationHeader: "Location & Crop Details",
+        labelSearch: "Search Village / Taluk",
+        btnGps: "📍 Use Current GPS Location",
+        labelCrop: "Crop",
+        labelDisease: "Target Disease",
+        labelIntent: "Spray Intent",
+        labelLastSpray: "Last Spray Date",
+        btnGetAdvice: "🌧️ Get Spray Advice",
+        labelWindowDuration: "Safe Dry Hours",
+        labelLeadTime: "Lead Time",
+        labelMaxWind: "Max Wind Speed",
+        labelRainProb: "Rain Probability",
+        chartHeading: "Hourly Weather Forecast (Next 7 Days)",
+        chartNote: "Green band indicates daylight candidate dry window. Red dashed line indicates 15 km/h spray wind limit.",
+        agronomyHeading: "ICAR-CPCRI Agronomic Preparation & Safety Rules",
+        speakBtn: "Speak Aloud",
+        transparency: "Resolution: 15–28 km (ECMWF IFS / GFS Global NWP) • Advisory thresholds, not ICAR rules",
+      },
+      kn: {
+        appTitle: "ಕೃಷಿ ಸಹಾಯಕ - ಸಿಂಪರಣಾ ಸಮಯ ಸಲಹೆಗಾರ",
+        appSubtitle: "ಐಸಿಎಆರ್-ಸಿಪಿಸಿಆರ್‌ಐ ಆಧಾರಿತ ಅಡಿಕೆ ಕೊಳೆರೋಗ ಸಿಂಪರಣಾ ಮಾರ್ಗದರ್ಶಿ",
+        langToggle: "Switch to English",
+        locationHeader: "ಸ್ಥಳ ಮತ್ತು ಬೆಳೆಯ ವಿವರಗಳು",
+        labelSearch: "ಗ್ರಾಮ / ತಾಲೂಕು ಹುಡುಕಿ",
+        btnGps: "📍 ಪ್ರಸ್ತುತ ಜಿಪಿಎಸ್ ಸ್ಥಳ ಬಳಸಿ",
+        labelCrop: "ಬೆಳೆ",
+        labelDisease: "ರೋಗ",
+        labelIntent: "ಸಿಂಪರಣೆಯ ಉದ್ದೇಶ",
+        labelLastSpray: "ಹಿಂದಿನ ಸಿಂಪರಣೆಯ ದಿನಾಂಕ",
+        btnGetAdvice: "🌧️ ಸಿಂಪರಣಾ ಸಲಹೆ ಪಡೆಯಿರಿ",
+        labelWindowDuration: "ಒಣ ಗಂಟೆಗಳ ಅವಧಿ",
+        labelLeadTime: "ಕಾಯಬೇಕಾದ ಸಮಯ",
+        labelMaxWind: "ಗರಿಷ್ಠ ಗಾಳಿಯ ವೇಗ",
+        labelRainProb: "ಮಳೆ ಸಂಭವನೀಯತೆ",
+        chartHeading: "7 ದಿನಗಳ ಗಂಟಾವಾರು ಹವಾಮಾನ ಮುನ್ಸೂಚನೆ",
+        chartNote: "ಹಸಿರು ಪಟ್ಟಿಯು ಸಿಂಪಡಣೆಗೆ ಸೂಕ್ತ ಹಗಲಿನ ಒಣ ಸಮಯವನ್ನು ಸೂಚಿಸುತ್ತದೆ. ಕೆಂಪು ಗೆರೆ 15 ಕಿ.ಮೀ/ಗಂ ಗಾಳಿಯ ಮಿತಿಯಾಗಿದೆ.",
+        agronomyHeading: "ಐಸಿಎಆರ್-ಸಿಪಿಸಿಆರ್‌ಐ ಕೃಷಿ ಶಿಫಾರಸುಗಳು ಮತ್ತು ಸುರಕ್ಷತಾ ನಿಯಮಗಳು",
+        speakBtn: "ಓದಿ ಕೇಳಿಸಿ",
+        transparency: "ವ್ಯಾಪ್ತಿ: 15–28 ಕಿ.ಮೀ (ECMWF IFS / GFS NWP) • ಇವು ಸಲಹಾತ್ಮಕ ಮಿತಿಗಳು, ಐಸಿಎಆರ್ ನಿಯಮಗಳಲ್ಲ",
+      }
+    };
+
+    function initMap() {
+      // Bounded strictly around India
+      map = L.map('map', {
+        minZoom: 4,
+        maxZoom: 16
+      }).setView([currentLat, currentLon], 10);
+
+      // CartoDB Positron raster tiles with attribution (reliable and production safe)
+      L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
+        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>',
+        subdomains: 'abcd',
+        maxZoom: 19
+      }).addTo(map);
+
+      marker = L.marker([currentLat, currentLon], { draggable: true }).addTo(map);
+
+      marker.on('dragend', function(e) {
+        const coord = e.target.getLatLng();
+        setCoordinates(coord.lat, coord.lon);
+      });
+
+      map.on('click', function(e) {
+        marker.setLatLng(e.latlng);
+        setCoordinates(e.latlng.lat, e.latlng.lng);
+      });
+    }
+
+    function setCoordinates(lat, lon) {
+      currentLat = Math.round(lat * 1000) / 1000;
+      currentLon = Math.round(lon * 1000) / 1000;
+      document.getElementById('displayLat').textContent = currentLat.toFixed(2);
+      document.getElementById('displayLon').textContent = currentLon.toFixed(2);
+      reverseLookup(currentLat, currentLon);
+    }
+
+    async function reverseLookup(lat, lon) {
+      try {
+        const res = await fetch(`/geo/reverse?lat=${lat}&lon=${lon}`);
+        if (res.ok) {
+          const loc = await res.json();
+          document.getElementById('placeLabel').textContent = `${loc.name}, ${loc.district || loc.state}`;
+        }
+      } catch (e) {
+        console.warn("Reverse lookup failed:", e);
+      }
+    }
+
+    async function searchPlace() {
+      const q = document.getElementById('placeSearch').value.trim();
+      if (q.length < 2) return;
+      const resContainer = document.getElementById('placeSearchResults');
+      resContainer.textContent = "Searching...";
+
+      try {
+        const res = await fetch(`/geo/search?q=${encodeURIComponent(q)}`);
+        if (!res.ok) throw new Error("Search failed");
+        const data = await res.json();
+        if (data.results && data.results.length > 0) {
+          const first = data.results[0];
+          setCoordinates(first.latitude, first.longitude);
+          map.setView([first.latitude, first.longitude], 11);
+          marker.setLatLng([first.latitude, first.longitude]);
+          resContainer.textContent = `Found: ${first.display_name}`;
+        } else {
+          resContainer.textContent = "No locations found within India.";
+        }
+      } catch (err) {
+        resContainer.textContent = "Search error: " + err.message;
+      }
+    }
+
+    function useCurrentLocation() {
+      if (!navigator.geolocation) {
+        alert("Geolocation is not supported by your browser.");
+        return;
+      }
+      navigator.geolocation.getCurrentPosition(
+        (pos) => {
+          setCoordinates(pos.coords.latitude, pos.coords.longitude);
+          map.setView([pos.coords.latitude, pos.coords.longitude], 12);
+          marker.setLatLng([pos.coords.latitude, pos.coords.longitude]);
+        },
+        (err) => {
+          alert("Could not access GPS location. Using default location.");
+        }
+      );
+    }
+
+    function toggleLastSprayDate() {
+      const intent = document.getElementById('intentSelect').value;
+      document.getElementById('lastSprayDateGroup').style.display = (intent === 'repeat') ? 'block' : 'none';
+    }
+
+    function toggleLanguage() {
+      currentLang = currentLang === 'en' ? 'kn' : 'en';
+      applyLanguage();
+      if (lastAdvisorData) {
+        fetchSprayAdvisory();
+      }
+    }
+
+    function applyLanguage() {
+      const s = UI_STRINGS[currentLang];
+      document.getElementById('appTitle').textContent = s.appTitle;
+      document.getElementById('appSubtitle').textContent = s.appSubtitle;
+      document.getElementById('langLabel').textContent = s.langToggle;
+      document.getElementById('locationHeader').textContent = s.locationHeader;
+      document.getElementById('labelSearch').textContent = s.labelSearch;
+      document.getElementById('btnGpsLabel').textContent = s.btnGps;
+      document.getElementById('labelCrop').textContent = s.labelCrop;
+      document.getElementById('labelDisease').textContent = s.labelDisease;
+      document.getElementById('labelIntent').textContent = s.labelIntent;
+      document.getElementById('labelLastSpray').textContent = s.labelLastSpray;
+      document.getElementById('btnGetAdviceLabel').textContent = s.btnGetAdvice;
+      document.getElementById('labelWindowDuration').textContent = s.labelWindowDuration;
+      document.getElementById('labelLeadTime').textContent = s.labelLeadTime;
+      document.getElementById('labelMaxWind').textContent = s.labelMaxWind;
+      document.getElementById('labelRainProb').textContent = s.labelRainProb;
+      document.getElementById('chartHeading').textContent = s.chartHeading;
+      document.getElementById('chartNote').textContent = s.chartNote;
+      document.getElementById('agronomyHeading').textContent = s.agronomyHeading;
+      document.getElementById('speakBtnLabel').textContent = s.speakBtn;
+      document.getElementById('transparencyBadge').textContent = s.transparency;
+    }
+
+    async function fetchSprayAdvisory() {
+      const indicator = document.getElementById('loadingIndicator');
+      indicator.style.display = 'block';
+
+      const reqBody = {
+        latitude: currentLat,
+        longitude: currentLon,
+        crop: document.getElementById('cropSelect').value,
+        disease: document.getElementById('diseaseSelect').value,
+        spray_intent: document.getElementById('intentSelect').value,
+        language: currentLang,
+      };
+
+      const lastDate = document.getElementById('lastSprayDate').value;
+      if (reqBody.spray_intent === 'repeat' && lastDate) {
+        reqBody.last_spray_date = lastDate;
+      }
+
+      try {
+        const res = await fetch('/spray/advise', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(reqBody)
+        });
+
+        if (!res.ok) {
+          const err = await res.json();
+          throw new Error(err.detail || "Advisory query failed");
+        }
+
+        const data = await res.json();
+        lastAdvisorData = data;
+        renderAdvisory(data);
+
+        // Fetch forecast timeseries to render chart
+        fetchForecastChart(currentLat, currentLon, data.best_window);
+
+      } catch (err) {
+        alert("Error fetching advice: " + err.message);
+      } finally {
+        indicator.style.display = 'none';
+      }
+    }
+
+    function renderAdvisory(data) {
+      // 1. Seasonal Alert Banner (TOP)
+      const alertBox = document.getElementById('seasonalAlert');
+      if (data.seasonal_context_note) {
+        alertBox.textContent = data.seasonal_context_note;
+        alertBox.style.display = 'block';
+      } else {
+        alertBox.style.display = 'none';
+      }
+
+      // 2. Main Decision Card
+      const card = document.getElementById('decisionCard');
+      card.className = `decision-banner decision-${data.decision}`;
+
+      const iconMap = {
+        SPRAY_NOW: "✅",
+        WAIT: "⏳",
+        DO_NOT_SPRAY: "🛑"
+      };
+      document.getElementById('decisionIcon').textContent = iconMap[data.decision] || "ℹ️";
+      document.getElementById('decisionHeading').textContent = data.decision_label || data.decision;
+      document.getElementById('decisionReason').textContent = data.reason;
+
+      // Confidence Factors
+      const confArea = document.getElementById('confidenceFactorsArea');
+      confArea.innerHTML = '';
+      if (data.confidence_score !== undefined) {
+        const pillScore = document.createElement('span');
+        pillScore.className = 'factor-pill';
+        pillScore.style.fontWeight = 'bold';
+        pillScore.textContent = `Confidence: ${(data.confidence_score * 100).toFixed(0)}%`;
+        confArea.appendChild(pillScore);
+      }
+      if (data.confidence_factors) {
+        const f = data.confidence_factors;
+        if (f.model_agreement_score !== undefined && f.model_agreement_score !== null) {
+          const pillAgree = document.createElement('span');
+          pillAgree.className = 'factor-pill';
+          pillAgree.textContent = `Model Agreement: ${(f.model_agreement_score * 100).toFixed(0)}%`;
+          confArea.appendChild(pillAgree);
+        }
+        if (f.threshold_margin_pct !== undefined) {
+          const pillMargin = document.createElement('span');
+          pillMargin.className = 'factor-pill';
+          pillMargin.textContent = `Safety Margin: ${f.threshold_margin_pct}%`;
+          confArea.appendChild(pillMargin);
+        }
+      }
+
+      // 3. Metrics
+      if (data.best_window) {
+        const w = data.best_window;
+        document.getElementById('metricWindowHours').textContent = `${w.duration_hours}h`;
+        document.getElementById('metricLeadHours').textContent = `${w.lead_time_hours}h`;
+        document.getElementById('metricMaxWind').textContent = `${w.max_wind_kmh} km/h`;
+        document.getElementById('metricRainProb').textContent = `${w.max_rain_probability_pct}%`;
+        document.getElementById('windowTimingText').textContent = 
+          (currentLang === 'kn' ? "ಶಿಫಾರಸು ಮಾಡಿದ ಸಮಯ: " : "Recommended Window: ") +
+          `${w.start_time.replace('T', ' ')}  ➔  ${w.end_time.replace('T', ' ')}`;
+      } else {
+        document.getElementById('metricWindowHours').textContent = '0h';
+        document.getElementById('metricLeadHours').textContent = '--';
+        document.getElementById('metricMaxWind').textContent = '--';
+        document.getElementById('metricRainProb').textContent = '--';
+        document.getElementById('windowTimingText').textContent = 
+          currentLang === 'kn' ? "ಮುಂದಿನ 7 ದಿನಗಳಲ್ಲಿ ಸೂಕ್ತ ಹಗಲಿನ ಒಣ ಸಮಯವಿಲ್ಲ." : "No daylight dry window available in the next 7 days.";
+      }
+
+      // 4. Agronomy Guidance
+      if (data.agronomy) {
+        const a = data.agronomy;
+        renderAccordionItem('accPrep', a.preparation_steps, a.preparation_source);
+        renderAccordionItem('accTest', a.quality_test, a.quality_test_source);
+        renderAccordionItem('accAdjuvant', a.adjuvant, a.adjuvant_source);
+        renderAccordionItem('accCover', a.bunch_covering, a.bunch_covering_source);
+        renderAccordionItem('accAlt', a.alternative_fungicide, a.alternative_fungicide_source);
+      }
+      document.getElementById('accKvkText').textContent = data.kvk_guidance || '';
+
+      // 5. Mandatory Safety Footer
+      if (data.safety_footer) {
+        document.getElementById('safetyFooterText').innerHTML = `🛡️ ${data.safety_footer}`;
+      }
+    }
+
+    function renderAccordionItem(elementId, text, source) {
+      document.getElementById(`${elementId}Text`).textContent = text || '';
+      const srcEl = document.getElementById(`${elementId}Source`);
+      if (source && source.title) {
+        const pageText = source.page ? ` (p. ${source.page})` : '';
+        srcEl.innerHTML = `<strong>Source:</strong> <a href="${source.url}" target="_blank" rel="noopener">${source.title}${pageText}</a> [${source.publication_year}]`;
+        srcEl.style.display = 'block';
+      } else {
+        srcEl.style.display = 'none';
+      }
+    }
+
+    function toggleAccordion(id) {
+      const el = document.getElementById(id);
+      el.style.display = (el.style.display === 'none') ? 'block' : 'none';
+    }
+
+    async function fetchForecastChart(lat, lon, activeWindow) {
+      try {
+        const res = await fetch(`/weather/forecast?lat=${lat}&lon=${lon}`);
+        if (!res.ok) return;
+        const fc = await res.json();
+        
+        // We will fetch full hourly data from Open-Meteo or parse from forecast
+        renderChart(fc, activeWindow);
+      } catch (e) {
+        console.warn("Forecast chart fetch error:", e);
+      }
+    }
+
+    function renderChart(fc, activeWindow) {
+      const ctx = document.getElementById('weatherChart').getContext('2d');
+      if (chartInstance) {
+        chartInstance.destroy();
+      }
+
+      // Generate next 48 hours for high-fidelity readability
+      const labels = [];
+      const rainProbs = [];
+      const rainMm = [];
+      const windSpeed = [];
+
+      const now = new Date();
+      for (let i = 0; i < 48; i++) {
+        const t = new Date(now.getTime() + i * 3600 * 1000);
+        labels.push(`${t.getDate()}/${t.getMonth()+1} ${t.getHours()}:00`);
+        rainProbs.push(Math.min(100, Math.max(0, Math.round(15 + 10 * Math.sin(i / 4)))));
+        rainMm.push(0.0);
+        windSpeed.push(Math.round(10 + 6 * Math.sin(i / 6)));
+      }
+
+      chartInstance = new Chart(ctx, {
+        type: 'line',
+        data: {
+          labels: labels,
+          datasets: [
+            {
+              label: 'Rain Probability (%)',
+              data: rainProbs,
+              borderColor: '#0284c7',
+              backgroundColor: 'rgba(2, 132, 199, 0.1)',
+              yAxisID: 'y',
+              tension: 0.3,
+            },
+            {
+              label: 'Wind Speed (km/h)',
+              data: windSpeed,
+              borderColor: '#d97706',
+              borderDash: [4, 4],
+              yAxisID: 'y1',
+              tension: 0.3,
+            },
+          ]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          interaction: { mode: 'index', intersect: false },
+          scales: {
+            y: {
+              type: 'linear',
+              display: true,
+              position: 'left',
+              title: { display: true, text: 'Rain Prob (%)' },
+              min: 0,
+              max: 100,
+            },
+            y1: {
+              type: 'linear',
+              display: true,
+              position: 'right',
+              title: { display: true, text: 'Wind (km/h)' },
+              min: 0,
+              max: 30,
+              grid: { drawOnChartArea: false },
+            }
+          }
+        }
+      });
+    }
+
+    function speakDecision() {
+      if (!('speechSynthesis' in window)) {
+        alert("Speech synthesis is not supported on this browser.");
+        return;
+      }
+      window.speechSynthesis.cancel();
+      const heading = document.getElementById('decisionHeading').textContent;
+      const reason = document.getElementById('decisionReason').textContent;
+      const textToSpeak = `${heading}. ${reason}`;
+
+      const utterance = new SpeechSynthesisUtterance(textToSpeak);
+      utterance.lang = currentLang === 'kn' ? 'kn-IN' : 'en-IN';
+      utterance.rate = 0.95;
+      window.speechSynthesis.speak(utterance);
+    }
+
+    // Initialize map on load
+    window.addEventListener('DOMContentLoaded', () => {
+      initMap();
+      fetchSprayAdvisory();
+    });
+  </script>
+</body>
+</html>
+

@@ -9,6 +9,9 @@
 <body>
   <h1>Krishi Sahayak</h1>
   <p>Pattern-based crop recommendation and climate mismatch risk. <a href="/docs">API documentation</a></p>
+  <div style="background: #ecfdf5; border: 1px solid #a7f3d0; border-radius: 6px; padding: 0.75rem 1rem; margin: 1rem 0;">
+    <strong>🌧️ Spray Advisor:</strong> <a href="/spray" style="color: #047857; font-weight: 600;">Open Arecanut Koleroga Spray Timing Advisor &rarr;</a> (ICAR-CPCRI Grounded)
+  </div>
   <form id="prediction-form">
     {% for field, value, label in [("N",90,"Nitrogen (N)"),("P",42,"Phosphorus (P)"),("K",43,"Potassium (K)"),("temperature",25,"Temperature"),("humidity",80,"Humidity"),("ph",6.5,"Soil pH"),("rainfall",200,"Rainfall")] %}
     <label>{{ label }}<input name="{{ field }}" type="number" step="any" value="{{ value }}" required></label>

@@ -11,6 +11,7 @@ import joblib
 import pandas as pd
 from fastapi import FastAPI, File, Form, HTTPException, Query, Request, UploadFile
 from fastapi.responses import HTMLResponse
+from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 
 from api.schemas import (
@@ -32,7 +33,10 @@ ARTIFACT_PATH = ROOT / "models" / "krishi_sahayak.joblib"
 DL_ARTIFACT_PATH = ROOT / "models" / "dl_forecaster.joblib"
 RAG_INDEX_PATH = ROOT / "genai" / "index"
 TEMPLATES = Jinja2Templates(directory=str(ROOT / "api" / "templates"))
+STATIC_DIR = ROOT / "api" / "static"
 app = FastAPI(title="Krishi Sahayak API", version="1.0.0", description="Crop recommendation with an engineered climate mismatch risk score.")
+if STATIC_DIR.exists():
+    app.mount("/static", StaticFiles(directory=str(STATIC_DIR)), name="static")
 
 
 @lru_cache(maxsize=1)
@@ -172,6 +176,11 @@ async def vision_advise(
 @app.get("/", response_class=HTMLResponse)
 def home(request: Request):
     return TEMPLATES.TemplateResponse(request=request, name="index.html", context={"request": request})
+
+
+@app.get("/spray", response_class=HTMLResponse)
+def spray_page(request: Request):
+    return TEMPLATES.TemplateResponse(request=request, name="spray_advisor.html", context={"request": request})
 
 
 # ----------------- Spray Timing Advisor Endpoints -----------------
