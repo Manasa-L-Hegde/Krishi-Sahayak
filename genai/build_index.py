@@ -34,9 +34,10 @@ def main() -> None:
     for number, item in enumerate(manifest, 1):
         suffix = ".pdf" if item["url"].lower().split("?")[0].endswith(".pdf") else ".html"
         path = CORPUS / f"{number:02d}{suffix}"
-        response = requests.get(item["url"], timeout=60, headers={"User-Agent": "Krishi-Sahayak-research/1.0"})
-        response.raise_for_status()
-        path.write_bytes(response.content)
+        if not path.exists():
+            response = requests.get(item["url"], timeout=60, headers={"User-Agent": "Krishi-Sahayak-research/1.0"})
+            response.raise_for_status()
+            path.write_bytes(response.content)
         text = extract(path)
         if len(text) < 200:
             raise ValueError(f"Downloaded source has too little extractable text: {item['url']}")

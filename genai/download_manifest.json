@@ -27,13 +27,13 @@
     "title": "PM-RKVY Operational Guidelines",
     "url": "https://soilhealth.dac.gov.in/assets/PM-%20RKVY%20Guidelines%20as%20on%2014.11.2024.pdf",
     "local_file": "05.pdf",
-    "characters": 511499
+    "characters": 511410
   },
   {
     "title": "School Soil Health Programme Letter",
     "url": "https://soilhealth.dac.gov.in/files/documents/DOletter-1000Schools.pdf",
     "local_file": "06.pdf",
-    "characters": 79256
+    "characters": 79223
   },
   {
     "title": "ICAR Agricultural Extension Division",
@@ -70,5 +70,23 @@
     "url": "https://icar.org.in/en/agricultural-engineering/agricultural-engineering",
     "local_file": "12.html",
     "characters": 2750
+  },
+  {
+    "title": "Koleroga (Mahali) of Arecanut (Extension Folder No. 17)",
+    "url": "https://cpcri.gov.in/filemgr/webfs/publication/ext17.pdf",
+    "local_file": "13.pdf",
+    "characters": 2934
+  },
+  {
+    "title": "Disease Management Strategies in Arecanut and Cocoa",
+    "url": "https://cpcri.gov.in/filemgr/webfs/publication/disease_management_strategies_in_arecanut_and_cocoa(eng)_1.pdf",
+    "local_file": "14.pdf",
+    "characters": 23644
+  },
+  {
+    "title": "CPCRI issues advisory to control koleroga disease in arecanut plantations (The Hindu, August 9, 2024)",
+    "url": "https://www.thehindu.com/news/cities/Mangalore/cpcri-issues-advisory-to-control-koleroga-disease-in-arecanut-plantations/article68506079.ece",
+    "local_file": "15.html",
+    "characters": 8810
   }
 ]
