@@ -264,24 +264,41 @@ def evaluate_spray_decision(
     seasonal_en: Optional[str] = None
     seasonal_kn: Optional[str] = None
 
-    # 1. Wash-off check: heavy rain soon after a recent spray (within past 1-3 days)
+    # 1. Wash-off check: rain falling strictly AFTER spray application up to current_time
     if last_spray_date:
         try:
-            last_dt = datetime.strptime(last_spray_date, "%Y-%m-%d").date()
-            today = datetime.now(timezone.utc).date()
-            days_since = (today - last_dt).days
-            if days_since <= 3 and (forecast.past_24h_rain_mm >= wash_off_threshold or forecast.past_48h_rain_mm >= wash_off_threshold):
-                recent_rain = max(forecast.past_24h_rain_mm, forecast.past_48h_rain_mm)
+            # Standard convention: If date-only (YYYY-MM-DD), anchor application to 10:00 AM local time
+            # (the midpoint of the typical morning spray window). If ISO with time (YYYY-MM-DDTHH:MM), parse directly.
+            spray_time_str = f"{last_spray_date}T10:00" if "T" not in last_spray_date else last_spray_date
+            last_date_part = last_spray_date.split("T")[0]
+            last_dt = datetime.strptime(last_date_part, "%Y-%m-%d").date()
+            ref_date = (
+                datetime.strptime(forecast.current_time.split("T")[0], "%Y-%m-%d").date()
+                if forecast.current_time and "T" in forecast.current_time
+                else datetime.now(timezone.utc).date()
+            )
+            days_since = (ref_date - last_dt).days
+
+            # Calculate rainfall occurring strictly after spray application up to current_time
+            rain_after_spray = 0.0
+            for pt in forecast.hourly:
+                if pt.time > spray_time_str:
+                    if forecast.current_time and pt.time > forecast.current_time:
+                        break
+                    if pt.rain_mm is not None:
+                        rain_after_spray += pt.rain_mm
+
+            if 0 <= days_since <= 3 and rain_after_spray >= wash_off_threshold:
                 wash_off_en = (
-                    f"Wash-off warning: Spray was applied on {last_spray_date} ({days_since} days ago), "
-                    f"and {recent_rain:.1f} mm of rainfall occurred shortly thereafter. "
-                    "The fungicide deposit may have washed off before drying. Check bunches for protective blue residue "
-                    "and consult your local KVK for a re-spray during the next dry window."
+                    f"[App advisory, not an ICAR rule] Possible wash-off detected: Spray was applied on {last_spray_date} "
+                    f"({days_since} day{'s' if days_since != 1 else ''} ago), and {rain_after_spray:.1f} mm of rainfall occurred after application. "
+                    "Heavy rainfall shortly after application can wash off fungicide deposits before proper drying. "
+                    "Inspect bunches for visible fungicide coverage and consult your local KVK or Raitha Samparka Kendra before re-spraying."
                 )
                 wash_off_kn = (
-                    f"ಔಷಧ ತೊಳೆದುಹೋಗಿರುವ ಎಚ್ಚರಿಕೆ: ಹಿಂದಿನ ಸಿಂಪರಣೆಯನ್ನು {last_spray_date} ರಂದು ({days_since} ದಿನಗಳ ಹಿಂದೆ) ಮಾಡಲಾಗಿದ್ದು, "
-                    f"ನಂತರ {recent_rain:.1f} ಮಿ.ಮೀ ಮಳೆಯಾಗಿದೆ. ಸಿಂಪಡಿಸಿದ ಔಷಧವು ತೊಳೆದುಹೋಗಿರುವ ಸಾಧ್ಯತೆಯಿದೆ. "
-                    "ಗೊಂಚಲುಗಳನ್ನು ಪರಿಶೀಲಿಸಿ ಮುಂದಿನ ಒಣ ಸಮಯದಲ್ಲಿ ಮರು-ಸಿಂಪರಣೆ ಮಾಡಲು ಸ್ಥಳೀಯ ಕೆವಿಕೆಯನ್ನು ಸಂಪರ್ಕಿಸಿ."
+                    f"[ಆ್ಯಪ್ ಸಲಹೆ, ಐಸಿಎಆರ್ ನಿಯಮವಲ್ಲ] ಔಷಧ ತೊಳೆದುಹೋಗಿರುವ ಸಾಧ್ಯತೆ: {last_spray_date} ರಂದು ({days_since} ದಿನಗಳ ಹಿಂದೆ) "
+                    f"ಸಿಂಪರಣೆ ಮಾಡಿದ ನಂತರ {rain_after_spray:.1f} ಮಿ.ಮೀ ಮಳೆಯಾಗಿದೆ. ಸಿಂಪಡಿಸಿದ ನಂತರ ಸುರಿದ ಮಳೆಯಿಂದಾಗಿ ಔಷಧದ ಲೇಪನವು ತೊಳೆದುಹೋಗಿರುವ ಸಾಧ್ಯತೆಯಿದೆ. "
+                    "ಗೊಂಚಲುಗಳಲ್ಲಿ ಔಷಧದ ಲೇಪನ ಉಳಿದಿದೆಯೇ ಎಂದು ಪರಿಶೀಲಿಸಿ, ಮತ್ತು ಮರು-ಸಿಂಪರಣೆ ಮಾಡುವ ಮುನ್ನ ಸ್ಥಳೀಯ ಕೆವಿಕೆ ಅಥವಾ ರೈತ ಸಂಪರ್ಕ ಕೇಂದ್ರವನ್ನು ಸಂಪರ್ಕಿಸಿ."
                 )
         except ValueError:
             logger.warning(f"Invalid last_spray_date format '{last_spray_date}'; ignoring wash-off check.")
@@ -289,9 +306,14 @@ def evaluate_spray_decision(
     # 2. Check repeat interval if spray_intent is repeat or last_spray_date provided
     if last_spray_date and not wash_off_en:
         try:
-            last_dt = datetime.strptime(last_spray_date, "%Y-%m-%d").date()
-            today = datetime.now(timezone.utc).date()
-            days_since = (today - last_dt).days
+            last_date_part = last_spray_date.split("T")[0]
+            last_dt = datetime.strptime(last_date_part, "%Y-%m-%d").date()
+            ref_date = (
+                datetime.strptime(forecast.current_time.split("T")[0], "%Y-%m-%d").date()
+                if forecast.current_time and "T" in forecast.current_time
+                else datetime.now(timezone.utc).date()
+            )
+            days_since = (ref_date - last_dt).days
             if rule.repeat_interval_days_min and days_since < rule.repeat_interval_days_min:
                 wait_days = rule.repeat_interval_days_min - days_since
                 return SprayAdvisorResult(
@@ -325,35 +347,22 @@ def evaluate_spray_decision(
             logger.warning(f"Invalid last_spray_date format '{last_spray_date}'; ignoring interval check.")
 
     # 3. Seasonal context note: Sources tie Koleroga sprays strictly to pre-monsoon showers or monsoon rain breaks
-    current_idx = 0
-    if forecast.current_time:
-        for idx, pt in enumerate(forecast.hourly):
-            if pt.time == forecast.current_time:
-                current_idx = idx
-                break
-    future_rain = sum((pt.rain_mm or 0.0) for pt in forecast.hourly[current_idx:] if pt.rain_mm is not None)
-
-    if forecast.past_7d_rain_mm == 0.0 and future_rain == 0.0:
-        if spray_intent == SprayIntent.FIRST:
-            seasonal_en = (
-                "Seasonal context: ICAR-CPCRI specifies the first prophylactic spray 'after the premonsoon showers'. "
-                "Current weather indicates completely dry conditions with zero recent rainfall. "
-                "If pre-monsoon showers have not commenced in your locality, consult your local KVK or Raitha Samparka Kendra before spraying."
-            )
-            seasonal_kn = (
-                "ಋತುಮಾನದ ಮಾಹಿತಿ: ಐಸಿಎಆರ್-ಸಿಪಿಸಿಆರ್‌ಐ ಪ್ರಕಾರ ಮೊದಲ ಮುನ್ನೆಚ್ಚರಿಕೆ ಸಿಂಪರಣೆಯನ್ನು 'ಮುಂಗಾರು ಪೂರ್ವ ಮಳೆಯ ನಂತರ' ಮಾಡಬೇಕು. "
-                "ಪ್ರಸ್ತುತ ಸಂಪೂರ್ಣ ಒಣ ಹವೆ ಇದ್ದು ಮಳೆಯಾಗಿಲ್ಲ. ನಿಮ್ಮ ಪ್ರದೇಶದಲ್ಲಿ ಮುಂಗಾರು ಪೂರ್ವ ಮಳೆ ಆರಂಭವಾಗದಿದ್ದರೆ, "
-                "ಸಿಂಪಡಿಸುವ ಮುನ್ನ ಸ್ಥಳೀಯ ಕೆವಿಕೆ ಅಥವಾ ರೈತ ಸಂಪರ್ಕ ಕೇಂದ್ರವನ್ನು ಸಂಪರ್ಕಿಸಿ."
-            )
-        elif spray_intent in {SprayIntent.REPEAT, SprayIntent.UNSURE}:
-            seasonal_en = (
-                "Seasonal context: Koleroga sprays are recommended during monsoon breaks. "
-                "Conditions are currently completely dry. Verify local disease symptoms with your KVK."
-            )
-            seasonal_kn = (
-                "ಋತುಮಾನದ ಮಾಹಿತಿ: ಕೊಳೆರೋಗದ ಸಿಂಪರಣೆಯನ್ನು ಮುಂಗಾರು ಮಳೆಯ ಬಿಡುವಿನಲ್ಲಿ ಶಿಫಾರಸು ಮಾಡಲಾಗಿದೆ. "
-                "ಪ್ರಸ್ತುತ ಒಣ ಹವೆ ಇದ್ದು, ರೋಗದ ಲಕ್ಷಣಗಳನ್ನು ಖಚಿತಪಡಿಸಿಕೊಳ್ಳಲು ಸ್ಥಳೀಯ ಕೆವಿಕೆ ಸಂಪರ್ಕಿಸಿ."
-            )
+    if spray_intent in {SprayIntent.FIRST, SprayIntent.UNSURE}:
+        seasonal_en = (
+            "Seasonal context: ICAR-CPCRI recommends applying the first prophylactic spray after the pre-monsoon showers and before the onset of regular southwest monsoon rains (Ext. Pub. No. 69, 1999). "
+            "If pre-monsoon showers have not commenced in your locality, consult your local KVK or Raitha Samparka Kendra before spraying."
+        )
+        seasonal_kn = (
+            "ಋತುಮಾನದ ಮಾಹಿತಿ: ಐಸಿಎಆರ್-ಸಿಪಿಸಿಆರ್‌ಐ ಪ್ರಕಾರ ಮೊದಲ ಮುನ್ನೆಚ್ಚರಿಕೆ ಸಿಂಪರಣೆಯನ್ನು ಮುಂಗಾರು ಪೂರ್ವ ಮಳೆಯ ನಂತರ ಮತ್ತು ನೈಋತ್ಯ ಮುಂಗಾರು ಆರಂಭವಾಗುವ ಮೊದಲು ಕೈಗೊಳ್ಳಬೇಕು (ವಿಸ್ತರಣಾ ಪ್ರಕಟಣೆ 69, 1999). "
+            "ನಿಮ್ಮ ಭಾಗದಲ್ಲಿ ಮುಂಗಾರು ಪೂರ್ವ ಮಳೆಯಾಗಿರದಿದ್ದರೆ ಸಿಂಪಡಿಸುವ ಮುನ್ನ ಸ್ಥಳೀಯ ಕೆವಿಕೆ ಅಥವಾ ರೈತ ಸಂಪರ್ಕ ಕೇಂದ್ರವನ್ನು ಸಂಪರ್ಕಿಸಿ."
+        )
+    elif spray_intent == SprayIntent.REPEAT:
+        seasonal_en = (
+            "Seasonal context: Koleroga repeat sprays (40-45 days after the first spray) are recommended during breaks in monsoon rainfall (Ext. Pub. No. 69, 1999; The Hindu / CPCRI, Aug 2024)."
+        )
+        seasonal_kn = (
+            "ಋತುಮಾನದ ಮಾಹಿತಿ: ಕೊಳೆರೋಗದ ಎರಡನೇ ಸಿಂಪರಣೆಯನ್ನು (ಮೊದಲ ಸಿಂಪರಣೆಯ 40-45 ದಿನಗಳ ನಂತರ) ಮುಂಗಾರು ಮಳೆಯ ಬಿಡುವಿನ ಸಮಯದಲ್ಲಿ ಕೈಗೊಳ್ಳಲು ಶಿಫಾರಸು ಮಾಡಲಾಗಿದೆ (ವಿಸ್ತರಣಾ ಪ್ರಕಟಣೆ 69, 1999; ದಿ ಹಿಂದೂ / ಸಿಪಿಸಿಆರ್‌ಐ, ಆಗಸ್ಟ್ 2024)."
+        )
 
     windows = find_dry_windows(forecast, cfg, min_duration_hours=min_dry_hours)
 

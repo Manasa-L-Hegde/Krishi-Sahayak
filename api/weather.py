@@ -143,15 +143,16 @@ def compute_past_rain(hourly: List[HourlyDataPoint], current_index: int) -> Tupl
 def calculate_model_agreement(
     forecast_primary: List[HourlyDataPoint],
     forecast_secondary_rain: Optional[List[Optional[float]]],
-    wet_rain_threshold_mm: float = 0.1,
+    rain_threshold_mm: float = 0.5,
 ) -> Optional[float]:
     """
     Compute agreement score (0.0 to 1.0) between primary model (ECMWF) and secondary model (GFS)
     STRICTLY over future forecast hours (excluding past analysis/hindcast hours).
 
-    Evaluation dimensions:
-    1. Categorical hourly match: whether both models agree on wet (>=0.1mm) vs dry (<0.1mm) hours.
-    2. Rain volume agreement: relative agreement on total forecasted precipitation over the horizon.
+    Evaluation dimensions (heuristic advisory weights: 50% categorical match, 50% volume match):
+    1. Categorical hourly match: whether both models agree on spray-critical wet (>=rain_threshold_mm)
+       vs dry (<rain_threshold_mm) hours. Sub-threshold trace rain (<0.5mm) is classified as dry.
+    2. Rain volume agreement: relative agreement on total forecasted precipitation from significant hours.
     """
     if not forecast_secondary_rain:
         return None
@@ -163,24 +164,24 @@ def calculate_model_agreement(
     p_rains = [(pt.rain_mm or 0.0) if pt.rain_mm is not None else 0.0 for pt in forecast_primary[:length]]
     s_rains = [(r or 0.0) if r is not None else 0.0 for r in forecast_secondary_rain[:length]]
 
-    total_p = sum(p_rains)
-    total_s = sum(s_rains)
-
-    # 1. Hourly categorical wet/dry agreement
-    wet_p = [r >= wet_rain_threshold_mm for r in p_rains]
-    wet_s = [r >= wet_rain_threshold_mm for r in s_rains]
+    # 1. Hourly categorical wet/dry agreement using spray safety threshold (default 0.5 mm)
+    wet_p = [r >= rain_threshold_mm for r in p_rains]
+    wet_s = [r >= rain_threshold_mm for r in s_rains]
 
     agree_hours = sum(1 for a, b in zip(wet_p, wet_s) if a == b)
     cat_match = agree_hours / length
 
-    # 2. Total precipitation volume agreement
-    if total_p == 0.0 and total_s == 0.0:
+    # 2. Total precipitation volume agreement for significant rainfall (>= rain_threshold_mm)
+    p_sig = sum(r for r in p_rains if r >= rain_threshold_mm)
+    s_sig = sum(r for r in s_rains if r >= rain_threshold_mm)
+
+    if p_sig == 0.0 and s_sig == 0.0:
         vol_match = 1.0
     else:
-        vol_diff = abs(total_p - total_s)
-        vol_match = max(0.0, 1.0 - (vol_diff / max(total_p, total_s, 1.0)))
+        vol_diff = abs(p_sig - s_sig)
+        vol_match = max(0.0, 1.0 - (vol_diff / max(p_sig, s_sig, 2.0)))
 
-    # Composite: 50% categorical hourly match + 50% volume match
+    # Composite heuristic: 50% categorical hourly match + 50% volume match
     score = 0.5 * cat_match + 0.5 * vol_match
     return round(score, 2)
 
@@ -253,7 +254,23 @@ def fetch_weather_forecast(
     if not hourly_points:
         raise WeatherServiceError("Parsed zero hourly weather datapoints.")
 
-    current_index = min(past_days * 24, len(hourly_points) - 1)
+    current_index = None
+    tz_name = data.get("timezone") or "Asia/Kolkata"
+    try:
+        import zoneinfo
+        tz_obj = zoneinfo.ZoneInfo(tz_name)
+        now_local = datetime.now(tz_obj)
+        now_hour_iso = now_local.strftime("%Y-%m-%dT%H:00")
+        for idx, pt in enumerate(hourly_points):
+            if pt.time == now_hour_iso:
+                current_index = idx
+                break
+    except Exception as exc:
+        logger.debug(f"Could not compute local wall-clock hour index: {exc}")
+
+    if current_index is None:
+        # Fallback to past_days * 24 (e.g. for synthetic unit tests with fixed past dates)
+        current_index = min(past_days * 24, len(hourly_points) - 1)
     rain_24, rain_48, rain_7d = compute_past_rain(hourly_points, current_index)
 
     # STRICT: Evaluate model agreement ONLY over future forecast hours (exclude past analysis/hindcast)

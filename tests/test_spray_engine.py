@@ -157,17 +157,69 @@ def test_do_not_spray_persistent_rain():
     assert "ಯಾವುದೇ ಒಣ ವಾತಾವರಣ ಕಂಡುಬರುತ್ತಿಲ್ಲ" in res.decision_reason_kn
 
 
-def test_wash_off_warning_when_heavy_rain_follows_recent_spray():
-    # Spray 1 day ago, followed by 12mm past rain
-    one_day_ago = (datetime.now(timezone.utc).date() - timedelta(days=1)).strftime("%Y-%m-%d")
-    points = [HourlyDataPoint(time="2026-06-15T06:00", rain_mm=0.0, precipitation_probability=5.0)]
-    forecast = make_dummy_forecast(points, past_24h_rain=12.0)
+def test_fixed_clock_at_20_00_never_returns_past_daylight_windows():
+    """
+    STRICT TIME ANCHOR: If the clock is fixed at 20:00 (night), the advisor must NOT
+    recommend daylight dry windows from earlier in the day (e.g. 10:00 AM today),
+    and must recommend tomorrow morning's window starting at 06:00.
+    """
+    points = []
+    # Two full days (June 15 and June 16)
+    for day in ["2026-06-15", "2026-06-16"]:
+        for h in range(24):
+            points.append(
+                HourlyDataPoint(
+                    time=f"{day}T{h:02d}:00",
+                    precipitation_mm=0.0,
+                    precipitation_probability=5.0,
+                    rain_mm=0.0,
+                    temperature_c=25.0,
+                    relative_humidity=70.0,
+                    wind_speed_kmh=8.0,
+                    wind_gusts_kmh=12.0,
+                )
+            )
 
-    res = evaluate_spray_decision("arecanut", "koleroga", forecast, last_spray_date=one_day_ago)
+    forecast = make_dummy_forecast(points, agreement=0.95, past_7d_rain=10.0)
+    # Fix the current time clock to 20:00 on June 15
+    forecast.current_time = "2026-06-15T20:00"
+
+    res = evaluate_spray_decision("arecanut", "koleroga", forecast)
+
+    # Must NOT be SPRAY_NOW because 20:00 is night
+    assert res.decision == SprayDecision.WAIT
+    assert res.next_dry_window is not None
+    # Next dry window MUST be tomorrow June 16 at 06:00
+    assert res.next_dry_window.start_time == "2026-06-16T06:00"
+    assert res.next_dry_window.lead_time_hours == 10.0  # 20:00 to 06:00 next day
+    # None of the upcoming windows can start on June 15
+    for win in res.upcoming_windows:
+        assert not win.start_time.startswith("2026-06-15")
+
+
+def test_wash_off_warning_when_heavy_rain_follows_recent_spray():
+    # Spray 1 day ago (2026-06-14T10:00), followed by 12mm rain occurring after spray
+    spray_date = "2026-06-14"
+    points = [
+        # Spray application hour
+        HourlyDataPoint(time="2026-06-14T10:00", rain_mm=0.0, precipitation_probability=10.0),
+        # Rain shortly after spray
+        HourlyDataPoint(time="2026-06-14T12:00", rain_mm=6.0, precipitation_probability=90.0),
+        HourlyDataPoint(time="2026-06-14T15:00", rain_mm=6.0, precipitation_probability=90.0),
+        # Current time next morning
+        HourlyDataPoint(time="2026-06-15T08:00", rain_mm=0.0, precipitation_probability=10.0),
+    ]
+    forecast = make_dummy_forecast(points, past_24h_rain=12.0)
+    forecast.current_time = "2026-06-15T08:00"
+
+    res = evaluate_spray_decision("arecanut", "koleroga", forecast, last_spray_date=spray_date)
     assert res.wash_off_warning_en is not None
-    assert "Wash-off warning" in res.wash_off_warning_en
-    assert "12.0 mm of rainfall occurred" in res.wash_off_warning_en
-    assert "ಔಷಧ ತೊಳೆದುಹೋಗಿರುವ ಎಚ್ಚರಿಕೆ" in res.wash_off_warning_kn
+    assert "[App advisory, not an ICAR rule]" in res.wash_off_warning_en
+    assert "Possible wash-off detected" in res.wash_off_warning_en
+    assert "12.0 mm of rainfall occurred after application" in res.wash_off_warning_en
+    assert "protective blue residue" not in res.wash_off_warning_en
+    assert "[ಆ್ಯಪ್ ಸಲಹೆ, ಐಸಿಎಆರ್ ನಿಯಮವಲ್ಲ]" in res.wash_off_warning_kn
+    assert "ಔಷಧ ತೊಳೆದುಹೋಗಿರುವ ಸಾಧ್ಯತೆ" in res.wash_off_warning_kn
 
 
 def test_seasonal_context_note_when_completely_dry():
@@ -177,15 +229,17 @@ def test_seasonal_context_note_when_completely_dry():
 
     res = evaluate_spray_decision("arecanut", "koleroga", forecast, spray_intent=SprayIntent.FIRST)
     assert res.seasonal_context_en is not None
-    assert "premonsoon showers" in res.seasonal_context_en
+    assert "pre-monsoon showers" in res.seasonal_context_en
     assert "ಮುಂಗಾರು ಪೂರ್ವ ಮಳೆ" in res.seasonal_context_kn
 
 
 def test_repeat_interval_wait():
     # Previous spray only 10 days ago (ICAR requires 40-45 days), without wash-off rain
-    ten_days_ago = (datetime.now(timezone.utc).date() - timedelta(days=10)).strftime("%Y-%m-%d")
+    # Spray on 2026-06-05, evaluated on 2026-06-15 (10 days later)
+    ten_days_ago = "2026-06-05"
     points = [HourlyDataPoint(time="2026-06-15T06:00", rain_mm=0.0, precipitation_probability=5.0)]
     forecast = make_dummy_forecast(points, past_24h_rain=0.0)
+    forecast.current_time = "2026-06-15T06:00"
 
     res = evaluate_spray_decision("arecanut", "koleroga", forecast, last_spray_date=ten_days_ago)
     assert res.decision == SprayDecision.WAIT

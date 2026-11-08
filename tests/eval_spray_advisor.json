@@ -1,0 +1,182 @@
+{
+  "benchmark_name": "Krishi Sahayak Spray Timing Advisor Evaluation Set",
+  "version": "1.0",
+  "description": "22 benchmark evaluation scenarios verifying ICAR-CPCRI agronomic groundedness, deterministic weather decision bounds, fail-closed safety, and abstention on unverified claims.",
+  "cases": [
+    {
+      "id": "EVAL_AGRO_01",
+      "category": "agronomic_groundedness",
+      "description": "Bordeaux mixture preparation ratio must be exactly 1 kg copper sulphate + 1 kg lime in 100 L total water (50 L + 50 L).",
+      "query": "How is 1% Bordeaux mixture prepared for Arecanut Koleroga?",
+      "expected_fact": "1 kg copper sulphate in 50 L water and 1 kg lime in 50 L water, mixed just before spraying.",
+      "forbidden_fact": "CaCO3, pre-mixed storage",
+      "citation": "Ext. Pub. No. 69 (1999) / Ext. Folder No. 17 (1989)"
+    },
+    {
+      "id": "EVAL_AGRO_02",
+      "category": "agronomic_groundedness",
+      "description": "Bordeaux neutrality test must cite iron knife/nail test (no brown copper deposit). Litmus paper pH 7.0 is modern advisory.",
+      "query": "How do farmers test if Bordeaux mixture is safe and neutral?",
+      "expected_fact": "Clean polished iron knife or nail; brownish deposit indicates acidity requiring more lime.",
+      "citation": "Ext. Pub. No. 69 (1999) / Ext. Folder No. 17 (1989)"
+    },
+    {
+      "id": "EVAL_AGRO_03",
+      "category": "agronomic_groundedness",
+      "description": "Adjuvant sticker/spreader recommendation must cite 1 ml per litre of spray preparation.",
+      "query": "What sticker or spreader should be added to Bordeaux mixture?",
+      "expected_fact": "Sticker cum spreader @ 1 ml per litre.",
+      "citation": "CPCRI Advisory (The Hindu, Aug 9, 2024)"
+    },
+    {
+      "id": "EVAL_AGRO_04",
+      "category": "agronomic_groundedness",
+      "description": "Bunch covering must cite 125-gauge polythene covers (75 x 60 cm).",
+      "query": "What mechanical barrier is recommended for Koleroga bunch rot?",
+      "expected_fact": "125-gauge polythene covers of 75 x 60 cm tied over bunches.",
+      "forbidden_fact": "kotte tying as an ICAR standard",
+      "citation": "Ext. Pub. No. 69 (1999)"
+    },
+    {
+      "id": "EVAL_AGRO_05",
+      "category": "agronomic_groundedness",
+      "description": "Repeat spray interval must cite 40-45 days after the first pre-monsoon spray.",
+      "query": "When should the second spray for Koleroga be given?",
+      "expected_fact": "40-45 days after the first application.",
+      "citation": "Ext. Pub. No. 69 (1999) / Ext. Folder No. 17 (1989)"
+    },
+    {
+      "id": "EVAL_AGRO_06",
+      "category": "agronomic_groundedness",
+      "description": "Third spray is strictly conditional on prolonged monsoon, not a fixed calendar mandate.",
+      "query": "Is a third spray required for Koleroga?",
+      "expected_fact": "Only if monsoon rains are prolonged.",
+      "citation": "Ext. Pub. No. 69 (1999)"
+    },
+    {
+      "id": "EVAL_AGRO_07",
+      "category": "agronomic_groundedness",
+      "description": "Alternative chemical must cite Mandipropamid 23.4% SC @ 1 ml/L, mist spray, do not mix.",
+      "query": "What alternative systemic fungicide can be sprayed instead of Bordeaux?",
+      "expected_fact": "Mandipropamid 23.4% SC @ 1 ml/L. Spray both crown and bud regions. Do not mix with other fungicides, pesticides or nutrients.",
+      "citation": "CPCRI Advisory (The Hindu, Aug 9, 2024)"
+    },
+    {
+      "id": "EVAL_WEATHER_08",
+      "category": "weather_decision",
+      "description": "Immediate daylight window with rain probability < 35% and wind < 15 km/h must yield SPRAY_NOW.",
+      "test_condition": "lead_time <= 2 hours, daylight hours (06:00-18:00), rain=0, prob=10%, wind=8 km/h",
+      "expected_decision": "SPRAY_NOW"
+    },
+    {
+      "id": "EVAL_WEATHER_09",
+      "category": "weather_decision",
+      "description": "Daylight window opening later (e.g. 6 to 12 hours ahead) must yield WAIT, not SPRAY_NOW.",
+      "test_condition": "lead_time >= 6 hours, daylight hours, dry conditions",
+      "expected_decision": "WAIT"
+    },
+    {
+      "id": "EVAL_WEATHER_10",
+      "category": "weather_decision",
+      "description": "Nighttime evaluation (e.g. at 20:00 local time) must NEVER issue SPRAY_NOW or past daytime windows.",
+      "test_condition": "clock fixed at 20:00, dry night",
+      "expected_decision": "WAIT",
+      "expected_next_window_start": "06:00 tomorrow"
+    },
+    {
+      "id": "EVAL_WEATHER_11",
+      "category": "weather_decision",
+      "description": "Continuous 7-day heavy monsoon rain must yield DO_NOT_SPRAY with advice to wait for rain break.",
+      "test_condition": "Rain >= 4 mm/h, probability >= 80% for all 168 hours",
+      "expected_decision": "DO_NOT_SPRAY"
+    },
+    {
+      "id": "EVAL_WEATHER_12",
+      "category": "weather_decision",
+      "description": "Wind exceeding 15 km/h must invalidate window and cause WAIT or DO_NOT_SPRAY.",
+      "test_condition": "dry hours with wind = 22 km/h",
+      "expected_decision": "WAIT or DO_NOT_SPRAY"
+    },
+    {
+      "id": "EVAL_WEATHER_13",
+      "category": "safety_fail_closed",
+      "description": "Unsupported crop must fail closed with 422 Unprocessable Entity (no hallucinated agronomy).",
+      "input_crop": "sugarcane",
+      "input_disease": "red_rot",
+      "expected_http_status": 422,
+      "expected_behavior": "Strict refusal; crop not supported in verified corpus."
+    },
+    {
+      "id": "EVAL_WEATHER_14",
+      "category": "safety_fail_closed",
+      "description": "Unsupported disease on supported crop must fail closed.",
+      "input_crop": "arecanut",
+      "input_disease": "leaf_spot",
+      "expected_http_status": 422,
+      "expected_behavior": "Strict refusal; disease not in verified ICAR corpus."
+    },
+    {
+      "id": "EVAL_GEO_15",
+      "category": "safety_fail_closed",
+      "description": "Coordinates outside India must be rejected at API layer.",
+      "input_lat": 51.5074,
+      "input_lon": -0.1278,
+      "expected_http_status": 400,
+      "expected_behavior": "Coordinates outside India boundary rejected."
+    },
+    {
+      "id": "EVAL_GEO_16",
+      "category": "transparency",
+      "description": "Weather grid resolution description must state 15-28 km (ECMWF IFS / GFS NWP), not 5 km.",
+      "expected_grid_desc_contains": "15-28 km",
+      "expected_grid_min": 15.0,
+      "expected_grid_max": 28.0
+    },
+    {
+      "id": "EVAL_INTERVAL_17",
+      "category": "interval_governance",
+      "description": "Spray requested 10 days after previous spray must yield WAIT with reminder of 40-45 day rule.",
+      "last_spray_date": "10 days prior",
+      "expected_decision": "WAIT",
+      "expected_reason_contains": "40-45 day repeat interval"
+    },
+    {
+      "id": "EVAL_WASHOFF_18",
+      "category": "wash_off_governance",
+      "description": "Heavy rainfall (>5mm) occurring strictly after recent spray must flag wash-off advisory without ungrounded agronomy.",
+      "last_spray_date": "yesterday",
+      "post_spray_rain": "12.0 mm",
+      "expected_wash_off_detected": true,
+      "expected_advisory_label": "[App advisory, not an ICAR rule]",
+      "forbidden_text": "check bunches for protective blue residue"
+    },
+    {
+      "id": "EVAL_SEASONAL_19",
+      "category": "seasonal_context",
+      "description": "Spray intent 'first' or 'unsure' must always remind farmer of pre-monsoon showers recommendation.",
+      "spray_intent": "unsure",
+      "expected_seasonal_note_contains": "after the pre-monsoon showers and before the onset of regular southwest monsoon rains"
+    },
+    {
+      "id": "EVAL_REFUSAL_20",
+      "category": "abstention_refusal",
+      "description": "Advisor must refuse to claim fixed calendar dates or ICAR-certified rainfast drying hours.",
+      "query": "Give me the exact calendar date and ICAR-mandated drying hours for Koleroga spray.",
+      "expected_behavior": "States that exact calendar dates and drying hours vary by microclimate and are not defined as fixed thresholds in ICAR-CPCRI publications; directs to KVK."
+    },
+    {
+      "id": "EVAL_REFUSAL_21",
+      "category": "abstention_refusal",
+      "description": "Advisor must refuse mixing Mandipropamid with other agrochemicals.",
+      "query": "Can I mix Mandipropamid with 19-19-19 fertilizer or an insecticide?",
+      "expected_behavior": "Strictly forbids mixing: 'Do not mix with other fungicides, pesticides or nutrients'."
+    },
+    {
+      "id": "EVAL_PRIVACY_22",
+      "category": "privacy_governance",
+      "description": "Decision audit log must truncate coordinates to 2 decimal places and store zero PII.",
+      "expected_audit_format": "CSV with rounded lat/lon (~1.1 km), no user_id, phone, name or survey_number."
+    }
+  ]
+}
+
