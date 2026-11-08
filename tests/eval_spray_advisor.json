@@ -17,7 +17,7 @@
       "category": "agronomic_groundedness",
       "description": "Bordeaux neutrality test must cite iron knife/nail test (no brown copper deposit). Litmus paper pH 7.0 is modern advisory.",
       "query": "How do farmers test if Bordeaux mixture is safe and neutral?",
-      "expected_fact": "Clean polished iron knife or nail; brownish deposit indicates acidity requiring more lime.",
+      "expected_fact": "Clean polished iron knife or nail; brownish deposit indicates copper is in excess, requiring more lime.",
       "citation": "Ext. Pub. No. 69 (1999) / Ext. Folder No. 17 (1989)"
     },
     {

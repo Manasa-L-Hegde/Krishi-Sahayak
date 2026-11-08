@@ -178,35 +178,50 @@ ARECANUT_KOLEROGA_RULE = AgronomicSprayRule(
         "total_water_l": 100.0,
         "instruction_en": (
             "Dissolve 1 kg of Copper Sulphate in 50 litres of water and 1 kg of lime in 50 litres "
-            "of water separately and mix just before spraying. Use copper, wooden, or plastic vessels; "
-            "never use other metallic vessels."
+            "of water separately and mix just before spraying. Copper, wooden or plastic vessels may be used "
+            "for preparation; never use other metallic vessels."
         ),
         "instruction_kn": (
             "1 ಕೆಜಿ ಮೈಲುತುತ್ತವನ್ನು (ಕಾಪರ್ ಸಲ್ಫೇಟ್) 50 ಲೀಟರ್ ನೀರಿನಲ್ಲಿ ಮತ್ತು 1 ಕೆಜಿ ಸುಣ್ಣವನ್ನು 50 ಲೀಟರ್ ನೀರಿನಲ್ಲಿ "
             "ಪ್ರತ್ಯೇಕವಾಗಿ ಕರಗಿಸಿ, ಸಿಂಪಡಿಸುವ ಮುನ್ನವೇ ಎರಡನ್ನೂ ಒಟ್ಟಿಗೆ ಬೆರೆಸಿ. ತಾಮ್ರ, ಮರ ಅಥವಾ ಪ್ಲಾಸ್ಟಿಕ್ ಪಾತ್ರೆಗಳನ್ನು ಬಳಸಿ; "
             "ಇತರ ಲೋಹದ ಪಾತ್ರೆಗಳನ್ನು ಬಳಸಬೇಡಿ."
         ),
-        "source": "ext17_pdf (Page 2, 1989)",
+        "source_id": "ext17_pdf",
+        "source": "ext17_pdf (Page 2, Col 2, Aug 1989)",
+        "source_title": "Koleroga (Mahali) of Arecanut (Extension Folder No. 17)",
+        "publication_year": 1989,
+        "page": 2,
+        "url": "https://cpcri.gov.in/filemgr/webfs/publication/ext17.pdf",
     },
     neutrality_test={
         "method": "Polished iron knife or nail test",
         "instruction_en": (
             "Dip a clean polished iron knife or nail into the solution. If a brownish copper coating appears, "
-            "the mixture is acidic; add more lime solution until no brownish deposit forms."
+            "copper is in excess; add more lime solution until no brownish deposit forms."
         ),
         "instruction_kn": (
-            "ಸ್ವಚ್ಛವಾದ ಉಕ್ಕಿನ ಚಾಕು ಅಥವಾ ಮೊಳೆಯನ್ನು ದ್ರಾವಣದಲ್ಲಿ ಮುಳುಗಿಸಿ. ಚಾಕುವಿನ ಮೇಲೆ ಕಂದು ಬಣ್ಣದ ತಾಮ್ರದ ಲೇಪನ ಕಂಡುಬಂದರೆ, "
-            "ದ್ರಾವಣವು ಆಮ್ಲೀಯವಾಗಿದೆ ಎಂದು ತಿಳಿಯಿರಿ; ಕಂದು ಬಣ್ಣ ಮಾಯವಾಗುವವರೆಗೆ ಇನ್ನಷ್ಟು ಸುಣ್ಣದ ತಿಳಿನೀರನ್ನು ಸೇರಿಸಿ."
+            "ಸ್ವಚ್ಛವಾದ ಕಬ್ಬಿಣದ ಚಾಕು ಅಥವಾ ಮೊಳೆಯನ್ನು ದ್ರಾವಣದಲ್ಲಿ ಮುಳುಗಿಸಿ. ಚಾಕುವಿನ ಮೇಲೆ ಕಂದು ಬಣ್ಣದ ತಾಮ್ರದ ಲೇಪನ ಕಂಡುಬಂದರೆ, "
+            "ತಾಮ್ರದ ಅಂಶವು ಹೆಚ್ಚಾಗಿದೆ ಎಂದು ತಿಳಿಯಿರಿ; ಕಂದು ಬಣ್ಣ ಮಾಯವಾಗುವವರೆಗೆ ಇನ್ನಷ್ಟು ಸುಣ್ಣದ ತಿಳಿನೀರನ್ನು ಸೇರಿಸಿ."
         ),
         "required_ph": 7.0,  # Stated in The Hindu / CPCRI 2024 advisory
+        "source_id": "ext17_pdf",
         "source": "ext17_pdf (Page 2, 1989) & The Hindu CPCRI advisory (Aug 2024)",
+        "source_title": "Koleroga (Mahali) of Arecanut (Extension Folder No. 17)",
+        "publication_year": 1989,
+        "page": 2,
+        "url": "https://cpcri.gov.in/filemgr/webfs/publication/ext17.pdf",
     },
     adjuvant={
         "type": "Sticker cum spreader",
         "dose_per_litre": "1 ml / L",
         "instruction_en": "Add a sticker cum spreader @ 1 ml per litre of spray preparation.",
         "instruction_kn": "ಪ್ರತಿ ಲೀಟರ್ ಸಿಂಪಡಣಾ ದ್ರಾವಣಕ್ಕೆ 1 ಮಿ.ಲೀ ಅಂಟುದ್ರವವನ್ನು (ಸ್ಟಿಕ್ಕರ್/ಸ್ಪ್ರೆಡರ್) ಸೇರಿಸಿ.",
+        "source_id": "thehindu_cpcri_2024",
         "source": "The Hindu / CPCRI advisory (Aug 2024)",
+        "source_title": "CPCRI issues advisory to control koleroga disease in arecanut plantations (The Hindu, Aug 9, 2024)",
+        "publication_year": 2024,
+        "page": None,
+        "url": "https://www.thehindu.com/news/cities/Mangalore/cpcri-issues-advisory-to-control-koleroga-disease-in-arecanut-plantations/article68506079.ece",
     },
     timing_relative_to_rain="Whenever there is a break in rainfall (The Hindu / CPCRI advisory, Aug 2024)",
     first_spray_timing="Prophylactic pre-monsoon / after premonsoon showers (ext17_pdf, Page 2, 1989)",
@@ -221,9 +236,14 @@ ARECANUT_KOLEROGA_RULE = AgronomicSprayRule(
             "Cover arecanut bunches with 125-gauge polythene covers (75 x 60 cm) as a mechanical barrier."
         ),
         "instruction_kn": (
-            "ಮಳೆಯ ನೀರು ಮತ್ತು ರೋಗಾಣು ತಾಗದಂತೆ 125 ಗೇಜ್ (75 x 60 ಸೆಂ.ಮೀ) ಅಳತೆಯ ಪಾಲಿಥಿನ್ ಚೀಲಗಳಿಂದ ಅಡಿಕೆ ಗೊಂಚಲುಗಳನ್ನು ಮುಚ್ಚಿ."
+            "ಯಾಂತ್ರಿಕ ತಡೆಗೋಡೆಯಾಗಿ 125 ಗೇಜ್ (75 x 60 ಸೆಂ.ಮೀ) ಅಳತೆಯ ಪಾಲಿಥಿನ್ ಚೀಲಗಳಿಂದ ಅಡಿಕೆ ಗೊಂಚಲುಗಳನ್ನು ಮುಚ್ಚಿ."
         ),
+        "source_id": "cpcri_vittal_leaflet_pdf",
         "source": "cpcri_vittal_leaflet_pdf (Page 2, 1999)",
+        "source_title": "Disease Management Strategies in Arecanut and Cocoa (Extension Publication No. 69)",
+        "publication_year": 1999,
+        "page": 2,
+        "url": "https://cpcri.gov.in/filemgr/webfs/publication/disease_management_strategies_in_arecanut_and_cocoa(eng)_1.pdf",
     },
     alternative_fungicide={
         "fungicide_name": "Mandipropamid 23.4% SC",
@@ -236,9 +256,14 @@ ARECANUT_KOLEROGA_RULE = AgronomicSprayRule(
         ),
         "instruction_kn": (
             "ಬದಲಿ ಶಿಲೀಂಧ್ರನಾಶಕವಾಗಿ ಮ್ಯಾಂಡಿಪ್ರೊಪಮಿಡ್ 23.4% SC ಯನ್ನು ಪ್ರತಿ ಲೀಟರ್ ನೀರಿಗೆ 1 ಮಿ.ಲೀ ನಂತೆ ಸಿಂಪಡಿಸಬಹುದು. "
-            "ಸೂಕ್ಷ್ಮ ಮಂಜಿನಂತೆ ಸಿಂಪಡಿಸಿ. ಇತರ ಯಾವುದೇ ಕೀಟನಾಶಕ, ರಸಗೊಬ್ಬರ ಅಥವಾ ಪೋಷಕಾಂಶಗಳೊಂದಿಗೆ ಬೆರೆಸಬೇಡಿ."
+            "ಸೂಕ್ಷ್ಮ ಮಂಜಿನಂತೆ ಸಿಂಪಡಿಸಿ. ಇತರ ಯಾವುದೇ ಶಿಲೀಂಧ್ರನಾಶಕ, ಕೀಟನಾಶಕ ಅಥವಾ ಪೋಷಕಾಂಶಗಳೊಂದಿಗೆ ಬೆರೆಸಬೇಡಿ."
         ),
+        "source_id": "thehindu_cpcri_2024",
         "source": "The Hindu / CPCRI advisory (Aug 2024)",
+        "source_title": "CPCRI issues advisory to control koleroga disease in arecanut plantations (The Hindu, Aug 9, 2024)",
+        "publication_year": 2024,
+        "page": None,
+        "url": "https://www.thehindu.com/news/cities/Mangalore/cpcri-issues-advisory-to-control-koleroga-disease-in-arecanut-plantations/article68506079.ece",
     },
     calendar_start_dates=None,  # Unverified in ICAR corpus -> Fail closed
     min_dry_hours=None,  # Unverified in ICAR corpus -> Fail closed

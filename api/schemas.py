@@ -78,6 +78,7 @@ class SprayAdvisoryResponse(BaseModel):
     crop: str
     disease: str
     spray_intent: str
+    seasonal_context_note: str | None
     decision: str
     decision_label: str
     reason: str
@@ -86,9 +87,9 @@ class SprayAdvisoryResponse(BaseModel):
     best_window: dict | None
     agronomy: dict
     wash_off_alert: str | None
-    seasonal_context_note: str | None
     disclaimer: str
     kvk_guidance: str
+    safety_footer: str
     citations: list[dict]
 
 

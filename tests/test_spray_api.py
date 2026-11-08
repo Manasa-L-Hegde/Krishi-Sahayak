@@ -7,8 +7,17 @@ from fastapi.testclient import TestClient
 from api.main import app
 from api.weather import HourlyDataPoint, WeatherForecast
 from api.geo import GeoLocation
+import api.spray_engine
 
 client = TestClient(app)
+
+
+@pytest.fixture(autouse=True)
+def redirect_audit_log_to_tmp(tmp_path, monkeypatch):
+    """Ensure all test invocations write audit records to a tmp path, never polluting logs/spray_audit.csv."""
+    test_audit = tmp_path / "test_spray_audit.csv"
+    monkeypatch.setattr(api.spray_engine, "AUDIT_LOG_FILE", test_audit)
+    yield
 
 
 def dummy_forecast(agreement: float = 0.85) -> WeatherForecast:
@@ -122,6 +131,9 @@ def test_spray_advise_endpoint_english():
         assert data["disease"] == "koleroga"
         assert data["decision"] in {"SPRAY_NOW", "WAIT", "DO_NOT_SPRAY"}
         assert "Advisory defaults, not ICAR rules" in data["disclaimer"]
+        assert "Safety advisory:" in data["safety_footer"]
+        assert data["seasonal_context_note"] is not None
+        assert "preparation_source" in data["agronomy"]
         assert len(data["citations"]) >= 2
         assert "1% Bordeaux" in data["agronomy"]["fungicide_name"] or "Bordeaux mixture" in data["agronomy"]["fungicide_name"]
 
@@ -142,6 +154,10 @@ def test_spray_advise_endpoint_kannada():
         data = resp.json()
         assert "ಬೋರ್ಡೋ" in data["agronomy"]["fungicide_name"]
         assert "ಕೃಷಿ ವಿಜ್ಞಾನ ಕೇಂದ್ರ" in data["kvk_guidance"]
+        assert "ಸುರಕ್ಷತಾ ಸಲಹೆ:" in data["safety_footer"]
+        assert "ಸಲಹಾತ್ಮಕ ಡೀಫಾಲ್ಟ್ ಮಿತಿಗಳು" in data["disclaimer"]
+        assert "ಕಬ್ಬಿಣದ ಚಾಕು" in data["agronomy"]["quality_test"]
+        assert "ಯಾಂತ್ರಿಕ ತಡೆಗೋಡೆಯಾಗಿ" in data["agronomy"]["bunch_covering"]
 
 
 def test_spray_advise_fail_closed_unsupported():

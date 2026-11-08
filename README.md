@@ -37,6 +37,14 @@ An isolated PyTorch LSTM slice now forecasts 7-day prices for onion, tomato, and
 
 The current slice provides English/Kannada RAG retrieval over official government/ICAR sources, a FAISS index, and optional Groq generation with a context-only prompt. It is not a multi-turn chatbot. The 15-case evaluation correctly triggered fallback for all 5 out-of-corpus questions, so this layer is marked implemented for this bounded advisory scope.
 
+### Spray Timing Advisor (implemented, deterministic rule-based)
+
+The Spray Timing Advisor provides live spray decision guidance (`SPRAY_NOW`, `WAIT`, `DO_NOT_SPRAY`) for Arecanut Koleroga (Mahali / Fruit Rot) by combining 7-day dual-model numerical weather forecasts (Open-Meteo ECMWF IFS 0.25° vs GFS Seamless 0.25°) with hand-curated, verbatim ICAR-CPCRI agronomic rules.
+
+- **Zero LLM / Zero Hallucination Guarantee:** The `/spray/advise` endpoint is **strictly deterministic and rule-based**. It does **NOT** invoke an LLM and does **NOT** query the FAISS vector index. Dosages (1% Bordeaux, 1 ml/L Mandipropamid), preparation procedures, neutrality tests, and intervals are rendered directly from typed, verified `AgronomicSprayRule` dataclasses.
+- **Handling Free-Text Questions:** General or free-text agronomic queries must be routed to the existing `/genai/ask` (or `/vision/advise`) endpoint, which performs semantic retrieval against the 369-chunk FAISS index and enforces fail-closed abstention when similarity falls below threshold (0.59).
+- **Audit Logging & Privacy:** Every spray recommendation logs an anonymized evaluation record to `logs/spray_audit.csv`. Coordinates are truncated to 2 decimal places (~1.1 km grid) and zero farmer identity or PII is recorded.
+
 The saved ML artifact contains the selected classifier, risk regressor, label encoder, feature order, and SHAP explainer. Requests only load this artifact; they never retrain. Power BI can import the CSV files in `diagnostics/` without becoming part of the Python serving process.
 
 ### Vision Advisory (experimental)
@@ -97,6 +105,10 @@ Per-crop precision, recall, and F1 are exported in `diagnostics/per_crop_metrics
 - `GET /health` reports artifact availability.
 - `POST /predict` accepts the seven numeric inputs and returns the crop, confidence, risk score, and top-three SHAP contributions.
 - `POST /vision/advise` (experimental) accepts multipart image, question, and language (`en`/`kn`) for symptom extraction and grounded RAG advisory.
+- `POST /spray/advise` provides grounded spray timing decisions (SPRAY_NOW, WAIT, DO_NOT_SPRAY) with daylight window analysis and ICAR citations.
+- `GET /spray/diseases` lists crops and diseases supported by the ICAR-grounded spray corpus.
+- `GET /weather/forecast` fetches 7-day multi-model forecast with 15–28 km resolution and model agreement score.
+- `GET /geo/search` and `GET /geo/reverse` geocode location names or reverse-lookup GPS coordinates strictly within India.
 - `GET /` serves the plain farmer-facing HTML form.
 - `GET /docs` provides Swagger UI with example values pre-filled for Try it out.
 

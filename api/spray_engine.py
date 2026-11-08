@@ -65,13 +65,24 @@ class SprayAdvisorResult:
     upcoming_windows: List[SprayWindow]
     agronomic_rule: Optional[AgronomicSprayRule]
     thresholds_used: Dict[str, Any]
-    disclaimer: str
+    disclaimer_en: str
+    disclaimer_kn: str
     kvk_fallback_en: str
     kvk_fallback_kn: str
+    safety_footer_en: str
+    safety_footer_kn: str
     seasonal_context_en: Optional[str] = None
     seasonal_context_kn: Optional[str] = None
     wash_off_warning_en: Optional[str] = None
     wash_off_warning_kn: Optional[str] = None
+
+    @property
+    def disclaimer(self) -> str:
+        return self.disclaimer_en
+
+    @property
+    def safety_footer(self) -> str:
+        return self.safety_footer_en
 
 
 def load_engine_config() -> Dict[str, Any]:
@@ -92,8 +103,10 @@ def load_engine_config() -> Dict[str, Any]:
         "daylight_end_hour": 18,
         "wash_off_rain_threshold_mm": 5.0,
         "immediate_window_max_lead_hours": 2,
-        "disclaimer_en": "Advisory defaults, not ICAR rules.",
-        "disclaimer_kn": "ಇವು ಸಲಹಾತ್ಮಕ ಡೀಫಾಲ್ಟ್ ಮಿತಿಗಳು, ಐಸಿಎಆರ್ ನಿಯಮಗಳಲ್ಲ.",
+        "disclaimer_en": "Advisory defaults, not ICAR rules. These parameters are heuristic weather safety thresholds for spray application.",
+        "disclaimer_kn": "ಇವು ಸಲಹಾತ್ಮಕ ಡೀಫಾಲ್ಟ್ ಮಿತಿಗಳು, ಐಸಿಎಆರ್ ನಿಯಮಗಳಲ್ಲ. ಇವು ಸಿಂಪರಣೆ ಸುರಕ್ಷತೆಯ ಅಂದಾಜು ಹವಾಮಾನ ಮಿತಿಗಳಾಗಿವೆ.",
+        "safety_footer_en": "Safety advisory: Always wear personal protective equipment (PPE: gloves, face mask, eye protection), follow manufacturer instructions on the chemical label, strictly observe the pre-harvest interval (PHI) before harvest, and consult your local Krishi Vigyan Kendra (KVK) or Raitha Samparka Kendra (RSK) for localized guidance.",
+        "safety_footer_kn": "ಸುರಕ್ಷತಾ ಸಲಹೆ: ಸಿಂಪಡಿಸುವಾಗ ಯಾವಾಗಲೂ ವೈಯಕ್ತಿಕ ಸುರಕ್ಷತಾ ಸಾಧನಗಳನ್ನು (ಪಿಪಿಇ: ಕೈಗವಸು, ಮುಖಗವಸು, ಕಣ್ಣಿನ ರಕ್ಷಣೆ) ಧರಿಸಿ, ಕೀಟನಾಶಕ ಲೇಬಲ್ ಮೇಲಿನ ಸೂಚನೆಗಳನ್ನು ಕಟ್ಟುನಿಟ್ಟಾಗಿ ಪಾಲಿಸಿ, ಕಟಾವಿಗೆ ಮುನ್ನ ಕಾಯುವ ಅವಧಿಯನ್ನು (PHI) ಗಮನಿಸಿ, ಮತ್ತು ಸ್ಥಳೀಯ ಮಾರ್ಗದರ್ಶನಕ್ಕಾಗಿ ಹತ್ತಿರದ ಕೃಷಿ ವಿಜ್ಞಾನ ಕೇಂದ್ರ (ಕೆವಿಕೆ) ಅಥವಾ ರೈತ ಸಂಪರ್ಕ ಕೇಂದ್ರವನ್ನು (ಆರ್‌ಎಸ್‌ಕೆ) ಸಂಪರ್ಕಿಸಿ.",
     }
 
 
@@ -256,8 +269,16 @@ def evaluate_spray_decision(
     min_dry_hours = cfg.get("default_min_dry_hours", 4.0)
     immediate_lead_max = cfg.get("immediate_window_max_lead_hours", 2)
     wash_off_threshold = cfg.get("wash_off_rain_threshold_mm", 5.0)
-    disclaimer_en = cfg.get("disclaimer_en", "Advisory defaults, not ICAR rules.")
-    disclaimer_kn = cfg.get("disclaimer_kn", "ಇವು ಸಲಹಾತ್ಮಕ ಡೀಫಾಲ್ಟ್ ಮಿತಿಗಳು, ಐಸಿಎಆರ್ ನಿಯಮಗಳಲ್ಲ.")
+    disclaimer_en = cfg.get("disclaimer_en", "Advisory defaults, not ICAR rules. These parameters are heuristic weather safety thresholds for spray application.")
+    disclaimer_kn = cfg.get("disclaimer_kn", "ಇವು ಸಲಹಾತ್ಮಕ ಡೀಫಾಲ್ಟ್ ಮಿತಿಗಳು, ಐಸಿಎಆರ್ ನಿಯಮಗಳಲ್ಲ. ಇವು ಸಿಂಪರಣೆ ಸುರಕ್ಷತೆಯ ಅಂದಾಜು ಹವಾಮಾನ ಮಿತಿಗಳಾಗಿವೆ.")
+    safety_footer_en = cfg.get(
+        "safety_footer_en",
+        "Safety advisory: Always wear personal protective equipment (PPE: gloves, face mask, eye protection), follow manufacturer instructions on the chemical label, strictly observe the pre-harvest interval (PHI) before harvest, and consult your local Krishi Vigyan Kendra (KVK) or Raitha Samparka Kendra (RSK) for localized guidance."
+    )
+    safety_footer_kn = cfg.get(
+        "safety_footer_kn",
+        "ಸುರಕ್ಷತಾ ಸಲಹೆ: ಸಿಂಪಡಿಸುವಾಗ ಯಾವಾಗಲೂ ವೈಯಕ್ತಿಕ ಸುರಕ್ಷತಾ ಸಾಧನಗಳನ್ನು (ಪಿಪಿಇ: ಕೈಗವಸು, ಮುಖಗವಸು, ಕಣ್ಣಿನ ರಕ್ಷಣೆ) ಧರಿಸಿ, ಕೀಟನಾಶಕ ಲೇಬಲ್ ಮೇಲಿನ ಸೂಚನೆಗಳನ್ನು ಕಟ್ಟುನಿಟ್ಟಾಗಿ ಪಾಲಿಸಿ, ಕಟಾವಿಗೆ ಮುನ್ನ ಕಾಯುವ ಅವಧಿಯನ್ನು (PHI) ಗಮನಿಸಿ, ಮತ್ತು ಸ್ಥಳೀಯ ಮಾರ್ಗದರ್ಶನಕ್ಕಾಗಿ ಹತ್ತಿರದ ಕೃಷಿ ವಿಜ್ಞಾನ ಕೇಂದ್ರ (ಕೆವಿಕೆ) ಅಥವಾ ರೈತ ಸಂಪರ್ಕ ಕೇಂದ್ರವನ್ನು (ಆರ್‌ಎಸ್‌ಕೆ) ಸಂಪರ್ಕಿಸಿ."
+    )
 
     wash_off_en: Optional[str] = None
     wash_off_kn: Optional[str] = None
@@ -267,8 +288,8 @@ def evaluate_spray_decision(
     # 1. Wash-off check: rain falling strictly AFTER spray application up to current_time
     if last_spray_date:
         try:
-            # Standard convention: If date-only (YYYY-MM-DD), anchor application to 10:00 AM local time
-            # (the midpoint of the typical morning spray window). If ISO with time (YYYY-MM-DDTHH:MM), parse directly.
+            # App assumption / convention: If date-only (YYYY-MM-DD), anchor application to 10:00 AM local time
+            # (default morning window assumption; not an ICAR-prescribed hour). If ISO with time, parse directly.
             spray_time_str = f"{last_spray_date}T10:00" if "T" not in last_spray_date else last_spray_date
             last_date_part = last_spray_date.split("T")[0]
             last_dt = datetime.strptime(last_date_part, "%Y-%m-%d").date()
@@ -337,9 +358,12 @@ def evaluate_spray_decision(
                     upcoming_windows=[],
                     agronomic_rule=rule,
                     thresholds_used=cfg,
-                    disclaimer=disclaimer_en,
+                    disclaimer_en=disclaimer_en,
+                    disclaimer_kn=disclaimer_kn,
                     kvk_fallback_en=rule.kvk_fallback_message_en,
                     kvk_fallback_kn=rule.kvk_fallback_message_kn,
+                    safety_footer_en=safety_footer_en,
+                    safety_footer_kn=safety_footer_kn,
                     wash_off_warning_en=wash_off_en,
                     wash_off_warning_kn=wash_off_kn,
                 )
@@ -349,11 +373,11 @@ def evaluate_spray_decision(
     # 3. Seasonal context note: Sources tie Koleroga sprays strictly to pre-monsoon showers or monsoon rain breaks
     if spray_intent in {SprayIntent.FIRST, SprayIntent.UNSURE}:
         seasonal_en = (
-            "Seasonal context: ICAR-CPCRI recommends applying the first prophylactic spray after the pre-monsoon showers and before the onset of regular southwest monsoon rains (Ext. Pub. No. 69, 1999). "
+            "Seasonal context: ICAR-CPCRI recommends applying the first prophylactic spray after the premonsoon showers and before the onset of regular southwest monsoon rains (Ext. Folder No. 17, 1989). "
             "If pre-monsoon showers have not commenced in your locality, consult your local KVK or Raitha Samparka Kendra before spraying."
         )
         seasonal_kn = (
-            "ಋತುಮಾನದ ಮಾಹಿತಿ: ಐಸಿಎಆರ್-ಸಿಪಿಸಿಆರ್‌ಐ ಪ್ರಕಾರ ಮೊದಲ ಮುನ್ನೆಚ್ಚರಿಕೆ ಸಿಂಪರಣೆಯನ್ನು ಮುಂಗಾರು ಪೂರ್ವ ಮಳೆಯ ನಂತರ ಮತ್ತು ನೈಋತ್ಯ ಮುಂಗಾರು ಆರಂಭವಾಗುವ ಮೊದಲು ಕೈಗೊಳ್ಳಬೇಕು (ವಿಸ್ತರಣಾ ಪ್ರಕಟಣೆ 69, 1999). "
+            "ಋತುಮಾನದ ಮಾಹಿತಿ: ಐಸಿಎಆರ್-ಸಿಪಿಸಿಆರ್‌ಐ ಪ್ರಕಾರ ಮೊದಲ ಮುನ್ನೆಚ್ಚರಿಕೆ ಸಿಂಪರಣೆಯನ್ನು ಮುಂಗಾರು ಪೂರ್ವ ಮಳೆಯ ನಂತರ ಮತ್ತು ನೈಋತ್ಯ ಮುಂಗಾರು ಆರಂಭವಾಗುವ ಮೊದಲು ಕೈಗೊಳ್ಳಬೇಕು (ವಿಸ್ತರಣಾ ಪತ್ರಿಕೆ 17, 1989). "
             "ನಿಮ್ಮ ಭಾಗದಲ್ಲಿ ಮುಂಗಾರು ಪೂರ್ವ ಮಳೆಯಾಗಿರದಿದ್ದರೆ ಸಿಂಪಡಿಸುವ ಮುನ್ನ ಸ್ಥಳೀಯ ಕೆವಿಕೆ ಅಥವಾ ರೈತ ಸಂಪರ್ಕ ಕೇಂದ್ರವನ್ನು ಸಂಪರ್ಕಿಸಿ."
         )
     elif spray_intent == SprayIntent.REPEAT:
@@ -389,9 +413,12 @@ def evaluate_spray_decision(
             upcoming_windows=[],
             agronomic_rule=rule,
             thresholds_used=cfg,
-            disclaimer=disclaimer_en,
+            disclaimer_en=disclaimer_en,
+            disclaimer_kn=disclaimer_kn,
             kvk_fallback_en=rule.kvk_fallback_message_en,
             kvk_fallback_kn=rule.kvk_fallback_message_kn,
+            safety_footer_en=safety_footer_en,
+            safety_footer_kn=safety_footer_kn,
             seasonal_context_en=seasonal_en,
             seasonal_context_kn=seasonal_kn,
             wash_off_warning_en=wash_off_en,
@@ -415,15 +442,48 @@ def evaluate_spray_decision(
         )
     else:
         decision = SprayDecision.WAIT
+        # Diagnose specific causes for current unsuitability
+        unfavorable_causes_en = []
+        unfavorable_causes_kn = []
+
+        curr_pt = None
+        if forecast.current_time:
+            for pt in forecast.hourly:
+                if pt.time == forecast.current_time:
+                    curr_pt = pt
+                    break
+
+        if curr_pt:
+            _, fail_reasons = is_hour_sprayable(curr_pt, cfg)
+            for r in fail_reasons:
+                if "non-daylight" in r:
+                    unfavorable_causes_en.append("Currently nighttime (spraying is restricted to daylight hours 06:00-18:00)")
+                    unfavorable_causes_kn.append("ಪ್ರಸ್ತುತ ರಾತ್ರಿ ಸಮಯ (ಸಿಂಪರಣೆಯನ್ನು ಹಗಲಿನ ಸಮಯ 06:00-18:00 ಕ್ಕೆ ಮಾತ್ರ ಸೀಮಿತಗೊಳಿಸಲಾಗಿದೆ)")
+                elif "rain " in r and "probability" not in r:
+                    unfavorable_causes_en.append(f"Currently raining ({curr_pt.rain_mm:.1f} mm)")
+                    unfavorable_causes_kn.append(f"ಪ್ರಸ್ತುತ ಮಳೆಯಾಗುತ್ತಿದೆ ({curr_pt.rain_mm:.1f} ಮಿ.ಮೀ)")
+                elif "rain probability" in r:
+                    unfavorable_causes_en.append(f"Rain probability is currently elevated ({curr_pt.precipitation_probability:.0f}%)")
+                    unfavorable_causes_kn.append(f"ಮಳೆ ಸಂಭವನೀಯತೆ ಹೆಚ್ಚಾಗಿದೆ ({curr_pt.precipitation_probability:.0f}%)")
+                elif "wind" in r:
+                    unfavorable_causes_en.append(f"Wind speed is currently high ({curr_pt.wind_speed_kmh:.1f} km/h)")
+                    unfavorable_causes_kn.append(f"ಗಾಳಿಯ ವೇಗ ಹೆಚ್ಚಾಗಿದೆ ({curr_pt.wind_speed_kmh:.1f} ಕಿ.ಮೀ/ಗಂ)")
+                elif "temp" in r:
+                    unfavorable_causes_en.append(f"Temperature is outside safe limits ({curr_pt.temperature_c:.1f}°C)")
+                    unfavorable_causes_kn.append(f"ತಾಪಮಾನವು ಸುರಕ್ಷಿತ ಮಿತಿಯ ಹೊರಗಿದೆ ({curr_pt.temperature_c:.1f}°C)")
+
+        cause_str_en = "; ".join(unfavorable_causes_en) if unfavorable_causes_en else "Conditions are currently unfavorable"
+        cause_str_kn = "; ".join(unfavorable_causes_kn) if unfavorable_causes_kn else "ಪ್ರಸ್ತುತ ಹವಾಮಾನವು ಸಿಂಪರಣೆಗೆ ಸೂಕ್ತವಾಗಿಲ್ಲ"
+
         reason_en = (
-            f"Conditions are currently unfavorable. Next daylight dry window expected on {first_win.start_time} "
+            f"{cause_str_en}. Next daylight dry window expected on {first_win.start_time} "
             f"to {first_win.end_time} ({first_win.duration_hours:.0f} hours dry, {first_win.lead_time_hours:.0f} hours ahead). "
-            "Wait for this break in rainfall before spraying."
+            "Wait for safe spray conditions before applying."
         )
         reason_kn = (
-            f"ಪ್ರಸ್ತುತ ಹವಾಮಾನವು ಸಿಂಪರಣೆಗೆ ಸೂಕ್ತವಾಗಿಲ್ಲ. ಮುಂದಿನ ಹಗಲಿನ ಒಣ ಸಮಯವು {first_win.start_time} ರಿಂದ {first_win.end_time} "
+            f"{cause_str_kn}. ಮುಂದಿನ ಹಗಲಿನ ಒಣ ಸಮಯವು {first_win.start_time} ರಿಂದ {first_win.end_time} "
             f"ರವರೆಗೆ ({first_win.duration_hours:.0f} ಗಂಟೆಗಳ ಒಣ ವಾತಾವರಣ) ನಿರೀಕ್ಷಿಸಲಾಗಿದೆ. "
-            "ಈ ಮಳೆ ಬಿಡುವಿನವರೆಗೆ ಕಾಯಿರಿ."
+            "ಸಿಂಪಡಿಸಲು ಸೂಕ್ತ ವಾತಾವರಣ ಬರುವವರೆಗೆ ಕಾಯಿರಿ."
         )
 
     return SprayAdvisorResult(
@@ -439,9 +499,12 @@ def evaluate_spray_decision(
         upcoming_windows=windows,
         agronomic_rule=rule,
         thresholds_used=cfg,
-        disclaimer=disclaimer_en,
+        disclaimer_en=disclaimer_en,
+        disclaimer_kn=disclaimer_kn,
         kvk_fallback_en=rule.kvk_fallback_message_en,
         kvk_fallback_kn=rule.kvk_fallback_message_kn,
+        safety_footer_en=safety_footer_en,
+        safety_footer_kn=safety_footer_kn,
         seasonal_context_en=seasonal_en,
         seasonal_context_kn=seasonal_kn,
         wash_off_warning_en=wash_off_en,
