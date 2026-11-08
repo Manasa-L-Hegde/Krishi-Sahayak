@@ -14,7 +14,9 @@ NOMINATIM_REVERSE_URL = "https://nominatim.openstreetmap.org/reverse"
 NOMINATIM_USER_AGENT = "KrishiSahayak-SprayAdvisor/1.0 (https://github.com/manas/krishi-sahayak)"
 
 GEO_CACHE_TTL_SECONDS = 86400  # 24 hours
-DEFAULT_GRID_RESOLUTION_KM = 5.0
+GRID_RESOLUTION_DESC = "15-28 km (NWP global grid for India; plot-specific microclimate may vary)"
+GRID_RESOLUTION_MIN_KM = 15.0
+GRID_RESOLUTION_MAX_KM = 28.0
 
 # In-memory search cache: query -> (timestamp, List[GeoLocation])
 _GEO_SEARCH_CACHE: Dict[str, Tuple[float, List[GeoLocation]]] = {}
@@ -34,7 +36,9 @@ class GeoLocation:
     taluk_or_subdistrict: Optional[str] = None
     postcode: Optional[str] = None
     country: str = "India"
-    grid_resolution_km: float = DEFAULT_GRID_RESOLUTION_KM
+    grid_resolution_desc: str = GRID_RESOLUTION_DESC
+    grid_resolution_min_km: float = GRID_RESOLUTION_MIN_KM
+    grid_resolution_max_km: float = GRID_RESOLUTION_MAX_KM
 
 
 def clear_geo_cache() -> None:
@@ -110,7 +114,9 @@ def search_places(
                         taluk_or_subdistrict=admin3,
                         postcode=item.get("postcode"),
                         country="India",
-                        grid_resolution_km=DEFAULT_GRID_RESOLUTION_KM,
+                        grid_resolution_desc=GRID_RESOLUTION_DESC,
+                        grid_resolution_min_km=GRID_RESOLUTION_MIN_KM,
+                        grid_resolution_max_km=GRID_RESOLUTION_MAX_KM,
                     )
                 )
 
@@ -158,7 +164,9 @@ def search_places(
                             taluk_or_subdistrict=taluk,
                             postcode=postcode,
                             country="India",
-                            grid_resolution_km=DEFAULT_GRID_RESOLUTION_KM,
+                            grid_resolution_desc=GRID_RESOLUTION_DESC,
+                            grid_resolution_min_km=GRID_RESOLUTION_MIN_KM,
+                            grid_resolution_max_km=GRID_RESOLUTION_MAX_KM,
                         )
                     )
 
@@ -229,7 +237,9 @@ def reverse_geocode(
                 taluk_or_subdistrict=addr.get("taluk") or addr.get("subdistrict"),
                 postcode=addr.get("postcode"),
                 country="India",
-                grid_resolution_km=DEFAULT_GRID_RESOLUTION_KM,
+                grid_resolution_desc=GRID_RESOLUTION_DESC,
+                grid_resolution_min_km=GRID_RESOLUTION_MIN_KM,
+                grid_resolution_max_km=GRID_RESOLUTION_MAX_KM,
             )
     except httpx.RequestError as exc:
         logger.warning(f"Reverse geocoding request failed: {exc}")

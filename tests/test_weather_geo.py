@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import os
 import pytest
 import httpx
 
@@ -109,7 +110,9 @@ def test_fetch_weather_forecast_success():
         forecast = fetch_weather_forecast(14.167, 75.043, client=client, use_cache=True)
         assert forecast.latitude == 14.17
         assert len(forecast.hourly) == 336
-        assert forecast.grid_resolution_km == 5.0
+        assert forecast.grid_resolution_min_km == 15.0
+        assert forecast.grid_resolution_max_km == 28.0
+        assert "15-28 km" in forecast.grid_resolution_desc
         assert 0.0 <= forecast.model_agreement_score <= 1.0
 
         # Verify caching
@@ -160,7 +163,8 @@ def test_search_places_open_meteo():
         assert loc.name == "Sagar"
         assert loc.state == "Karnataka"
         assert loc.district == "Shivamogga"
-        assert loc.grid_resolution_km == 5.0
+        assert loc.grid_resolution_min_km == 15.0
+        assert loc.grid_resolution_max_km == 28.0
 
         cached_results = search_places("sagar", client=client, use_cache=True)
         assert cached_results == results
@@ -188,3 +192,28 @@ def test_reverse_geocode_nominatim():
         assert loc.name == "Kasaragod"
         assert loc.state == "Kerala"
         assert loc.district == "Kasaragod"
+
+
+# ----------------- Live Smoke Tests (Skipped by default) -----------------
+
+@pytest.mark.live
+@pytest.mark.skipif(
+    os.getenv("RUN_LIVE_TESTS") != "1",
+    reason="Live network test skipped by default. Run with RUN_LIVE_TESTS=1 to execute.",
+)
+def test_live_weather_open_meteo_karnataka():
+    # Sagar, Shivamogga, Karnataka (Arecanut heartland): 14.167 N, 75.043 E
+    forecast = fetch_weather_forecast(14.167, 75.043, use_cache=False)
+    assert 13.5 <= forecast.latitude <= 15.0
+    assert 74.0 <= forecast.longitude <= 76.0
+    assert len(forecast.hourly) >= 168  # 7 days * 24h
+    assert 0.0 <= forecast.model_agreement_score <= 1.0
+    print(f"\n[LIVE SMOKE TEST OUTPUT]")
+    print(f"Location: ({forecast.latitude}, {forecast.longitude}), Elevation: {forecast.elevation}m")
+    print(f"Timezone: {forecast.timezone}, Current timestamp: {forecast.current_time}")
+    print(f"Past 24h rain: {forecast.past_24h_rain_mm} mm, Past 7d rain: {forecast.past_7d_rain_mm} mm")
+    print(f"Model agreement score: {forecast.model_agreement_score}")
+    print(f"First 3 forecast hours:")
+    for pt in forecast.hourly[168:171]:
+        print(f"  {pt.time} -> Rain: {pt.rain_mm}mm ({pt.precipitation_probability}%), Temp: {pt.temperature_c}C, Wind: {pt.wind_speed_kmh}km/h")
+

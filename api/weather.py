@@ -10,7 +10,10 @@ logger = logging.getLogger(__name__)
 
 OPEN_METEO_FORECAST_URL = "https://api.open-meteo.com/v1/forecast"
 WEATHER_CACHE_TTL_SECONDS = 3600  # 1 hour
-DEFAULT_GRID_RESOLUTION_KM = 5.0
+# In India, Open-Meteo uses global NWP models (ECMWF IFS 0.25° and GFS 0.25°), giving ~15-28 km native resolution.
+GRID_RESOLUTION_MIN_KM = 15.0
+GRID_RESOLUTION_MAX_KM = 28.0
+GRID_RESOLUTION_DESC = "15-28 km (ECMWF IFS 0.25° / GFS Global NWP grid for India)"
 
 
 class WeatherServiceError(Exception):
@@ -36,7 +39,9 @@ class WeatherForecast:
     longitude: float
     elevation: float
     timezone: str
-    grid_resolution_km: float
+    grid_resolution_desc: str
+    grid_resolution_min_km: float
+    grid_resolution_max_km: float
     current_time: str
     hourly: List[HourlyDataPoint]
     model_agreement_score: float  # 0.0 (total disagreement) to 1.0 (strong agreement)
@@ -217,7 +222,9 @@ def fetch_weather_forecast(
         longitude=data.get("longitude", key[1]),
         elevation=data.get("elevation", 0.0),
         timezone=data.get("timezone", "UTC"),
-        grid_resolution_km=DEFAULT_GRID_RESOLUTION_KM,
+        grid_resolution_desc=GRID_RESOLUTION_DESC,
+        grid_resolution_min_km=GRID_RESOLUTION_MIN_KM,
+        grid_resolution_max_km=GRID_RESOLUTION_MAX_KM,
         current_time=hourly_points[current_index].time if current_index < len(hourly_points) else "",
         hourly=hourly_points,
         model_agreement_score=agreement_score,
