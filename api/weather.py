@@ -97,6 +97,11 @@ def parse_hourly_payload(hourly_dict: Dict[str, List[Any]], model_pref: str = "e
     wind = _get_series(hourly_dict, "wind_speed_10m", model_pref)
     gusts = _get_series(hourly_dict, "wind_gusts_10m", model_pref)
 
+    # For drift limit safety, evaluate the higher (worst-case) wind speed and gusts
+    # across primary (ECMWF) and secondary (GFS) models when both are available.
+    gfs_wind = hourly_dict.get("wind_speed_10m_gfs_seamless")
+    gfs_gusts = hourly_dict.get("wind_gusts_10m_gfs_seamless")
+
     points: List[HourlyDataPoint] = []
     n = len(times)
     for i in range(n):
@@ -107,6 +112,12 @@ def parse_hourly_payload(hourly_dict: Dict[str, List[Any]], model_pref: str = "e
         rh_val = float(rh[i]) if (i < len(rh) and rh[i] is not None) else None
         w_val = float(wind[i]) if (i < len(wind) and wind[i] is not None) else None
         g_val = float(gusts[i]) if (i < len(gusts) and gusts[i] is not None) else w_val
+
+        # Drift safety: use higher of ECMWF and GFS wind
+        if w_val is not None and gfs_wind and i < len(gfs_wind) and gfs_wind[i] is not None:
+            w_val = max(w_val, float(gfs_wind[i]))
+        if g_val is not None and gfs_gusts and i < len(gfs_gusts) and gfs_gusts[i] is not None:
+            g_val = max(g_val, float(gfs_gusts[i]))
 
         points.append(
             HourlyDataPoint(

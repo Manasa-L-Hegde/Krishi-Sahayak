@@ -9,6 +9,14 @@
   <link rel="stylesheet" href="/static/vendor/leaflet.css">
 
   <style>
+    @font-face {
+      font-family: 'Noto Sans Kannada';
+      src: url('/static/vendor/fonts/NotoSansKannada-Regular.ttf') format('truetype');
+      font-weight: 400;
+      font-style: normal;
+      font-display: swap;
+    }
+
     :root {
       --primary: #15803d;
       --primary-dark: #166534;
@@ -25,7 +33,7 @@
       --info: #0284c7;
     }
 
-    * { box-sizing: border-box; margin: 0; padding: 0; font-family: system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif; }
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: system-ui, -apple-system, Segoe UI, Roboto, "Noto Sans Kannada", sans-serif; }
     body { background-color: var(--bg); color: var(--text); line-height: 1.5; padding-bottom: 80px; }
 
     header {
@@ -258,8 +266,8 @@
       <div class="form-group">
         <label for="placeSearch" id="labelSearch">Search Village / Taluk</label>
         <div style="display: flex; gap: 0.5rem;">
-          <input type="text" id="placeSearch" class="form-control" placeholder="e.g. Sagar, Shivamogga" value="Sagar">
-          <button type="button" class="btn btn-primary" style="width: auto; padding: 0.5rem 0.85rem;" onclick="searchPlace()">Search</button>
+          <input type="text" id="placeSearch" class="form-control" placeholder="e.g. Sagar, Shivamogga" value="Sagar" onkeypress="if(event.key === 'Enter') debouncedSearchPlace()">
+          <button type="button" class="btn btn-primary" style="width: auto; padding: 0.5rem 0.85rem;" onclick="debouncedSearchPlace()">Search</button>
         </div>
         <div id="placeSearchResults" style="font-size: 0.8rem; margin-top: 0.35rem; color: var(--text-muted);"></div>
       </div>
@@ -272,6 +280,15 @@
       <div style="display: flex; justify-content: space-between; font-size: 0.75rem; color: var(--text-muted); margin-top: 0.25rem;">
         <span>Lat: <span id="displayLat">14.17</span>, Lon: <span id="displayLon">75.04</span></span>
         <span id="placeLabel">Sagar, Shivamogga</span>
+      </div>
+
+      <!-- Privacy & Third-Party Service Disclosure -->
+      <div class="privacy-note" id="privacyNoticeBox" style="margin-top: 1rem; font-size: 0.75rem; color: var(--text-muted); background: #f1f5f9; padding: 0.6rem 0.75rem; border-radius: 0.35rem; line-height: 1.4;">
+        🔒 <strong id="privacyTitle">Privacy & Data Notice:</strong> GPS coordinates are used exclusively in-session to query weather forecasts and are not stored. Third-party services utilized:
+        <ul style="padding-left: 1.1rem; margin-top: 0.25rem;">
+          <li><strong>Open-Meteo:</strong> Weather forecasts (ECMWF & GFS) &amp; Geocoding search (<a href="https://open-meteo.com" target="_blank" rel="noopener">open-meteo.com</a>).</li>
+          <li><strong>CARTO:</strong> Positron raster map tiles (<a href="https://carto.com/attributions" target="_blank" rel="noopener">carto.com</a>, &copy; OpenStreetMap contributors).</li>
+        </ul>
       </div>
 
       <hr style="margin: 1rem 0; border: none; border-top: 1px solid var(--border);">
@@ -311,6 +328,10 @@
 
     <!-- RIGHT PANEL: Decision Card, Chart, and Agronomy Guidance -->
     <div>
+      <div id="serviceErrorArea" style="display: none; background: #fef2f2; border: 1px solid #f87171; border-radius: 0.5rem; padding: 1rem; color: #991b1b; margin-bottom: 1rem;">
+        <strong>⚠️ Weather Service Error:</strong> <span id="serviceErrorMessage">Weather forecast service is currently unreachable.</span>
+      </div>
+
       <div id="loadingIndicator" style="display: none; padding: 2rem; text-align: center; color: var(--text-muted);">
         <p>Fetching 7-day dual-NWP forecast & evaluating ICAR rules...</p>
       </div>
@@ -325,7 +346,7 @@
           <div class="decision-content" style="flex: 1;">
             <div style="display: flex; justify-content: space-between; align-items: flex-start;">
               <h2 id="decisionHeading">WAIT (ಕಾದುನೋಡಿ)</h2>
-              <button class="audio-btn" onclick="speakDecision()" title="Speak aloud in current language">
+              <button class="audio-btn" id="speakBtn" onclick="speakDecision()" title="Speak aloud in current language">
                 🔊 <span id="speakBtnLabel">Speak Aloud</span>
               </button>
             </div>
@@ -511,8 +532,46 @@
         agronomyHeading: "ಐಸಿಎಆರ್-ಸಿಪಿಸಿಆರ್‌ಐ ಕೃಷಿ ಶಿಫಾರಸುಗಳು ಮತ್ತು ಸುರಕ್ಷತಾ ನಿಯಮಗಳು",
         speakBtn: "ಓದಿ ಕೇಳಿಸಿ",
         transparency: "ವ್ಯಾಪ್ತಿ: 15–28 ಕಿ.ಮೀ (ECMWF IFS / GFS NWP) • ಇವು ಸಲಹಾತ್ಮಕ ಮಿತಿಗಳು, ಐಸಿಎಆರ್ ನಿಯಮಗಳಲ್ಲ",
+        privacyNotice: "🔒 ಗೌಪ್ಯತೆ ಮತ್ತು ಮಾಹಿತಿ ಸೂಚನೆ: ಜಿಪಿಎಸ್ ನಿರ್ದೇಶಾಂಕಗಳನ್ನು ಕೇವಲ ಹವಾಮಾನ ಮುನ್ಸೂಚನೆ ಪಡೆಯಲು ಮಾತ್ರ ಬಳಸಲಾಗುತ್ತದೆ ಮತ್ತು ಉಳಿಸಿಕೊಳ್ಳಲಾಗುವುದಿಲ್ಲ. ಬಳಸಲಾದ ತೃತೀಯ ಸೇವೆಗಳು: ಓಪನ್-ಮೆಟಿಯೋ (ಹವಾಮಾನ & ಭೂ-ಶೋಧನೆ), ಕಾರ್ಟೋ (ನಕ್ಷೆ).",
       }
     };
+
+    let searchDebounceTimer = null;
+    function debouncedSearchPlace() {
+      clearTimeout(searchDebounceTimer);
+      searchDebounceTimer = setTimeout(searchPlace, 250);
+    }
+
+    function checkVoiceAvailability() {
+      const btn = document.getElementById('speakBtn');
+      const label = document.getElementById('speakBtnLabel');
+      if (!('speechSynthesis' in window)) {
+        if (btn) btn.style.display = 'none';
+        return;
+      }
+      const voices = window.speechSynthesis.getVoices();
+      const hasKnVoice = voices.some(v => v.lang === 'kn-IN' || v.lang.startsWith('kn'));
+
+      if (currentLang === 'kn' && !hasKnVoice) {
+        if (btn) {
+          btn.title = "ಕನ್ನಡ ಧ್ವನಿ ಈ ಸಾಧನದಲ್ಲಿ ಲಭ್ಯವಿಲ್ಲ (kn-IN speech synthesis voice unavailable on this browser/OS)";
+          btn.style.opacity = '0.5';
+          btn.style.cursor = 'not-allowed';
+          if (label) label.textContent = "ಧ್ವನಿ ಲಭ್ಯವಿಲ್ಲ (No Voice)";
+        }
+      } else {
+        if (btn) {
+          btn.style.display = 'inline-flex';
+          btn.style.opacity = '1.0';
+          btn.style.cursor = 'pointer';
+          btn.title = "Speak aloud in current language";
+          if (label) label.textContent = UI_STRINGS[currentLang].speakBtn;
+        }
+      }
+    }
+    if ('speechSynthesis' in window) {
+      window.speechSynthesis.onvoiceschanged = checkVoiceAvailability;
+    }
 
     function initMap() {
       // Bounded strictly around India
@@ -637,10 +696,13 @@
       document.getElementById('agronomyHeading').textContent = s.agronomyHeading;
       document.getElementById('speakBtnLabel').textContent = s.speakBtn;
       document.getElementById('transparencyBadge').textContent = s.transparency;
+      checkVoiceAvailability();
     }
 
     async function fetchSprayAdvisory() {
       const indicator = document.getElementById('loadingIndicator');
+      const errArea = document.getElementById('serviceErrorArea');
+      if (errArea) errArea.style.display = 'none';
       indicator.style.display = 'block';
 
       const reqBody = {
@@ -665,8 +727,8 @@
         });
 
         if (!res.ok) {
-          const err = await res.json();
-          throw new Error(err.detail || "Advisory query failed");
+          const err = await res.json().catch(() => ({ detail: "Network error or service unavailable" }));
+          throw new Error(err.detail || `Server returned status ${res.status}`);
         }
 
         const data = await res.json();
@@ -677,7 +739,16 @@
         fetchForecastChart(currentLat, currentLon, data.best_window);
 
       } catch (err) {
-        alert("Error fetching advice: " + err.message);
+        console.error("Advisory error:", err);
+        if (errArea) {
+          const msgSpan = document.getElementById('serviceErrorMessage');
+          if (msgSpan) {
+            msgSpan.textContent = (currentLang === 'kn' ? "ಹವಾಮಾನ ಸೇವೆ ಲಭ್ಯವಿಲ್ಲ: " : "Weather service error: ") + err.message;
+          }
+          errArea.style.display = 'block';
+        } else {
+          alert("Error fetching advice: " + err.message);
+        }
       } finally {
         indicator.style.display = 'none';
       }
@@ -703,7 +774,19 @@
         DO_NOT_SPRAY: "🛑"
       };
       document.getElementById('decisionIcon').textContent = iconMap[data.decision] || "ℹ️";
-      document.getElementById('decisionHeading').textContent = data.decision_label || data.decision;
+      
+      // If seasonal note applies, display informative seasonal headline rather than bare command
+      let heading = data.decision_label || data.decision;
+      if (data.seasonal_context_note) {
+        if (currentLang === 'kn') {
+          if (data.decision === 'SPRAY_NOW') heading = "ಹವಾಮಾನ ಸೂಕ್ತ – ಋತುಮಾನ ಪರಿಶೀಲಿಸಿ (WEATHER OK – CHECK SEASON)";
+          else if (data.decision === 'WAIT') heading = "ಕಾದುನೋಡಿ – ಋತುಮಾನ ಪರಿಶೀಲಿಸಿ (WAIT – CHECK SEASON)";
+        } else {
+          if (data.decision === 'SPRAY_NOW') heading = "WEATHER OK – CHECK SEASON";
+          else if (data.decision === 'WAIT') heading = "WAIT – CHECK SEASON";
+        }
+      }
+      document.getElementById('decisionHeading').textContent = heading;
       document.getElementById('decisionReason').textContent = data.reason;
 
       // Confidence Factors
@@ -874,6 +957,13 @@
         alert("Speech synthesis is not supported on this browser.");
         return;
       }
+      const voices = window.speechSynthesis.getVoices();
+      const hasKnVoice = voices.some(v => v.lang === 'kn-IN' || v.lang.startsWith('kn'));
+      if (currentLang === 'kn' && !hasKnVoice) {
+        alert("ಕನ್ನಡ ಧ್ವನಿ (kn-IN speech synthesis voice) ನಿಮ್ಮ ಸಾಧನದಲ್ಲಿ ಲಭ್ಯವಿಲ್ಲ. ದಯವಿಟ್ಟು ಪಠ್ಯವನ್ನು ಓದಿ.");
+        return;
+      }
+
       window.speechSynthesis.cancel();
       const heading = document.getElementById('decisionHeading').textContent;
       const reason = document.getElementById('decisionReason').textContent;
@@ -887,9 +977,87 @@
 
     // Initialize map on load
     window.addEventListener('DOMContentLoaded', () => {
+      const urlParams = new URLSearchParams(window.location.search);
+      if (urlParams.get('lang') === 'kn') {
+        currentLang = 'kn';
+        applyLanguage();
+      }
       initMap();
-      fetchSprayAdvisory();
+
+      const mockState = urlParams.get('mock');
+      if (mockState === 'spray_now') {
+        renderMockSprayNow();
+      } else if (mockState === 'service_error') {
+        renderMockError();
+      } else {
+        fetchSprayAdvisory();
+      }
     });
+
+    function renderMockSprayNow() {
+      const mock = {
+        crop: "arecanut",
+        disease: "koleroga",
+        spray_intent: "first",
+        seasonal_context_note: currentLang === 'kn' 
+          ? "ಋತುವಿನ ಸಂದರ್ಭ: ಐಸಿಎಆರ್-ಸಿಪಿಸಿಆರ್‌ಐ ಮುಂಗಾರು ಪೂರ್ವ ಮಳೆಯ ನಂತರ ಮೊದಲ ಮುನ್ನೆಚ್ಚರಿಕೆ ಸಿಂಪರಣೆ ಮಾಡಲು (ವಿಸ್ತರಣಾ ಫೋಲ್ಡರ್ ನಂ. 17, 1989) ಅಥವಾ ಮುಂಗಾರು ಪೂರ್ವ ಅನ್ವಯವಾಗಿ (ವಿಸ್ತರಣಾ ಪ್ರಕಟಣೆ ನಂ. 69, 1999) ಶಿಫಾರಸು ಮಾಡುತ್ತದೆ. ನಿಮ್ಮ ಭಾಗದಲ್ಲಿ ಮುಂಗಾರು ಪೂರ್ವ ಮಳೆ ಪ್ರಾರಂಭವಾಗದಿದ್ದರೆ, ಸಿಂಪಡಿಸುವ ಮೊದಲು ಕೆವಿಕೆ ಸಂಪರ್ಕಿಸಿ."
+          : "Seasonal context: ICAR-CPCRI recommends applying the first prophylactic spray after the premonsoon showers (Ext. Folder No. 17, 1989) or as a pre-monsoon application (Ext. Pub. No. 69, 1999). If pre-monsoon showers have not commenced in your locality, consult your local KVK or RSK before spraying.",
+        decision: "SPRAY_NOW",
+        decision_label: currentLang === 'kn' ? "ಹವಾಮಾನ ಸೂಕ್ತ – ಋತುಮಾನ ಪರಿಶೀಲಿಸಿ (WEATHER OK – CHECK SEASON)" : "WEATHER OK – CHECK SEASON",
+        reason: currentLang === 'kn'
+          ? "ಹಗಲಿನ ಒಣ ಹವಾಮಾನ ಲಭ್ಯವಿದೆ (ಮುಂದಿನ 5 ಗಂಟೆಗಳ ಕಾಲ ಮಳೆಯಿಲ್ಲ, ಗಾಳಿ 8.2 ಕಿ.ಮೀ/ಗಂ). ಮುಂಗಾರು ಪೂರ್ವ ಮಳೆ ಆರಂಭವಾಗಿದ್ದರೆ ಸಿಂಪಡಿಸಬಹುದು."
+          : "Daylight dry window is open now (5 hours dry, wind 8.2 km/h, rain prob 5%). Safe for application if pre-monsoon showers have occurred.",
+        confidence_score: 0.94,
+        confidence_factors: {
+          lead_time_hours: 0.0,
+          lead_time_reliability_factor: 1.0,
+          model_agreement_score: 0.98,
+          model_agreement_factor: 0.99,
+          threshold_margin_pct: 45.3,
+          threshold_margin_factor: 1.0
+        },
+        best_window: {
+          start_time: "2026-11-09T08:00",
+          end_time: "2026-11-09T13:00",
+          duration_hours: 5.0,
+          lead_time_hours: 0.0,
+          avg_temperature_c: 27.5,
+          max_wind_kmh: 8.2,
+          max_rain_probability_pct: 5.0
+        },
+        agronomy: {
+          fungicide_name: currentLang === 'kn' ? "1% ತಟಸ್ಥ ಬೋರ್ಡೋ ದ್ರಾವಣ" : "Bordeaux mixture (1%)",
+          preparation_steps: currentLang === 'kn' 
+            ? "1 ಕೆ.ಜಿ ಮೈಲುತುತ್ತನ್ನು 50 ಲೀಟರ್ ನೀರಿನಲ್ಲಿ ಮತ್ತು 1 ಕೆ.ಜಿ ಸುಣ್ಣವನ್ನು 50 ಲೀಟರ್ ನೀರಿನಲ್ಲಿ ಪ್ರತ್ಯೇಕವಾಗಿ ಕರಗಿಸಿ ಸಿಂಪಡಿಸುವ ಮೊದಲು ಬೆರೆಸಿ."
+            : "Dissolve 1 kg of Copper Sulphate in 50 litres of water and 1 kg of lime in 50 litres of water separately and mix just before spraying.",
+          preparation_source: { title: "Koleroga (Mahali) of Arecanut (Ext. Folder No. 17)", publication_year: 1989, page: 2, url: "https://cpcri.gov.in/filemgr/webfs/publication/ext17.pdf" },
+          quality_test: currentLang === 'kn'
+            ? "ಸ್ವಚ್ಛವಾದ ಉಕ್ಕಿನ ಚಾಕು ಅಥವಾ ಮೊಳೆಯನ್ನು ದ್ರಾವಣದಲ್ಲಿ ಅದ್ದಿ. ಕಂದು ಲೇಪನ ಬಂದರೆ ತಾಮ್ರ ಹೆಚ್ಚಿದೆ ಎಂದರ್ಥ; ಕಂದು ಬಣ್ಣ ಬರುವುದು ನಿಲ್ಲುವವರೆಗೆ ಸುಣ್ಣದ ನೀರನ್ನು ಸೇರಿಸಿ."
+            : "Dip a clean polished iron knife or nail into the solution. If brownish coating appears, add lime until clear.",
+          quality_test_source: { title: "Koleroga (Mahali) of Arecanut (Ext. Folder No. 17)", publication_year: 1989, page: 2, url: "https://cpcri.gov.in/filemgr/webfs/publication/ext17.pdf" },
+          adjuvant: currentLang === 'kn' ? "ಪ್ರತಿ ಲೀಟರ್ ಸಿಂಪರಣಾ ದ್ರಾವಣಕ್ಕೆ 1 ಮಿ.ಲೀ ಅಂಟುದ್ರವ (ಸ್ಟಿಕ್ಕರ್) ಸೇರಿಸಿ." : "Add a sticker cum spreader @ 1 ml per litre of spray preparation.",
+          adjuvant_source: { title: "CPCRI issues advisory (The Hindu, Aug 9, 2024)", publication_year: 2024, page: null, url: "https://www.thehindu.com" },
+          repeat_interval: currentLang === 'kn' ? "40-45 ದಿನಗಳ ನಂತರ" : "40-45 days",
+          repeat_interval_source: { title: "Disease Management Strategies (Pub. 69)", publication_year: 1999, page: 2, url: "https://cpcri.gov.in" },
+          bunch_covering: currentLang === 'kn' ? "125 ಗೇಜ್ (75 x 60 ಸೆಂ.ಮೀ) ಪಾಲಿಥಿನ್ ಚೀಲಗಳಿಂದ ಅಡಿಕೆ ಗೊಂಚಲು ಮುಚ್ಚಿ." : "Cover arecanut bunches with 125-gauge polythene covers (75 x 60 cm).",
+          bunch_covering_source: { title: "Disease Management Strategies (Pub. 69)", publication_year: 1999, page: 2, url: "https://cpcri.gov.in" }
+        },
+        safety_footer: currentLang === 'kn'
+          ? "ಸುರಕ್ಷತಾ ಸಲಹೆ: ಸಿಂಪಡಿಸುವಾಗ ಯಾವಾಗಲೂ ವೈಯಕ್ತಿಕ ಸುರಕ್ಷತಾ ಸಾಧನಗಳನ್ನು (ಪಿಪಿಇ: ಕೈಗವಸು, ಮುಖಗವಸು, ಕಣ್ಣಿನ ರಕ್ಷಣೆ) ಧರಿಸಿ, ಉತ್ಪನ್ನದ ಲೇಬಲ್ ಮೇಲಿನ ಸೂಚನೆಗಳನ್ನು ಕಟ್ಟುನಿಟ್ಟಾಗಿ ಪಾಲಿಸಿ, ಕಟಾವಿಗೆ ಮುನ್ನ ಕಾಯುವ ಅವಧಿಯನ್ನು (PHI) ಗಮನಿಸಿ, ಮತ್ತು ಸ್ಥಳೀಯ ಮಾರ್ಗದರ್ಶನಕ್ಕಾಗಿ ಹತ್ತಿರದ ಕೆವಿಕೆ ಸಂಪರ್ಕಿಸಿ."
+          : "Safety advisory: Always wear personal protective equipment (PPE: gloves, face mask, eye protection), follow manufacturer instructions on the chemical label, strictly observe pre-harvest interval (PHI), and consult local KVK."
+      };
+      renderAdvisory(mock);
+    }
+
+    function renderMockError() {
+      const errArea = document.getElementById('serviceErrorArea');
+      if (errArea) {
+        document.getElementById('serviceErrorMessage').textContent = currentLang === 'kn'
+          ? "ಓಪನ್-ಮೆಟಿಯೋ ಹವಾಮಾನ ಸೇವೆ ಸಂಪರ್ಕಿಸಲು ಸಾಧ್ಯವಾಗುತ್ತಿಲ್ಲ (502 Bad Gateway / Network Timeout). ಹವಾಮಾನ ದೃಢೀಕರಣವಿಲ್ಲದೆ ಸಿಂಪರಣಾ ಸಲಹೆ ನೀಡಲಾಗುವುದಿಲ್ಲ (Fail-Closed)."
+          : "Open-Meteo weather service unreachable (502 Bad Gateway / Network Timeout). The advisor fails closed and will not guess weather data.";
+        errArea.style.display = 'block';
+      }
+    }
   </script>
 </body>
 </html>

@@ -250,16 +250,22 @@ def calculate_decision_confidence(
     else:
         agreement_factor = 0.85
 
-    # 3. Threshold safety margin factor:
-    # If the deciding variable (e.g. wind at 14.5 km/h vs 15.0 km/h limit) is within 10-20%
-    # of the boundary, scale down confidence since slight forecast variance could breach limits.
+    # 3. Threshold safety margin factor (heuristic advisory calibration):
+    # If the deciding variable (e.g. wind at 13.6 km/h vs 15.0 km/h limit) is within 10-20%
+    # of the boundary, scale down confidence since slight microclimate/forecast variance could breach limits.
+    # Note: confidence_margin_band_pct (default 20%) and confidence_margin_floor (default 0.75) are
+    # heuristic advisory settings, not ICAR biological limits.
+    band_pct = cfg.get("confidence_margin_band_pct", 20.0) / 100.0
+    floor_factor = cfg.get("confidence_margin_floor", 0.75)
+
     wind_margin = max(0.0, (wind_limit - window.max_wind_kmh) / wind_limit) if wind_limit > 0 else 1.0
     prob_margin = max(0.0, (prob_limit - window.max_precipitation_probability) / prob_limit) if prob_limit > 0 else 1.0
     limiting_margin = min(wind_margin, prob_margin)
 
-    # If margin is below 20% (0.20), scale down factor between 0.75 and 1.0
-    if limiting_margin < 0.20:
-        margin_factor = max(0.75, 0.75 + (limiting_margin / 0.20) * 0.25)
+    # Linear interpolation between floor_factor and 1.0 across the margin band:
+    # formula: margin_factor = floor_factor + (1.0 - floor_factor) * (limiting_margin / band_pct)
+    if limiting_margin < band_pct and band_pct > 0:
+        margin_factor = max(floor_factor, floor_factor + (limiting_margin / band_pct) * (1.0 - floor_factor))
     else:
         margin_factor = 1.0
 

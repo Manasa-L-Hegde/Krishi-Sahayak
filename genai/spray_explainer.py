@@ -27,18 +27,32 @@ def build_spray_explanation(
 
     # Decision banner
     if is_kn:
-        decision_label = {
-            SprayDecision.SPRAY_NOW: "ಈಗಲೇ ಸಿಂಪಡಿಸಿ (SPRAY NOW)",
-            SprayDecision.WAIT: "ಕಾದುನೋಡಿ (WAIT)",
-            SprayDecision.DO_NOT_SPRAY: "ಸಿಂಪಡಿಸಬೇಡಿ (DO NOT SPRAY)",
-        }[result.decision]
+        if result.seasonal_context_kn:
+            decision_label = {
+                SprayDecision.SPRAY_NOW: "ಹವಾಮಾನ ಸೂಕ್ತ – ಋತುಮಾನ ಪರಿಶೀಲಿಸಿ (WEATHER OK – CHECK SEASON)",
+                SprayDecision.WAIT: "ಕಾದುನೋಡಿ – ಋತುಮಾನ ಪರಿಶೀಲಿಸಿ (WAIT – CHECK SEASON)",
+                SprayDecision.DO_NOT_SPRAY: "ಸಿಂಪಡಿಸಬೇಡಿ (DO NOT SPRAY)",
+            }[result.decision]
+        else:
+            decision_label = {
+                SprayDecision.SPRAY_NOW: "ಈಗಲೇ ಸಿಂಪಡಿಸಿ (SPRAY NOW)",
+                SprayDecision.WAIT: "ಕಾದುನೋಡಿ (WAIT)",
+                SprayDecision.DO_NOT_SPRAY: "ಸಿಂಪಡಿಸಬೇಡಿ (DO NOT SPRAY)",
+            }[result.decision]
         reason_text = result.decision_reason_kn
     else:
-        decision_label = {
-            SprayDecision.SPRAY_NOW: "SPRAY NOW",
-            SprayDecision.WAIT: "WAIT",
-            SprayDecision.DO_NOT_SPRAY: "DO NOT SPRAY",
-        }[result.decision]
+        if result.seasonal_context_en:
+            decision_label = {
+                SprayDecision.SPRAY_NOW: "WEATHER OK – CHECK SEASON",
+                SprayDecision.WAIT: "WAIT – CHECK SEASON",
+                SprayDecision.DO_NOT_SPRAY: "DO NOT SPRAY",
+            }[result.decision]
+        else:
+            decision_label = {
+                SprayDecision.SPRAY_NOW: "SPRAY NOW",
+                SprayDecision.WAIT: "WAIT",
+                SprayDecision.DO_NOT_SPRAY: "DO NOT SPRAY",
+            }[result.decision]
         reason_text = result.decision_reason_en
 
     # Agronomic guidance

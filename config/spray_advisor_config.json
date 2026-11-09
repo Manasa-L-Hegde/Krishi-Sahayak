@@ -16,6 +16,8 @@
   "wash_off_rain_threshold_mm": 5.0,
   "wash_off_window_hours": 48,
   "immediate_window_max_lead_hours": 2,
-  "near_term_lead_hours_threshold": 48
+  "near_term_lead_hours_threshold": 48,
+  "confidence_margin_band_pct": 20.0,
+  "confidence_margin_floor": 0.75
 }
 

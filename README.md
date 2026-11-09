@@ -43,7 +43,17 @@ The Spray Timing Advisor provides live spray decision guidance (`SPRAY_NOW`, `WA
 
 - **Zero LLM / Zero Hallucination Guarantee:** The `/spray/advise` endpoint is **strictly deterministic and rule-based**. It does **NOT** invoke an LLM and does **NOT** query the FAISS vector index. Dosages (1% Bordeaux, 1 ml/L Mandipropamid), preparation procedures, neutrality tests, and intervals are rendered directly from typed, verified `AgronomicSprayRule` dataclasses.
 - **Handling Free-Text Questions:** General or free-text agronomic queries must be routed to the existing `/genai/ask` (or `/vision/advise`) endpoint, which performs semantic retrieval against the 369-chunk FAISS index and enforces fail-closed abstention when similarity falls below threshold (0.59).
-- **Audit Logging & Privacy:** Every spray recommendation logs an anonymized evaluation record to `logs/spray_audit.csv`. Coordinates are truncated to 2 decimal places (~1.1 km grid) and zero farmer identity or PII is recorded.
+- **Audit Logging & Privacy:** Every spray recommendation logs an anonymized evaluation record to `logs/spray_audit.csv`. Coordinates are rounded to ~1.1 km grid and zero farmer identity or PII is recorded.
+- **Operational Scope & Known Limitations:**
+  - **Grid Resolution Limits:** Weather forecasts are retrieved at NWP model grid cell resolution (~15–28 km for ECMWF IFS 0.25° and GFS). Adjacent villages within the same ~20 km grid block receive identical numerical forecasts. Microclimate variations (valley drafts, elevation shifts) require localized grower judgment.
+  - **Geocoder Coverage Limits:** Village-level name searches rely on Open-Meteo's geocoding database. Smaller hamlets may not appear; farmers should use the draggable map pin or GPS location button.
+  - **Scope Limitation:** Currently covers **Arecanut Koleroga (Fruit rot / Mahali)** only. Adding new crops or diseases strictly requires independently curated and verified agronomic corpora.
+  - **Source Publication Age:** Core Bordeaux practices are grounded in ICAR-CPCRI Extension Publication No. 69 (1999) and Extension Folder No. 17 (1989), supplemented by recent 2024 CPCRI advisories (The Hindu). The historical chemical preparation instructions require validation by local KVK or agricultural officers.
+- **Roadmap Before Real-World Pilot:**
+  1. Complete API rate limiting and graceful 502/503 service fallback wrappers.
+  2. Implement automated `/health` endpoint probes, a standardized Dockerfile, and GitHub Actions CI running pytest.
+  3. Formal signoff from a native Kannada speaker on the UI and speech translation review table.
+  4. Agronomic review by a local Krishi Vigyan Kendra (KVK) or horticulture department extension specialist before conducting field trials with farmers.
 
 The saved ML artifact contains the selected classifier, risk regressor, label encoder, feature order, and SHAP explainer. Requests only load this artifact; they never retrain. Power BI can import the CSV files in `diagnostics/` without becoming part of the Python serving process.
 
