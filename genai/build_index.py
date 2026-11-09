@@ -44,6 +44,19 @@ def main() -> None:
         records.append({**item, "local_file": path.name, "characters": len(text)})
         for index, text_chunk in enumerate(chunk_text(text)):
             chunks.append({"id": f"{number:02d}-{index:04d}", "source": item["title"], "url": item["url"], "text": text_chunk})
+    
+    curated_file = ROOT / "curated_arecanut_chunks.json"
+    if curated_file.exists():
+        curated_chunks = json.loads(curated_file.read_text(encoding="utf-8"))
+        for c in curated_chunks:
+            chunks.append({
+                "id": c["id"],
+                "source": c["source"],
+                "url": c["url"],
+                "text": c["text"]
+            })
+        print(f"Appended {len(curated_chunks)} hand-curated bilingual agronomy chunks.")
+
     embedder = SentenceTransformer(MODEL_NAME)
     vectors = embedder.encode([item["text"] for item in chunks], normalize_embeddings=True, show_progress_bar=True).astype("float32")
     index = faiss.IndexFlatIP(vectors.shape[1])

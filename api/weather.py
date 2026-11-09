@@ -113,11 +113,19 @@ def parse_hourly_payload(hourly_dict: Dict[str, List[Any]], model_pref: str = "e
         w_val = float(wind[i]) if (i < len(wind) and wind[i] is not None) else None
         g_val = float(gusts[i]) if (i < len(gusts) and gusts[i] is not None) else w_val
 
-        # Drift safety: use higher of ECMWF and GFS wind
-        if w_val is not None and gfs_wind and i < len(gfs_wind) and gfs_wind[i] is not None:
-            w_val = max(w_val, float(gfs_wind[i]))
-        if g_val is not None and gfs_gusts and i < len(gfs_gusts) and gfs_gusts[i] is not None:
-            g_val = max(g_val, float(gfs_gusts[i]))
+        # Drift safety: evaluate the higher (worst-case) wind speed and gusts
+        # across primary (ECMWF) and secondary (GFS) models over whichever values are non-null.
+        gfs_w = float(gfs_wind[i]) if (gfs_wind and i < len(gfs_wind) and gfs_wind[i] is not None) else None
+        if w_val is not None and gfs_w is not None:
+            w_val = max(w_val, gfs_w)
+        elif w_val is None and gfs_w is not None:
+            w_val = gfs_w
+
+        gfs_g = float(gfs_gusts[i]) if (gfs_gusts and i < len(gfs_gusts) and gfs_gusts[i] is not None) else None
+        if g_val is not None and gfs_g is not None:
+            g_val = max(g_val, gfs_g)
+        elif g_val is None and gfs_g is not None:
+            g_val = gfs_g
 
         points.append(
             HourlyDataPoint(

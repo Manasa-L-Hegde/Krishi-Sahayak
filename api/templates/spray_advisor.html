@@ -284,10 +284,11 @@
 
       <!-- Privacy & Third-Party Service Disclosure -->
       <div class="privacy-note" id="privacyNoticeBox" style="margin-top: 1rem; font-size: 0.75rem; color: var(--text-muted); background: #f1f5f9; padding: 0.6rem 0.75rem; border-radius: 0.35rem; line-height: 1.4;">
-        🔒 <strong id="privacyTitle">Privacy & Data Notice:</strong> GPS coordinates are used exclusively in-session to query weather forecasts and are not stored. Third-party services utilized:
+        🔒 <strong id="privacyTitle">Privacy & Data Notice:</strong> Location rounded to ~1 km (±0.01°) and generated advice are logged to an anonymized server audit log (<code>spray_audit.csv</code>) for safety review. No personal identifiable information (PII) is stored. Third-party services utilized:
         <ul style="padding-left: 1.1rem; margin-top: 0.25rem;">
-          <li><strong>Open-Meteo:</strong> Weather forecasts (ECMWF & GFS) &amp; Geocoding search (<a href="https://open-meteo.com" target="_blank" rel="noopener">open-meteo.com</a>).</li>
-          <li><strong>CARTO:</strong> Positron raster map tiles (<a href="https://carto.com/attributions" target="_blank" rel="noopener">carto.com</a>, &copy; OpenStreetMap contributors).</li>
+          <li><strong>Open-Meteo:</strong> Receives coordinates for ECMWF &amp; GFS forecasts and forward place search (<a href="https://open-meteo.com" target="_blank" rel="noopener">open-meteo.com</a>).</li>
+          <li><strong>OSM Nominatim:</strong> Receives coordinates during reverse geocoding to resolve village/taluk names (<a href="https://nominatim.openstreetmap.org" target="_blank" rel="noopener">nominatim.org</a>).</li>
+          <li><strong>CARTO:</strong> Positron raster map tile server receives client IP during map viewing (<a href="https://carto.com/attributions" target="_blank" rel="noopener">carto.com</a>, &copy; OpenStreetMap contributors).</li>
         </ul>
       </div>
 
