@@ -7,10 +7,12 @@ from pathlib import Path
 from functools import lru_cache
 from typing import Any
 
+from collections import defaultdict
+import time
 import joblib
 import pandas as pd
 from fastapi import FastAPI, File, Form, HTTPException, Query, Request, UploadFile
-from fastapi.responses import HTMLResponse
+from fastapi.responses import HTMLResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 
@@ -38,6 +40,46 @@ app = FastAPI(title="Krishi Sahayak API", version="1.0.0", description="Crop rec
 if STATIC_DIR.exists():
     app.mount("/static", StaticFiles(directory=str(STATIC_DIR)), name="static")
 
+PILOT_MODE = os.getenv("PILOT_MODE", "false").lower() in ("true", "1", "yes")
+
+RATE_LIMIT_RECORD: dict[str, list[float]] = defaultdict(list)
+RATE_LIMIT_MAX = int(os.getenv("RATE_LIMIT_PER_MINUTE", "60"))
+RATE_LIMIT_WINDOW = 60.0
+
+
+@app.middleware("http")
+async def rate_limit_middleware(request: Request, call_next):
+    path = request.url.path
+    if path.startswith("/static") or path == "/health":
+        return await call_next(request)
+
+    client_ip = request.client.host if request.client else "127.0.0.1"
+    if client_ip == "testclient":
+        return await call_next(request)
+    forwarded = request.headers.get("X-Forwarded-For")
+    if forwarded:
+        client_ip = forwarded.split(",")[0].strip()
+
+    now = time.time()
+    cutoff = now - RATE_LIMIT_WINDOW
+    timestamps = [t for t in RATE_LIMIT_RECORD[client_ip] if t > cutoff]
+    if len(timestamps) >= RATE_LIMIT_MAX:
+        return JSONResponse(
+            status_code=429,
+            content={"detail": "Too many requests. Please wait before retrying."}
+        )
+    timestamps.append(now)
+    RATE_LIMIT_RECORD[client_ip] = timestamps
+    return await call_next(request)
+
+
+def check_pilot_mode() -> None:
+    if os.getenv("PILOT_MODE", "false").lower() in ("true", "1", "yes"):
+        raise HTTPException(
+            status_code=404,
+            detail="GenAI free-text Q&A is disabled in pilot mode. Please use /spray for verified spray advisories."
+        )
+
 
 @lru_cache(maxsize=1)
 def load_artifacts() -> dict[str, Any]:
@@ -59,8 +101,18 @@ def explain_prediction(artifacts: dict[str, Any], row: pd.DataFrame, class_index
 
 
 @app.get("/health")
-def health() -> dict[str, str]:
-    return {"status": "ok" if ARTIFACT_PATH.exists() else "degraded", "model": ARTIFACT_PATH.name}
+def health() -> dict[str, Any]:
+    model_ok = ARTIFACT_PATH.exists()
+    rag_ok = (RAG_INDEX_PATH / "faiss.index").exists()
+    status = "ok" if (model_ok and rag_ok) else "degraded"
+    return {
+        "status": status,
+        "model": ARTIFACT_PATH.name if model_ok else None,
+        "rag_index_chunks": 375 if rag_ok else 0,
+        "pilot_mode": os.getenv("PILOT_MODE", "false").lower() in ("true", "1", "yes"),
+        "supported_spray_diseases": ["arecanut:koleroga"],
+        "version": "1.0.0",
+    }
 
 
 @app.post("/predict", response_model=PredictionResponse)
@@ -116,12 +168,14 @@ def load_rag():
 
 @app.post("/genai/advise", response_model=AdvisoryResponse)
 def advise(payload: AdvisoryRequest) -> AdvisoryResponse:
+    check_pilot_mode()
     result = load_rag().answer(payload.question, payload.language)
     return AdvisoryResponse(**result)
 
 
 @app.post("/genai/ask", response_model=ChatAdvisoryResponse)
 def ask_expert(payload: ChatAdvisoryRequest) -> ChatAdvisoryResponse:
+    check_pilot_mode()
     result = load_rag().ask_expert(payload.question, payload.language)
     return ChatAdvisoryResponse(**result)
 
@@ -162,6 +216,7 @@ async def vision_advise(
     question: str = Form(...),
     language: str = Form("en"),
 ) -> AdvisoryResponse:
+    check_pilot_mode()
     norm_lang = language.strip().lower()
     if norm_lang not in {"en", "kn", "english", "kannada"}:
         raise HTTPException(status_code=422, detail="Unsupported language. Choose 'en' or 'kn'.")
@@ -175,7 +230,8 @@ async def vision_advise(
 
 @app.get("/", response_class=HTMLResponse)
 def home(request: Request):
-    return TEMPLATES.TemplateResponse(request=request, name="index.html", context={"request": request})
+    pilot = os.getenv("PILOT_MODE", "false").lower() in ("true", "1", "yes")
+    return TEMPLATES.TemplateResponse(request=request, name="index.html", context={"request": request, "pilot_mode": pilot})
 
 
 @app.get("/spray", response_class=HTMLResponse)

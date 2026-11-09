@@ -63,14 +63,10 @@ class AgronomicSprayRule:
     # Provenance mapping
     provenance: Dict[str, ProvenanceRecord] = field(default_factory=dict)
     kvk_fallback_message_en: str = (
-        "Exact calendar dates and rainfast drying hours vary by microclimate and are not defined "
-        "as fixed thresholds in the ICAR-CPCRI publications. Consult your local Krishi Vigyan Kendra (KVK) "
-        "or Raitha Samparka Kendra (RSK) for localized guidance."
+        "The documents used by this app do not give a figure for this. Please consult your KVK or RSK."
     )
     kvk_fallback_message_kn: str = (
-        "ಖಚಿತ ಕ್ಯಾಲೆಂಡರ್ ದಿನಾಂಕಗಳು ಮತ್ತು ಮಳೆ ನಿರೋಧಕ ಒಣಗುವ ಸಮಯವು ಸ್ಥಳೀಯ ಹವಾಮಾನಕ್ಕೆ ಅನುಗುಣವಾಗಿ ಬದಲಾಗುತ್ತವೆ "
-        "ಮತ್ತು ಐಸಿಎಆರ್-ಸಿಪಿಸಿಆರ್‌ಐ ಪ್ರಕಟಣೆಗಳಲ್ಲಿ ನಿಶ್ಚಿತ ಮಿತಿಯಾಗಿ ನಮೂದಿಸಿಲ್ಲ. ಸ್ಥಳೀಯ ಮಾರ್ಗದರ್ಶನಕ್ಕಾಗಿ "
-        "ನಿಮ್ಮ ಹತ್ತಿರದ ಕೃಷಿ ವಿಜ್ಞಾನ ಕೇಂದ್ರ (ಕೆವಿಕೆ) ಅಥವಾ ರೈತ ಸಂಪರ್ಕ ಕೇಂದ್ರವನ್ನು (ಆರ್‌ಎಸ್‌ಕೆ) ಸಂಪರ್ಕಿಸಿ."
+        "ಈ ಆ್ಯಪ್‌ನಲ್ಲಿ ಬಳಸಲಾದ ದಾಖಲೆಗಳಲ್ಲಿ ಇದಕ್ಕೆ ನಿರ್ದಿಷ್ಟ ಸಂಖ್ಯೆ ಅಥವಾ ದಿನಾಂಕ ನೀಡಿಲ್ಲ. ದಯವಿಟ್ಟು ನಿಮ್ಮ ಕೆವಿಕೆ ಅಥವಾ ಆರ್‌ಎಸ್‌ಕೆ ಸಂಪರ್ಕಿಸಿ."
     )
 
 

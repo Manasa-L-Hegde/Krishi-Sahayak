@@ -19,7 +19,7 @@ TOP_K = 4
 def check_abstention_intent(question: str) -> tuple[bool, str]:
     """
     Detect questions asking for fixed calendar spray dates or rainfast drying hours,
-    which ICAR-CPCRI does not prescribe as fixed values.
+    which the official documents used by this app do not prescribe as fixed figures.
     Returns (should_abstain, response_text).
     """
     q_lower = question.lower()
@@ -27,46 +27,81 @@ def check_abstention_intent(question: str) -> tuple[bool, str]:
     # 1. Calendar dates detection (EN and KN)
     calendar_patterns = [
         "calendar date", "which date", "exact date", "what date", "calendar day",
-        "ಕ್ಯಾಲೆಂಡರ್", "ದಿನಾಂಕ", "ಯಾವ ದಿನಾಂಕ", "ಖಚಿತ ದಿನಾಂಕ", "ಕ್ಯಾಲೆಂಡರ್ ದಿನಾಂಕ"
+        "which month", "what day",
+        "ಕ್ಯಾಲೆಂಡರ್", "ದಿನಾಂಕ", "ಯಾವ ದಿನಾಂಕ", "ಖಚಿತ ದಿನಾಂಕ", "ಕ್ಯಾಲೆಂಡರ್ ದಿನಾಂಕ", "ಯಾವ ತಾರೀಖು", "ಯಾವ ತಿಂಗಳು"
     ]
     is_calendar = any(p in q_lower for p in calendar_patterns)
 
-    # 2. Rainfast / dry hours detection (EN and KN)
+    # 2. Rainfast / dry hours detection (EN and KN) including paraphrases
     dry_hours_patterns = [
         "hours dry", "dry hours", "stay dry", "how many hours", "hours after spray",
         "rainfast", "drying time", "dry time", "hours needed",
-        "ಎಷ್ಟು ಗಂಟೆ", "ಒಣ ಗಂಟೆ", "ಒಣಗಲು ಎಷ್ಟು ಸಮಯ", "ಮಳೆ ಬರುವ ಮುನ್ನ ಎಷ್ಟು ಗಂಟೆ"
+        "how long should it not rain", "how long must it not rain", "how long before it rains",
+        "how long before rain", "rain free hours", "rain-free hours", "dry period",
+        "drying hours", "how long dry",
+        "ಎಷ್ಟು ಗಂಟೆ", "ಒಣ ಗಂಟೆ", "ಒಣಗಲು ಎಷ್ಟು ಸಮಯ", "ಮಳೆ ಬರುವ ಮುನ್ನ", "ಮಳೆ ಬರಬಾರದು", "ಎಷ್ಟು ಹೊತ್ತು ಮಳೆ", "ಎಷ್ಟು ಕಾಲ ಮಳೆ"
     ]
     is_dry_hours = any(p in q_lower for p in dry_hours_patterns)
 
     # Check if the query is in arecanut / spray context
-    crop_context = any(c in q_lower for c in ["arecanut", "koleroga", "mahali", "bordeaux", "spray", "ಅಡಿಕೆ", "ಕೊಳೆರೋಗ", "ಬೋರ್ಡೋ", "ಸಿಂಪರಣೆ"])
+    crop_context = any(c in q_lower for c in [
+        "arecanut", "koleroga", "mahali", "bordeaux", "spray", "spraying",
+        "ಅಡಿಕೆ", "ಕೊಳೆರೋಗ", "ಬೋರ್ಡೋ", "ಸಿಂಪರಣೆ", "ಸಿಂಪಡ"
+    ])
 
     if (is_calendar or is_dry_hours) and crop_context:
-        msg_en = (
-            "ICAR-CPCRI publications do not prescribe fixed calendar dates or fixed rainfast dry hours. "
-            "Timing strictly depends on localized pre-monsoon showers and weather breaks. "
-            "Please consult your local Krishi Vigyan Kendra (KVK) or Raitha Samparka Kendra (RSK) for localized guidance."
-        )
-        msg_kn = (
-            "ಐಸಿಎಆರ್-ಸಿಪಿಸಿಆರ್‌ಐ ಪ್ರಕಟಣೆಗಳಲ್ಲಿ ನಿರ್ದಿಷ್ಟ ಕ್ಯಾಲೆಂಡರ್ ದಿನಾಂಕಗಳು ಅಥವಾ ಮಳೆ ನಿರೋಧಕ ಒಣಗುವ ಗಂಟೆಗಳನ್ನು ನಿಗದಿಪಡಿಸಿಲ್ಲ. "
-            "ಸಿಂಪರಣೆಯು ಮುಂಗಾರು ಪೂರ್ವ ಮಳೆ ಮತ್ತು ಸ್ಥಳೀಯ ಹವಾಮಾನ ಬಿಡುವನ್ನು ಅವಲಂಬಿಸಿರುತ್ತದೆ. "
-            "ದಯವಿಟ್ಟು ಸ್ಥಳೀಯ ಮಾರ್ಗದರ್ಶನಕ್ಕಾಗಿ ನಿಮ್ಮ ಹತ್ತಿರದ ಕೃಷಿ ವಿಜ್ಞಾನ ಕೇಂದ್ರ (ಕೆವಿಕೆ) ಅಥವಾ ರೈತ ಸಂಪರ್ಕ ಕೇಂದ್ರವನ್ನು (ಆರ್‌ಎಸ್‌ಕೆ) ಸಂಪರ್ಕಿಸಿ."
-        )
+        msg_en = "The documents used by this app do not give a figure for this. Please consult your KVK or RSK."
+        msg_kn = "ಈ ಆ್ಯಪ್‌ನಲ್ಲಿ ಬಳಸಲಾದ ದಾಖಲೆಗಳಲ್ಲಿ ಇದಕ್ಕೆ ನಿರ್ದಿಷ್ಟ ಸಂಖ್ಯೆ ಅಥವಾ ದಿನಾಂಕ ನೀಡಿಲ್ಲ. ದಯವಿಟ್ಟು ನಿಮ್ಮ ಕೆವಿಕೆ ಅಥವಾ ಆರ್‌ಎಸ್‌ಕೆ ಸಂಪರ್ಕಿಸಿ."
         is_kn = any(ord(char) >= 0x0C80 and ord(char) <= 0x0CFF for char in question)
         return True, msg_kn if is_kn else msg_en
 
     return False, ""
 
 
+def check_yellow_leaf_disease_intent(question: str) -> tuple[bool, str]:
+    """
+    According to ICAR-CPCRI (Extension Pub. No. 69), Yellow Leaf Disease of arecanut
+    is caused by a phytoplasma and is not amenable to control by conventional plant
+    protection measures. Chemical sprays like Bordeaux mixture must NEVER be recommended for it.
+    Instead, garden management (NPK fertilizers, organic manure, drainage, cover crops) is recommended.
+    """
+    q_lower = question.lower()
+    is_yellow_leaf = any(k in q_lower for k in [
+        "yellow leaf", "leaves are yellow", "leaf yellowing", "yellowing of leaves",
+        "leaves yellow", "leaf is yellow",
+        "ಎಲೆ ಹಳದಿ", "ಹಳದಿ ಎಲೆ", "ಹಳದಿಯಾಗಿದೆ"
+    ])
+    is_arecanut = any(k in q_lower for k in ["arecanut", "areca", "palm", "ಮರ", "ಅಡಿಕೆ"])
+    if is_yellow_leaf and is_arecanut:
+        msg_en = (
+            "According to ICAR-CPCRI Extension Publication No. 69, Yellow Leaf Disease of arecanut is "
+            "caused by a phytoplasma and is NOT amenable to control by conventional chemical spraying (do NOT spray Bordeaux mixture). "
+            "The recommended measure is proper garden management: regular application of balanced fertilizers (100g N, 40g P, 140g K per palm/year in two splits), "
+            "additional Mussoorie phos (800g/palm), organic manures and green leaf (12kg each/palm/year), and ensuring good drainage. "
+            "Please consult your local Krishi Vigyan Kendra (KVK) for localized diagnosis."
+        )
+        msg_kn = (
+            "ಐಸಿಎಆರ್-ಸಿಪಿಸಿಆರ್‌ಐ ವಿಸ್ತರಣಾ ಪ್ರಕಟಣೆ 69 ರ ಪ್ರಕಾರ, ಅಡಿಕೆ ಮರದ ಹಳದಿ ಎಲೆ ರೋಗವು ಫೈಟೋಪ್ಲಾಸ್ಮಾದಿಂದ ಬರುತ್ತದೆ ಮತ್ತು "
+            "ಇದಕ್ಕೆ ಸಾಂಪ್ರದಾಯಿಕ ರಾಸಾಯನಿಕ ಸಿಂಪರಣೆ ಪರಿಣಾಮಕಾರಿಯಲ್ಲ (ಬೋರ್ಡೋ ದ್ರಾವಣವನ್ನು ಸಿಂಪಡಿಸಬಾರದು). "
+            "ಇದಕ್ಕೆ ತೋಟದ ನಿರ್ವಹಣೆ ಶಿಫಾರಸು ಮಾಡಲಾಗಿದೆ: ಸಮತೋಲಿತ ಗೊಬ್ಬರ (ಪ್ರತಿ ಮರಕ್ಕೆ 100 ಗ್ರಾಂ ಸಾರಜನಕ, 40 ಗ್ರಾಂ ರಂಜಕ, 140 ಗ್ರಾಂ ಪೊಟ್ಯಾಷ್), "
+            "ಹೆಚ್ಚುವರಿ ಮಸ್ಸೋರಿ ಫಾಸ್ (800 ಗ್ರಾಂ), ಸಾವಯವ ಗೊಬ್ಬರ ಮತ್ತು ಹಸಿರೆಲೆ ಗೊಬ್ಬರ (ತಲಾ 12 ಕೆ.ಜಿ) ನೀಡುವುದು ಹಾಗೂ ಉತ್ತಮ ನೀರು ಬಸಿದುಹೋಗುವ ವ್ಯವಸ್ಥೆ ಮಾಡುವುದು. "
+            "ದಯವಿಟ್ಟು ಹೆಚ್ಚಿನ ಮಾಹಿತಿಗಾಗಿ ಸ್ಥಳೀಯ ಕೃಷಿ ವಿಜ್ಞಾನ ಕೇಂದ್ರವನ್ನು (ಕೆವಿಕೆ) ಸಂಪರ್ಕಿಸಿ."
+        )
+        is_kn = any(ord(char) >= 0x0C80 and ord(char) <= 0x0CFF for char in question)
+        return True, msg_kn if is_kn else msg_en
+    return False, ""
+
+
 def verify_numeric_grounding(answer_text: str, context_text: str) -> bool:
     """
-    Verify that every numeric token or percentage in the generated answer appears in the retrieved context.
-    Prevents hallucinated doses, percentages, intervals, or hours.
+    Verify that every numeric token or percentage in the generated answer exists as an exact
+    token in the retrieved context. Prevents hallucinated doses, percentages, intervals, or hours.
+    Comparing whole tokens ensures that e.g. '4' does not falsely match inside '40-45'.
     """
+    context_numbers = set(re.findall(r"\b\d+(?:\.\d+)?%?\b", context_text))
     answer_numbers = re.findall(r"\b\d+(?:\.\d+)?%?\b", answer_text)
     for num in answer_numbers:
-        if num not in context_text:
+        if num not in context_numbers:
             return False
     return True
 
@@ -84,17 +119,45 @@ class LocalRAG:
         self.embedder = SentenceTransformer(MODEL_NAME)
         self.chunks = json.loads((directory / "chunks.json").read_text(encoding="utf-8"))
 
-    def retrieve(self, question: str, k: int = TOP_K) -> list[dict[str, Any]]:
+    def retrieve(self, question: str, k: int = TOP_K, language: str | None = None) -> list[dict[str, Any]]:
+        is_kn = any(ord(char) >= 0x0C80 and ord(char) <= 0x0CFF for char in question)
+        target_lang = "kn" if is_kn else "en"
+        if language:
+            target_lang = "kn" if language.lower().startswith("kn") or language.lower().startswith("kann") else "en"
+
         vector = self.embedder.encode([question], normalize_embeddings=True).astype("float32")
-        scores, indices = self.index.search(vector, k)
-        return [{**self.chunks[int(index)], "similarity": float(score)} for score, index in zip(scores[0], indices[0]) if index >= 0]
+        scores, indices = self.index.search(vector, k * 3)
+        results = []
+        for score, index in zip(scores[0], indices[0]):
+            if index >= 0:
+                chunk = self.chunks[int(index)]
+                chunk_id = chunk.get("id", "")
+                chunk_text_sample = chunk.get("text", "")
+                is_chunk_kn = "-KN" in chunk_id or any(ord(char) >= 0x0C80 and ord(char) <= 0x0CFF for char in chunk_text_sample)
+                if is_chunk_kn and target_lang == "en":
+                    continue
+                if not is_chunk_kn and target_lang == "kn" and "-EN" in chunk_id:
+                    continue
+                results.append({**chunk, "similarity": float(score)})
+                if len(results) >= k:
+                    break
+        return results
 
     def answer(self, question: str, language: str | None = None) -> dict[str, Any]:
         should_abstain, abstention_msg = check_abstention_intent(question)
         if should_abstain:
             return {"answer": abstention_msg, "sources": [], "grounded": False, "fallback": True}
 
-        hits = self.retrieve(question)
+        is_yellow, yellow_msg = check_yellow_leaf_disease_intent(question)
+        if is_yellow:
+            return {
+                "answer": yellow_msg,
+                "sources": ["Disease Management Strategies in Arecanut and Cocoa (Extension Publication No. 69, 1999, p. 4)"],
+                "grounded": True,
+                "fallback": False
+            }
+
+        hits = self.retrieve(question, language=language)
         qualifying = [hit for hit in hits if hit["similarity"] >= THRESHOLD]
         if not qualifying:
             return {"answer": FALLBACK, "sources": [], "grounded": False, "fallback": True}
@@ -113,6 +176,13 @@ class LocalRAG:
                 messages=[{"role": "system", "content": "You are a strictly grounded agricultural information assistant."},
                           {"role": "user", "content": prompt}], temperature=0)
             content = response.choices[0].message.content or ""
+            lower_content = content.lower()
+            if any(phrase in lower_content for phrase in [
+                "does not contain", "do not contain", "does not provide", "do not provide",
+                "does not mention", "do not mention", "no information", "not found in the context"
+            ]):
+                return {"answer": FALLBACK, "sources": sorted({hit["source"] for hit in qualifying}),
+                        "grounded": False, "fallback": True}
             # Post-generation numeric check: every number in the answer must exist in the context
             if not verify_numeric_grounding(content, context):
                 return {"answer": "The generated advisory contained unverified quantities. " + FALLBACK,
@@ -137,7 +207,17 @@ class LocalRAG:
                 "fallback": True
             }
 
-        hits = self.retrieve(question, k=TOP_K)
+        is_yellow, yellow_msg = check_yellow_leaf_disease_intent(question)
+        if is_yellow:
+            return {
+                "answer": yellow_msg,
+                "sources": ["Disease Management Strategies in Arecanut and Cocoa (Extension Publication No. 69, 1999, p. 4)"],
+                "grounded": True,
+                "verified": True,
+                "fallback": False
+            }
+
+        hits = self.retrieve(question, k=TOP_K, language=language)
         qualifying = [hit for hit in hits if hit["similarity"] >= 0.50]
 
         # For dosage, preparation, dilution, mixing, and interval queries, return the verified passage directly (extractive)

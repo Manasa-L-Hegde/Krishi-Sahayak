@@ -30,8 +30,8 @@ def test_get_spray_rule_arecanut_koleroga():
     # Verify unverified items are strictly None
     assert rule.min_dry_hours is None
     assert rule.calendar_start_dates is None
-    assert "Krishi Vigyan Kendra" in rule.kvk_fallback_message_en
-    assert "ಕೃಷಿ ವಿಜ್ಞಾನ ಕೇಂದ್ರ" in rule.kvk_fallback_message_kn
+    assert "KVK" in rule.kvk_fallback_message_en
+    assert "ಕೆವಿಕೆ" in rule.kvk_fallback_message_kn
 
     # Verify Mandipropamid dosage 1 ml/L
     assert rule.alternative_fungicide is not None

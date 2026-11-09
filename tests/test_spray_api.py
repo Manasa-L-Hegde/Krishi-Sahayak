@@ -153,7 +153,7 @@ def test_spray_advise_endpoint_kannada():
         assert resp.status_code == 200
         data = resp.json()
         assert "ಬೋರ್ಡೋ" in data["agronomy"]["fungicide_name"]
-        assert "ಕೃಷಿ ವಿಜ್ಞಾನ ಕೇಂದ್ರ" in data["kvk_guidance"]
+        assert "ಕೆವಿಕೆ" in data["kvk_guidance"]
         assert "ಸುರಕ್ಷತಾ ಸಲಹೆ:" in data["safety_footer"]
         assert "ಸಲಹಾತ್ಮಕ ಡೀಫಾಲ್ಟ್ ಮಿತಿಗಳು" in data["disclaimer"]
         assert "ಕಬ್ಬಿಣದ ಚಾಕು" in data["agronomy"]["quality_test"]

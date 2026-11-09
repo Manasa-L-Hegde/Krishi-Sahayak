@@ -20,6 +20,12 @@
   </form>
   <h2>Result</h2><pre id="result">Submit the example values to see a prediction.</pre>
   <h2>Government agricultural advisory</h2>
+  {% if pilot_mode %}
+  <div style="background: #fff3cd; color: #856404; padding: 0.75rem 1rem; border-radius: 4px; margin: 1rem 0; border: 1px solid #ffeeba;">
+    <strong>🔒 Field Pilot Mode Active:</strong> Free-text agricultural Q&A is disabled for the field pilot.
+    Please use the <a href="/spray" style="color: #533f03; font-weight: bold; text-decoration: underline;">Krishi Sahayak Spray Timing Advisor</a> for deterministic, ICAR-grounded spray scheduling.
+  </div>
+  {% else %}
   <form id="advisory-form">
     <label>Question<input name="question" type="text" value="What is PM-KISAN?" required></label>
     <label>Language<select name="language"><option>English</option><option>Kannada</option></select></label>
@@ -27,6 +33,7 @@
   </form>
   <pre id="advisory-result">Ask a question to search the verified government corpus.</pre>
   <p><small>Limitation: this matches a fixed dataset; it is not live agronomic simulation.</small></p>
+  {% endif %}
   <script>
     document.getElementById('prediction-form').addEventListener('submit', async function (event) {
       event.preventDefault();
