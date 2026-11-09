@@ -16,6 +16,61 @@ THRESHOLD = 0.59
 TOP_K = 4
 
 
+def check_abstention_intent(question: str) -> tuple[bool, str]:
+    """
+    Detect questions asking for fixed calendar spray dates or rainfast drying hours,
+    which ICAR-CPCRI does not prescribe as fixed values.
+    Returns (should_abstain, response_text).
+    """
+    q_lower = question.lower()
+
+    # 1. Calendar dates detection (EN and KN)
+    calendar_patterns = [
+        "calendar date", "which date", "exact date", "what date", "calendar day",
+        "ಕ್ಯಾಲೆಂಡರ್", "ದಿನಾಂಕ", "ಯಾವ ದಿನಾಂಕ", "ಖಚಿತ ದಿನಾಂಕ", "ಕ್ಯಾಲೆಂಡರ್ ದಿನಾಂಕ"
+    ]
+    is_calendar = any(p in q_lower for p in calendar_patterns)
+
+    # 2. Rainfast / dry hours detection (EN and KN)
+    dry_hours_patterns = [
+        "hours dry", "dry hours", "stay dry", "how many hours", "hours after spray",
+        "rainfast", "drying time", "dry time", "hours needed",
+        "ಎಷ್ಟು ಗಂಟೆ", "ಒಣ ಗಂಟೆ", "ಒಣಗಲು ಎಷ್ಟು ಸಮಯ", "ಮಳೆ ಬರುವ ಮುನ್ನ ಎಷ್ಟು ಗಂಟೆ"
+    ]
+    is_dry_hours = any(p in q_lower for p in dry_hours_patterns)
+
+    # Check if the query is in arecanut / spray context
+    crop_context = any(c in q_lower for c in ["arecanut", "koleroga", "mahali", "bordeaux", "spray", "ಅಡಿಕೆ", "ಕೊಳೆರೋಗ", "ಬೋರ್ಡೋ", "ಸಿಂಪರಣೆ"])
+
+    if (is_calendar or is_dry_hours) and crop_context:
+        msg_en = (
+            "ICAR-CPCRI publications do not prescribe fixed calendar dates or fixed rainfast dry hours. "
+            "Timing strictly depends on localized pre-monsoon showers and weather breaks. "
+            "Please consult your local Krishi Vigyan Kendra (KVK) or Raitha Samparka Kendra (RSK) for localized guidance."
+        )
+        msg_kn = (
+            "ಐಸಿಎಆರ್-ಸಿಪಿಸಿಆರ್‌ಐ ಪ್ರಕಟಣೆಗಳಲ್ಲಿ ನಿರ್ದಿಷ್ಟ ಕ್ಯಾಲೆಂಡರ್ ದಿನಾಂಕಗಳು ಅಥವಾ ಮಳೆ ನಿರೋಧಕ ಒಣಗುವ ಗಂಟೆಗಳನ್ನು ನಿಗದಿಪಡಿಸಿಲ್ಲ. "
+            "ಸಿಂಪರಣೆಯು ಮುಂಗಾರು ಪೂರ್ವ ಮಳೆ ಮತ್ತು ಸ್ಥಳೀಯ ಹವಾಮಾನ ಬಿಡುವನ್ನು ಅವಲಂಬಿಸಿರುತ್ತದೆ. "
+            "ದಯವಿಟ್ಟು ಸ್ಥಳೀಯ ಮಾರ್ಗದರ್ಶನಕ್ಕಾಗಿ ನಿಮ್ಮ ಹತ್ತಿರದ ಕೃಷಿ ವಿಜ್ಞಾನ ಕೇಂದ್ರ (ಕೆವಿಕೆ) ಅಥವಾ ರೈತ ಸಂಪರ್ಕ ಕೇಂದ್ರವನ್ನು (ಆರ್‌ಎಸ್‌ಕೆ) ಸಂಪರ್ಕಿಸಿ."
+        )
+        is_kn = any(ord(char) >= 0x0C80 and ord(char) <= 0x0CFF for char in question)
+        return True, msg_kn if is_kn else msg_en
+
+    return False, ""
+
+
+def verify_numeric_grounding(answer_text: str, context_text: str) -> bool:
+    """
+    Verify that every numeric token or percentage in the generated answer appears in the retrieved context.
+    Prevents hallucinated doses, percentages, intervals, or hours.
+    """
+    answer_numbers = re.findall(r"\b\d+(?:\.\d+)?%?\b", answer_text)
+    for num in answer_numbers:
+        if num not in context_text:
+            return False
+    return True
+
+
 def chunk_text(text: str, words_per_chunk: int = 350, overlap: int = 60) -> list[str]:
     words = re.findall(r"\S+", text)
     step = words_per_chunk - overlap
@@ -35,6 +90,10 @@ class LocalRAG:
         return [{**self.chunks[int(index)], "similarity": float(score)} for score, index in zip(scores[0], indices[0]) if index >= 0]
 
     def answer(self, question: str, language: str | None = None) -> dict[str, Any]:
+        should_abstain, abstention_msg = check_abstention_intent(question)
+        if should_abstain:
+            return {"answer": abstention_msg, "sources": [], "grounded": False, "fallback": True}
+
         hits = self.retrieve(question)
         qualifying = [hit for hit in hits if hit["similarity"] >= THRESHOLD]
         if not qualifying:
@@ -50,21 +109,52 @@ class LocalRAG:
                   f"CONTEXT:\n{context}\n\nQUESTION: {question}")
         try:
             response = Groq(api_key=api_key).chat.completions.create(
-                model=os.getenv("GROQ_MODEL", "openai/gpt-oss-20b"),
+                model=os.getenv("GROQ_MODEL", "llama-3.1-8b-instant"),
                 messages=[{"role": "system", "content": "You are a strictly grounded agricultural information assistant."},
                           {"role": "user", "content": prompt}], temperature=0)
+            content = response.choices[0].message.content or ""
+            # Post-generation numeric check: every number in the answer must exist in the context
+            if not verify_numeric_grounding(content, context):
+                return {"answer": "The generated advisory contained unverified quantities. " + FALLBACK,
+                        "sources": sorted({hit["source"] for hit in qualifying}), "grounded": False, "fallback": True}
+            return {"answer": content, "sources": sorted({hit["source"] for hit in qualifying}),
+                    "grounded": True, "fallback": False}
         except Exception:
             return {"answer": "The advisory service is unavailable. " + FALLBACK,
                     "sources": sorted({hit["source"] for hit in qualifying}), "grounded": False, "fallback": True}
-        return {"answer": response.choices[0].message.content, "sources": sorted({hit["source"] for hit in qualifying}),
-                "grounded": True, "fallback": False}
 
     def ask_expert(self, question: str, language: str = "English") -> dict[str, Any]:
         """Answers agricultural questions thoroughly.
         If verified corpus matches are found, it grounds the answer in those official documents.
         If general farming advice is needed, it provides expert agronomic guidance through Groq."""
+        should_abstain, abstention_msg = check_abstention_intent(question)
+        if should_abstain:
+            return {
+                "answer": abstention_msg,
+                "sources": [],
+                "grounded": False,
+                "verified": False,
+                "fallback": True
+            }
+
         hits = self.retrieve(question, k=TOP_K)
         qualifying = [hit for hit in hits if hit["similarity"] >= 0.50]
+
+        # For dosage, preparation, dilution, mixing, and interval queries, return the verified passage directly (extractive)
+        is_dose_prep_timing = any(kw in question.lower() for kw in [
+            "dose", "proportion", "prepare", "preparation", "mix", "how to make", "interval", "percent", "%",
+            "gauge", "polythene", "bunch cover", "vessel", "knife", "blade", "ತಯಾರಿಕೆ", "ಪ್ರಮಾಣ", "ಅಳತೆ", "ದಿನ", "ಗೇಜ್", "ಚೀಲ", "ಪಾತ್ರೆ", "ಚಾಕು"
+        ])
+        if qualifying and is_dose_prep_timing:
+            top = qualifying[0]
+            return {
+                "answer": f"{top['text']}\n\n[Official Source: {top['source']}]",
+                "sources": sorted({hit["source"] for hit in qualifying}),
+                "grounded": True,
+                "verified": True,
+                "fallback": False
+            }
+
         api_key = os.getenv("GROQ_API_KEY")
 
         if qualifying:
