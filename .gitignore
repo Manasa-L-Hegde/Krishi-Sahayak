@@ -9,5 +9,8 @@ __pycache__/
 *.log
 data/raw/*.csv
 logs/
-genai/corpus/15.html
+diagnostics/page2_raw.png
+genai/corpus/*.html
+genai/corpus/*.pdf
 genai/corpus/downloads/*.html
+genai/corpus/downloads/*.pdf

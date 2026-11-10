@@ -155,7 +155,7 @@ def test_rag_retrieval_and_refusal_eval():
     data_out = resp_out.json()
     assert data_out["fallback"] is True
     assert data_out["grounded"] is False
-    assert "don't have verified information" in data_out["answer"]
+    assert any(p in data_out["answer"] for p in ["could not find a matching passage", "don't have verified information"])
 
     # 2. Abstention verification: ungrounded arecanut queries (dry hours, calendar dates, and paraphrases)
     # Must fail closed: trigger fallback and state the documents used by this app do not give a figure.

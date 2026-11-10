@@ -64,8 +64,25 @@ APPROVED_EDITS = {
         ],
     },
     "CURATED-03-EN": {
-        "label_prefix": "",
-        "ocr_repairs": [],
+        "label_prefix": "ICAR-CPCRI Koleroga Advisory (Aug 9, 2024): 1. ",
+        "ocr_repairs": [
+            (
+                "Therefore, it is important to take up control measures timely whenever there is a break in rainfall, a CPCRI release said. It advised farmers to spray 1% Bordeaux mixture or Mandipropamid 23.4% SC (1 ml per litre) to all the bunches even if fruit rot has not yet been noticed in the plantation.",
+                "Take up control measures timely whenever there is a break in rainfall. 2. Spray 1% Bordeaux mixture or Mandipropamid 23.4% SC (1 ml per litre) to all bunches even if fruit rot is not yet noticed.",
+            ),
+            (
+                "Wherever the fruit rot has already been noticed in severe form, spray on both crown and bud regions to protect the trees from bud and crown rot.",
+                "3. Wherever fruit rot has already been noticed in severe form, spray both crown and bud regions to protect trees from bud and crown rot.",
+            ),
+            (
+                "Do not mix any other fungicides/pesticides/nutrients.",
+                "4. Do not mix with other fungicides, pesticides or nutrients.",
+            ),
+            (
+                "The Bordeaux mixture should be prepared fresh, the pH of the preparation should be neutral (pH 7) and it is advised to add a sticker cum spreader @1 ml per litre for spray preparation. Ensure proper mist spray of the fungicide.",
+                "5. Bordeaux mixture should be prepared fresh, neutral (pH 7), with sticker cum spreader @1 ml per litre. Ensure proper mist spray. [Source: ICAR-CPCRI release in The Hindu, Aug 9, 2024]",
+            ),
+        ],
         "punctuation_and_whitespace": [],
     },
 }

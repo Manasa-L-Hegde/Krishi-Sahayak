@@ -47,30 +47,52 @@ RATE_LIMIT_MAX = int(os.getenv("RATE_LIMIT_PER_MINUTE", "60"))
 RATE_LIMIT_WINDOW = 60.0
 
 
-@app.middleware("http")
-async def rate_limit_middleware(request: Request, call_next):
-    path = request.url.path
-    if path.startswith("/static") or path == "/health":
-        return await call_next(request)
+class RateLimitMiddleware:
+    def __init__(self, app_):
+        self.app = app_
 
-    client_ip = request.client.host if request.client else "127.0.0.1"
-    if client_ip == "testclient":
-        return await call_next(request)
-    forwarded = request.headers.get("X-Forwarded-For")
-    if forwarded:
-        client_ip = forwarded.split(",")[0].strip()
+    async def __call__(self, scope, receive, send):
+        if scope["type"] != "http":
+            await self.app(scope, receive, send)
+            return
 
-    now = time.time()
-    cutoff = now - RATE_LIMIT_WINDOW
-    timestamps = [t for t in RATE_LIMIT_RECORD[client_ip] if t > cutoff]
-    if len(timestamps) >= RATE_LIMIT_MAX:
-        return JSONResponse(
-            status_code=429,
-            content={"detail": "Too many requests. Please wait before retrying."}
-        )
-    timestamps.append(now)
-    RATE_LIMIT_RECORD[client_ip] = timestamps
-    return await call_next(request)
+        path = scope.get("path", "")
+        if path.startswith("/static") or path == "/health":
+            await self.app(scope, receive, send)
+            return
+
+        forwarded_ip = None
+        for k, v in scope.get("headers", []):
+            if k.lower() == b"x-forwarded-for":
+                forwarded_ip = v.decode("latin1").split(",")[0].strip()
+                break
+
+        if forwarded_ip:
+            client_ip = forwarded_ip
+        else:
+            client = scope.get("client")
+            client_ip = client[0] if client else "127.0.0.1"
+            if client_ip == "testclient":
+                await self.app(scope, receive, send)
+                return
+
+        now = time.time()
+        cutoff = now - RATE_LIMIT_WINDOW
+        timestamps = [t for t in RATE_LIMIT_RECORD[client_ip] if t > cutoff]
+        if len(timestamps) >= RATE_LIMIT_MAX:
+            response = JSONResponse(
+                status_code=429,
+                content={"detail": "Too many requests. Please wait before retrying."}
+            )
+            await response(scope, receive, send)
+            return
+
+        timestamps.append(now)
+        RATE_LIMIT_RECORD[client_ip] = timestamps
+        await self.app(scope, receive, send)
+
+
+app.add_middleware(RateLimitMiddleware)
 
 
 def check_pilot_mode() -> None:
@@ -125,9 +147,16 @@ def predict(payload: PredictionRequest) -> PredictionResponse:
     encoded_crop = classifier.classes_[class_index]
     crop = artifacts["label_encoder"].inverse_transform([encoded_crop])[0]
     risk_score = float(artifacts["risk_model"].predict(row)[0])
-    return PredictionResponse(crop=str(crop), confidence=float(probabilities[class_index]),
-                              risk_score=max(0.0, min(100.0, risk_score)),
-                              shap_contributions=explain_prediction(artifacts, row, class_index))
+    pilot = os.getenv("PILOT_MODE", "false").lower() in ("true", "1", "yes")
+    return PredictionResponse(
+        crop=str(crop),
+        confidence=float(probabilities[class_index]),
+        risk_score=max(0.0, min(100.0, risk_score)),
+        shap_contributions=explain_prediction(artifacts, row, class_index),
+        status_label="experimental" if pilot else "production",
+        experimental=pilot,
+        warning="EXPERIMENTAL: Soil-based pattern matching model (Phase 1); unverified for live field deployment in pilot mode." if pilot else None,
+    )
 
 
 @app.post("/dl/forecast", response_model=ForecastResponse)
@@ -143,7 +172,15 @@ def forecast(payload: ForecastRequest) -> ForecastResponse:
         raise HTTPException(status_code=422, detail="recent_prices must contain non-negative values")
     from dl.forecast import forecast_from_artifact
     forecast_prices = forecast_from_artifact(artifact["models"][commodity], payload.recent_prices)
-    return ForecastResponse(commodity=commodity, horizon_days=artifact["horizon"], forecast_prices=forecast_prices, model="LSTM")
+    pilot = os.getenv("PILOT_MODE", "false").lower() in ("true", "1", "yes")
+    return ForecastResponse(
+        commodity=commodity,
+        horizon_days=artifact["horizon"],
+        forecast_prices=forecast_prices,
+        model="LSTM",
+        status_label="experimental",
+        warning="EXPERIMENTAL: DL price forecaster (Phase 2) is a research prototype; unverified for farmer financial decisions." if pilot else None,
+    )
 
 
 @app.get("/dl/commodities-data")

@@ -10,7 +10,16 @@ import faiss
 import numpy as np
 from sentence_transformers import SentenceTransformer
 
-FALLBACK = "I don't have verified information on that — please check with your local agriculture officer"
+FALLBACK_EN = "I could not find a matching passage in the verified documents; please rephrase or consult your local KVK or RSK."
+FALLBACK_KN = "ಪರಿಶೀಲಿಸಿದ ದಾಖಲೆಗಳಲ್ಲಿ ಸೂಕ್ತ ಮಾಹಿತಿ ದೊರೆತಿಲ್ಲ; ದಯವಿಟ್ಟು ವಾಕ್ಯವನ್ನು ಬದಲಿಸಿ ಅಥವಾ ನಿಮ್ಮ ಸ್ಥಳೀಯ ಕೆವಿಕೆ / ಆರ್‌ಎಸ್‌ಕೆ ಸಂಪರ್ಕಿಸಿ."
+FALLBACK = FALLBACK_EN
+
+
+def get_low_retrieval_fallback(language: str | None = None, question: str = "") -> str:
+    is_kn = any(ord(char) >= 0x0C80 and ord(char) <= 0x0CFF for char in question)
+    if language and (language.lower().startswith("kn") or language.lower().startswith("kann")):
+        is_kn = True
+    return FALLBACK_KN if is_kn else FALLBACK_EN
 MODEL_NAME = "paraphrase-multilingual-mpnet-base-v2"
 THRESHOLD = 0.59
 TOP_K = 4
@@ -159,11 +168,25 @@ class LocalRAG:
 
         hits = self.retrieve(question, language=language)
         qualifying = [hit for hit in hits if hit["similarity"] >= THRESHOLD]
+        low_fb = get_low_retrieval_fallback(language, question)
         if not qualifying:
-            return {"answer": FALLBACK, "sources": [], "grounded": False, "fallback": True}
+            return {"answer": low_fb, "sources": [], "grounded": False, "fallback": True}
+
+        # Guard Kannada free-text generation until recall improves
+        is_kn = any(ord(char) >= 0x0C80 and ord(char) <= 0x0CFF for char in question)
+        if language and (language.lower().startswith("kn") or language.lower().startswith("kann")):
+            is_kn = True
+        if is_kn:
+            return {
+                "answer": "ಕನ್ನಡ ಮುಕ್ತ ಪ್ರಶ್ನೋತ್ತರ ವ್ಯವಸ್ಥೆಯನ್ನು ನಿಖರತೆ ಸುಧಾರಣೆಗಾಗಿ ತಾತ್ಕಾಲಿಕವಾಗಿ ಸ್ಥಗಿತಗೊಳಿಸಲಾಗಿದೆ. ದಯವಿಟ್ಟು /spray ಪುಟದಲ್ಲಿ ಅಧಿಕೃತ ಸಿಂಪರಣಾ ಸಲಹೆ ಪಡೆಯಿರಿ ಅಥವಾ ಸ್ಥಳೀಯ ಕೆವಿಕೆ ಸಂಪರ್ಕಿಸಿ.",
+                "sources": sorted({hit["source"] for hit in qualifying}),
+                "grounded": False,
+                "fallback": True,
+            }
+
         api_key = os.getenv("GROQ_API_KEY")
         if not api_key:
-            return {"answer": "Verified context was retrieved, but no Groq API key is configured. " + FALLBACK,
+            return {"answer": "Verified context was retrieved, but no Groq API key is configured. " + low_fb,
                     "sources": sorted({hit["source"] for hit in qualifying}), "grounded": False, "fallback": True}
         from groq import Groq
         context = "\n\n".join(f"SOURCE: {hit['source']}\n{hit['text']}" for hit in qualifying)
@@ -181,16 +204,16 @@ class LocalRAG:
                 "does not contain", "do not contain", "does not provide", "do not provide",
                 "does not mention", "do not mention", "no information", "not found in the context"
             ]):
-                return {"answer": FALLBACK, "sources": sorted({hit["source"] for hit in qualifying}),
+                return {"answer": low_fb, "sources": sorted({hit["source"] for hit in qualifying}),
                         "grounded": False, "fallback": True}
             # Post-generation numeric check: every number in the answer must exist in the context
             if not verify_numeric_grounding(content, context):
-                return {"answer": "The generated advisory contained unverified quantities. " + FALLBACK,
+                return {"answer": "The generated advisory contained unverified quantities. " + low_fb,
                         "sources": sorted({hit["source"] for hit in qualifying}), "grounded": False, "fallback": True}
             return {"answer": content, "sources": sorted({hit["source"] for hit in qualifying}),
                     "grounded": True, "fallback": False}
         except Exception:
-            return {"answer": "The advisory service is unavailable. " + FALLBACK,
+            return {"answer": "The advisory service is unavailable. " + low_fb,
                     "sources": sorted({hit["source"] for hit in qualifying}), "grounded": False, "fallback": True}
 
     def ask_expert(self, question: str, language: str = "English") -> dict[str, Any]:
@@ -218,7 +241,17 @@ class LocalRAG:
             }
 
         hits = self.retrieve(question, k=TOP_K, language=language)
-        qualifying = [hit for hit in hits if hit["similarity"] >= 0.50]
+        qualifying = [hit for hit in hits if hit["similarity"] >= THRESHOLD]
+
+        if not qualifying:
+            fb = get_low_retrieval_fallback(language, question)
+            return {
+                "answer": fb,
+                "sources": [],
+                "grounded": False,
+                "verified": False,
+                "fallback": True,
+            }
 
         # For dosage, preparation, dilution, mixing, and interval queries, return the verified passage directly (extractive)
         is_dose_prep_timing = any(kw in question.lower() for kw in [
@@ -235,55 +268,38 @@ class LocalRAG:
                 "fallback": False
             }
 
-        api_key = os.getenv("GROQ_API_KEY")
-
-        if qualifying:
-            sources = sorted({hit["source"] for hit in qualifying})
-            context = "\n\n".join(f"SOURCE: {hit['source']}\n{hit['text']}" for hit in qualifying)
-            prompt = (
-                f"You are Krishi Sahayak (ಕೃಷಿ ಸಹಾಯಕ), an expert senior agricultural advisor for Indian farmers.\n"
-                f"The farmer asked in {language}: '{question}'\n\n"
-                f"Use the verified government/ICAR context below as your primary reference, and supplement with accurate, "
-                f"practical farming best practices if needed.\n"
-                f"CONTEXT:\n{context}\n\n"
-                f"Provide a clear, respectful, and well-structured answer in {language}. "
-                f"Use bullet points and bold key terms. Explicitly mention official scheme benefits or ICAR guidelines if relevant."
-            )
-            grounded = True
-            verified_label = True
-        else:
-            sources = ["General Agricultural Advisory (ICAR & KVK Best Practices)"]
-            prompt = (
-                f"You are Krishi Sahayak (ಕೃಷಿ ಸಹಾಯಕ), a compassionate and highly experienced senior agricultural scientist "
-                f"and agronomist dedicated to helping Indian farmers.\n"
-                f"The farmer has asked this question: '{question}'\n\n"
-                f"Provide comprehensive, practical, step-by-step agricultural guidance tailored to Indian farming conditions.\n"
-                f"Include:\n"
-                f"1. Direct answer and practical solution\n"
-                f"2. Best practices (recommended varieties, organic options/Jeevamrutha, or IPM methods where applicable)\n"
-                f"3. Timing, dosage, or soil/water management tips\n"
-                f"4. Preventative measures\n\n"
-                f"Language required: {language}. Ensure the tone is warm, encouraging, and easy for a farmer to understand. "
-                f"Use bullet points for readability."
-            )
-            grounded = True
-            verified_label = False
-
-        if not api_key:
-            if qualifying:
-                return {
-                    "answer": f"**Verified Information Found ({', '.join(sources)}):**\n\n" + qualifying[0]["text"][:600] + "...",
-                    "sources": sources,
-                    "grounded": True,
-                    "verified": True,
-                    "fallback": False
-                }
+        is_kn = any(ord(char) >= 0x0C80 and ord(char) <= 0x0CFF for char in question)
+        if language and (language.lower().startswith("kn") or language.lower().startswith("kann")):
+            is_kn = True
+        if is_kn:
             return {
-                "answer": "Krishi Sahayak is ready to assist you. Please ensure the GROQ_API_KEY is active in your .env file to enable full interactive AI advisory, or visit your nearest Krishi Vigyan Kendra (KVK).",
-                "sources": ["Local KVK Advisory"],
+                "answer": "ಕನ್ನಡ ಮುಕ್ತ ಪ್ರಶ್ನೋತ್ತರ ವ್ಯವಸ್ಥೆಯನ್ನು ನಿಖರತೆ ಸುಧಾರಣೆಗಾಗಿ ತಾತ್ಕಾಲಿಕವಾಗಿ ಸ್ಥಗಿತಗೊಳಿಸಲಾಗಿದೆ. ದಯವಿಟ್ಟು /spray ಪುಟದಲ್ಲಿ ಅಧಿಕೃತ ಸಿಂಪರಣಾ ಸಲಹೆ ಪಡೆಯಿರಿ ಅಥವಾ ಸ್ಥಳೀಯ ಕೆವಿಕೆ ಸಂಪರ್ಕಿಸಿ.",
+                "sources": sorted({hit["source"] for hit in qualifying}),
                 "grounded": False,
                 "verified": False,
-                "fallback": True
+                "fallback": True,
+            }
+
+        api_key = os.getenv("GROQ_API_KEY")
+        sources = sorted({hit["source"] for hit in qualifying})
+        context = "\n\n".join(f"SOURCE: {hit['source']}\n{hit['text']}" for hit in qualifying)
+        prompt = (
+            f"You are Krishi Sahayak (ಕೃಷಿ ಸಹಾಯಕ), an expert senior agricultural advisor for Indian farmers.\n"
+            f"The farmer asked in {language}: '{question}'\n\n"
+            f"Use the verified government/ICAR context below as your primary reference, and supplement with accurate, "
+            f"practical farming best practices if needed.\n"
+            f"CONTEXT:\n{context}\n\n"
+            f"Provide a clear, respectful, and well-structured answer in {language}. "
+            f"Use bullet points and bold key terms. Explicitly mention official scheme benefits or ICAR guidelines if relevant."
+        )
+
+        if not api_key:
+            return {
+                "answer": f"**Verified Information Found ({', '.join(sources)}):**\n\n" + qualifying[0]["text"][:600] + "...",
+                "sources": sources,
+                "grounded": True,
+                "verified": True,
+                "fallback": False
             }
 
         from groq import Groq

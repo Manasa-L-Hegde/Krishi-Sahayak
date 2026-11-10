@@ -1,0 +1,11 @@
+.venv/
+__pycache__/
+*.pyc
+.git/
+.pytest_cache/
+*.log
+*.tmp
+diagnostics/*.png
+diagnostics/*.csv
+genai/corpus/*.pdf
+genai/corpus/*.html

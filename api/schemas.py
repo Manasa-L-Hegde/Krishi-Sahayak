@@ -25,6 +25,9 @@ class PredictionResponse(BaseModel):
     confidence: float
     risk_score: float
     shap_contributions: list[ShapContribution]
+    status_label: str = "production"
+    experimental: bool = False
+    warning: str | None = None
 
 
 class ForecastRequest(BaseModel):
@@ -37,6 +40,8 @@ class ForecastResponse(BaseModel):
     horizon_days: int
     forecast_prices: list[float]
     model: str
+    status_label: str = "experimental"
+    warning: str | None = None
 
 
 class AdvisoryRequest(BaseModel):

@@ -90,7 +90,7 @@ def test_genai_out_of_corpus_uses_fallback():
     body = response.json()
     assert body["fallback"] is True
     assert body["grounded"] is False
-    assert "don't have verified information" in body["answer"]
+    assert any(p in body["answer"] for p in ["could not find a matching passage", "don't have verified information"])
 
 
 def test_genai_rejects_unsupported_language():
@@ -121,7 +121,7 @@ def test_vision_advise_mocked_meta(monkeypatch):
         body = response.json()
         assert body["fallback"] is True
         assert body["grounded"] is False
-        assert "don't have verified information" in body["answer"]
+        assert any(p in body["answer"] for p in ["could not find a matching passage", "don't have verified information"])
         mock_client.chat.completions.create.assert_called_once()
         call_kwargs = mock_client.chat.completions.create.call_args[1]
         assert call_kwargs["model"] == "muse-spark-1.1"
