@@ -137,13 +137,13 @@ def route_faq(query: str, language: str = "en") -> Optional[Dict[str, Any]]:
     elif matched_intent == "vessels":
         if is_kannada:
             ans = (
-                "ಬೋರ್ಡೋ ದ್ರಾವಣ ತಯಾರಿಸಲು ತಾಮ್ರ, ಮರ ಅಥವಾ ಪ್ಲಾಸ್ಟಿಕ್ ಪಾತ್ರೆಗಳನ್ನು ಮಾತ್ರ ಬಳಸಿ. "
-                "ಇತರ ಯಾವುದೇ ಲೋಹದ (ಕಬ್ಬಿಣ, ಸತು, ಹಿತ್ತಾಳೆ) ಪಾತ್ರೆಗಳನ್ನು ಬಳಸಬೇಡಿ, ಏಕೆಂದರೆ ಮೈಲುತುತ್ತು ಅವುಗಳೊಂದಿಗೆ ಪ್ರತಿಕ್ರಿಯಿಸುತ್ತದೆ."
+                "ಬೋರ್ಡೋ ಮಿಶ್ರಣ ತಯಾರಿಸಲು ತಾಮ್ರ, ಮರ ಅಥವಾ ಪ್ಲಾಸ್ಟಿಕ್ ಪಾತ್ರೆಗಳನ್ನು ಬಳಸಬಹುದು. "
+                "ಇತರ ಲೋಹದ ಪಾತ್ರೆಗಳನ್ನು ಬಳಸಬೇಡಿ."
             )
         else:
             ans = (
                 "Copper, wooden or plastic vessels may be used for preparation of this mixture. "
-                "Never use other metallic vessels (such as iron or zinc) as copper sulphate reacts with them."
+                "Do not use other metallic vessels."
             )
         source = f"{rule.preparation['source_title']} (Page {rule.preparation['page']}, {rule.preparation['publication_year']})"
         url = rule.preparation["url"]
@@ -214,3 +214,4 @@ def route_faq(query: str, language: str = "en") -> Optional[Dict[str, Any]]:
         "fallback": False,
         "intent": matched_intent,
     }
+

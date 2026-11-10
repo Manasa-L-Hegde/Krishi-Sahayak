@@ -15,8 +15,8 @@
 | Parameter / Field | App Value | Source Publication, Year & Page | Source Verbatim / Official Rule | App Heuristic / Boundary Assumption |
 | :--- | :--- | :--- | :--- | :--- |
 | **Bordeaux Concentration** | 1% neutral Bordeaux mixture | ICAR-CPCRI Ext. Folder No. 17 (1989), p. 2; Ext. Pub. No. 69 (1999), p. 2 | *"prophylactic pre-monsoon spraying with one per cent Bordeaux mixture"* | Strictly 1.0%; no other concentration permitted. |
-| **Preparation Ratio** | 1 kg CuSO₄ + 1 kg quicklime in 100 L water | ICAR-CPCRI Ext. Folder No. 17 (1989), p. 2 | *"Dissolve 1 kg of Copper Sulphate in 50 litres of water and 1 kg of lime in 50 litres of water separately and mix just before spraying."* | Must dissolve in two separate 50 L batches and combine fresh just before application. |
-| **Preparation Vessels** | Copper, wooden, or plastic vessels only | ICAR-CPCRI Ext. Folder No. 17 (1989), p. 2 | *"Copper, wooden or plastic vessels may be used for preparation of this mixture. Do not use other metallic vessels."* | App explicitly warns: metallic vessels (iron, zinc, galvanized) react with copper sulfate. |
+| **Preparation Ratio** | 1 kg CuSO₄ + 1 kg lime in 100 L water | ICAR-CPCRI Ext. Folder No. 17 (1989), p. 2 | *"Dissolve 1 kg of Copper Sulphate in 50 litres of water and 1 kg of lime in 50 litres of water separately and mix just before spraying."* | Must dissolve in two separate 50 L batches and combine fresh just before application. |
+| **Preparation Vessels** | Copper, wooden, or plastic vessels only | ICAR-CPCRI Ext. Folder No. 17 (1989), p. 2 | *"Copper, wooden or plastic vessels may be used for preparation of this mixture. Do not use other metallic vessels."* | Source verbatim: "Do not use other metallic vessels." |
 | **Neutrality Test** | Clean polished iron knife or nail test | ICAR-CPCRI Ext. Folder No. 17 (1989), p. 2 | *"To test the excess copper in the Bordeaux mixture solution, a polished iron knife or nail may be dipped into the solution. If copper is in excess a brownish coating will appear on the knife in which case lime may be added till such coating disappears."* | In modern KVK advisories, neutral pH 7 is checked with litmus/pH paper; knife test remains field standard. |
 | **Adjuvant / Sticker** | 1 ml / L spray solution | CPCRI Advisory in *The Hindu* (August 9, 2024) | *"it is advised to add a sticker cum spreader @1 ml per litre for spray preparation."* | Generic "sticker cum spreader" only; zero commercial brand names endorsed. |
 | **Alternative Chemical** | Mandipropamid 23.4% SC @ 1 ml / L | CPCRI Advisory in *The Hindu* (August 9, 2024) | *"spray 1% Bordeaux mixture or Mandipropamid 23.4% SC (1 ml per litre) to all the bunches even if fruit rot has not yet been noticed in the plantation."* | Alternative to Bordeaux for rain-break spraying. Mist spray required. |
@@ -34,24 +34,20 @@
 
 ---
 
-## 2. Visual Proof of Lime Dose Digit ("1 kg") in Ext. 17 Scan
+## 2. Physical Scan Crops: Lime Dose Digit in Ext. 17 Scan
 
-During verification of `ext17.pdf` Page 2, standard text extraction returned:
+During automated text extraction of `ext17.pdf` Page 2, standard PDF parsers returned:
 `"Dissolve 1 kg of Copper Sulphate in 50 litres of water and \n kg of lime in 50 litres of water separately"`
-leaving an apparent blank before `"kg of lime"`.
+leaving an apparent blank before `"kg of lime"` in the invisible OCR text layer.
 
-To conclusively verify whether the source document specified "1 kg", high-resolution image analysis was conducted on `Im0.jpg` extracted from Page 2 of the PDF (`diagnostics/lime_dose_crop.png` and `diagnostics/lime_digit_zoom.png`):
-1. **Physical Scan Resolution:** 4200 × 2559 pixels.
-2. **Bounding Box in Im0.jpg:** $x \in [2416, 3541]$, $y \in [538, 850]$ pixels.
-3. **Verbatim Text Visible in Scan Crop:**
-   - **Line 1:** `Dissolve 1 kg of Copper Sulphate in 50 litres of water and`
-   - **Line 2:** `1 kg of lime in 50 litres of water separately and mix just`
-   - **Line 3:** `before spraying. If the quality of lime is inferior, one kg of lime`
-   - **Line 4:** `may not be sufficient to neutralise the copper sulphate completely.`
-4. **Findings & OCR Omission:**
-   - The numeral **`1`** is visibly printed with a distinct top serif directly preceding `kg of lime` at the beginning of Line 2.
-   - The phrase *"in a wooden or plastic bucket"* does **not** appear in this paragraph; vessel specifications appear in the subsequent paragraph (*"Copper, wooden or plastic vessels may be used..."*).
-   - The PDF creator software improperly aligned the text layer bounding box across the line break, omitting the single glyph `1` from the invisible text stream while leaving the raster scan completely legible.
+To allow expert agronomists to evaluate the physical print directly, high-resolution raster crops extracted from `Im0.jpg` of `ext17.pdf` (Page 2, bounding box $x \in [2416, 3541]$, $y \in [538, 850]$ pixels) are provided below:
+
+![Ext. 17 Preparation Paragraph Crop](lime_dose_crop.png)
+
+![Ext. 17 Lime Digit Zoom](lime_digit_zoom.png)
+
+> [!IMPORTANT]
+> **Digit Verification Status:** The digit preceding `"kg of lime"` on Line 2 was **not machine-verified** by OCR. The PDF text stream omitted the single character bounding box across the line break. The raster crops above are provided for visual inspection by expert reviewers to independently confirm the printed numeral (`1`).
 
 ---
 
@@ -142,7 +138,7 @@ To prevent vector similarity fluctuations and avoid false negative refusals on s
 
 ## 6. Technical Review Questions for ICAR-CPCRI Vittal & KVK Agronomists
 
-1. **Lime Quality & Neutrality:** Ext. 17 mentions adding more lime if the knife develops a brownish coating. In field practice, what grade of quicklime is recommended, and is the knife test still preferred over pH indicator strips (pH 7.0)?
+1. **Lime Quality & Neutrality:** Ext. 17 mentions adding more lime if the knife develops a brownish coating. In field practice, what form of lime is recommended (quicklime vs slaked lime), and is the knife test still preferred over pH indicator strips (pH 7.0)?
 2. **Mandipropamid 23.4% SC Rainfastness:** Modern commercial formulations of Mandipropamid claim systemic uptake within 1–2 hours. Does ICAR-CPCRI recommend a specific minimum rain-free period for Mandipropamid versus Bordeaux mixture during monsoon breaks?
 3. **Adjuvant Compatibility:** Are there specific recommended chemistries for the 1 ml/L "sticker-cum-spreader" (e.g., non-ionic silicones vs resin-based adhesives) when mixed with high-pH Bordeaux mixture?
 4. **Polythene Bunch Covers vs Spraying Economics:** Ext. Pub. 69 highlights 125-gauge polythene covers (75 × 60 cm) as an effective mechanical barrier. Under current coastal labor costs, does CPCRI recommend bunch covering as a complete replacement for the second spray, or as a complement in high-rainfall valleys?
