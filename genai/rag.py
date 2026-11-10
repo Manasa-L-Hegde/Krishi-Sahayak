@@ -16,6 +16,26 @@ FALLBACK_EN = "I could not find a matching passage in the verified documents; pl
 FALLBACK_KN = "ಪರಿಶೀಲಿಸಿದ ದಾಖಲೆಗಳಲ್ಲಿ ಸೂಕ್ತ ಮಾಹಿತಿ ದೊರೆತಿಲ್ಲ; ದಯವಿಟ್ಟು ವಾಕ್ಯವನ್ನು ಬದಲಿಸಿ ಅಥವಾ ನಿಮ್ಮ ಸ್ಥಳೀಯ ಕೆವಿಕೆ / ಆರ್‌ಎಸ್‌ಕೆ ಸಂಪರ್ಕಿಸಿ."
 FALLBACK = FALLBACK_EN
 
+UNMENTIONED_FOREIGN_ENTITIES = [
+    "mancozeb", "copper oxychloride", "coc", "carbendazim", "chlorpyrifos",
+    "quicklime", "slaked lime", "urea", "dap", "potash", "neem oil", "pseudomonas", "trichoderma",
+    "ಮ್ಯಾಂಕೋಜೆಬ್", "ಕಾಪರ್ ಆಕ್ಸಿಕ್ಲೋರೈಡ್", "ಕ್ವಿಕ್‌ಲೈಮ್", "ಅರಳಿದ ಸುಣ್ಣ", "ಕ್ಲೋರ್‌ಪೈರಿಫಾಸ್", "ಕಾರ್ಬಂಡೈಸಿಮ್", "ಯೂರಿಯಾ"
+]
+
+
+def passes_entity_guard(question: str, passage_text: str) -> bool:
+    """
+    Entity guard: If the question names a product, chemical, or formulation term (e.g. mancozeb,
+    copper oxychloride, quicklime, slaked lime) that the retrieved passage does not contain,
+    reject the candidate passage to prevent false accepts on near-miss queries.
+    """
+    q_lower = question.lower()
+    p_lower = passage_text.lower()
+    for ent in UNMENTIONED_FOREIGN_ENTITIES:
+        if ent in q_lower and ent not in p_lower:
+            return False
+    return True
+
 
 def get_low_retrieval_fallback(language: str | None = None, question: str = "") -> str:
     is_kn = any(ord(char) >= 0x0C80 and ord(char) <= 0x0CFF for char in question)
@@ -179,7 +199,10 @@ class LocalRAG:
             }
 
         hits = self.retrieve(question, language=language)
-        qualifying = [hit for hit in hits if hit["similarity"] >= THRESHOLD]
+        qualifying = [
+            hit for hit in hits
+            if hit["similarity"] >= THRESHOLD and passes_entity_guard(question, hit["text"])
+        ]
         low_fb = get_low_retrieval_fallback(language, question)
         if not qualifying:
             return {"answer": low_fb, "sources": [], "grounded": False, "fallback": True}
@@ -264,7 +287,10 @@ class LocalRAG:
             }
 
         hits = self.retrieve(question, k=TOP_K, language=language)
-        qualifying = [hit for hit in hits if hit["similarity"] >= THRESHOLD]
+        qualifying = [
+            hit for hit in hits
+            if hit["similarity"] >= THRESHOLD and passes_entity_guard(question, hit["text"])
+        ]
 
         if not qualifying:
             fb = get_low_retrieval_fallback(language, question)

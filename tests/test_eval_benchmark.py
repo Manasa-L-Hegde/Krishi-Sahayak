@@ -223,3 +223,121 @@ def test_rag_retrieval_and_refusal_eval():
     recall_rate = hits_over_threshold / len(in_corpus_queries)
     # With curated chunks, recall is at least 50% at 0.59; full production separation requires hybrid search
     assert recall_rate >= 0.50, f"Expected thresholded recall >= 50%, got {recall_rate*100:.1f}%"
+
+
+def test_near_miss_entity_and_quantity_guards():
+    """
+    Test suite for near-miss safety queries:
+    - NM_01: Mandipropamid + micronutrients (explicit CPCRI prohibition against tank-mixing)
+    - NM_02: Bordeaux + mancozeb / copper oxychloride (Entity Guard rejection)
+    - NM_03: Quicklime vs. slaked lime (Entity Guard rejection, source states only 'lime')
+    - NM_04: 50 L scaling (Quantity Guard: strict 100 L constraint with KVK/RSK direction)
+    - NM_05: Bud rot (Koleroag 1% recipe must NOT be returned for bud rot)
+    Runs in both English and Kannada.
+    """
+    from pathlib import Path
+    from genai.rag import LocalRAG
+
+    rag = LocalRAG(Path("genai/index"))
+
+    cases = [
+        # (id, query, lang, expected_intent, expected_grounded, expected_fallback, expected_phrase)
+        (
+            "NM_01_EN",
+            "Mandipropamid mixed with a micronutrient spray",
+            "en",
+            "alternative",
+            True,
+            False,
+            "Do not mix with other fungicides, pesticides, or nutrients.",
+        ),
+        (
+            "NM_02_EN",
+            "Can I mix Bordeaux mixture with mancozeb or copper oxychloride?",
+            "en",
+            None,
+            False,
+            True,
+            "could not find a matching passage",
+        ),
+        (
+            "NM_03_EN",
+            "Should I use quicklime or slaked lime for Bordeaux mixture?",
+            "en",
+            None,
+            False,
+            True,
+            "could not find a matching passage",
+        ),
+        (
+            "NM_04_EN",
+            "How much copper sulphate and lime for 50 L water?",
+            "en",
+            "quantity_scaling",
+            True,
+            False,
+            "The source recipe makes 100 litres in total (1 kg copper sulphate in 50 L + 1 kg lime in 50 L). For other quantities consult your KVK/RSK.",
+        ),
+        (
+            "NM_05_EN",
+            "What is the treatment for bud rot?",
+            "en",
+            None,
+            False,
+            True,
+            "could not find a matching passage",
+        ),
+        (
+            "NM_01_KN",
+            "ಮ್ಯಾಂಡಿಪ್ರೊಪಮಿಡ್ ಜೊತೆ ಸೂಕ್ಷ್ಮ ಪೋಷಕಾಂಶ ಬೆರೆಸಬಹುದೇ?",
+            "kn",
+            "alternative",
+            True,
+            False,
+            "ಇತರ ಯಾವುದೇ ಶಿಲೀಂಧ್ರನಾಶಕ, ಕೀಟನಾಶಕ ಅಥವಾ ಪೋಷಕಾಂಶಗಳೊಂದಿಗೆ ಬೆರೆಸಬೇಡಿ",
+        ),
+        (
+            "NM_02_KN",
+            "ಬೋರ್ಡೋ ಮಿಶ್ರಣದೊಂದಿಗೆ ಮ್ಯಾಂಕೋಜೆಬ್ ಅಥವಾ ಕಾಪರ್ ಆಕ್ಸಿಕ್ಲೋರೈಡ್ ಬೆರೆಸಬಹುದೇ?",
+            "kn",
+            None,
+            False,
+            True,
+            "ಪರಿಶೀಲಿಸಿದ ದಾಖಲೆಗಳಲ್ಲಿ ಸೂಕ್ತ ಮಾಹಿತಿ ದೊರೆತಿಲ್ಲ",
+        ),
+        (
+            "NM_03_KN",
+            "ಬೋರ್ಡೋ ಮಿಶ್ರಣಕ್ಕೆ ಕ್ವಿಕ್‌ಲೈಮ್ ಬಳಸಬೇಕೆ ಅಥವಾ ಅರಳಿದ ಸುಣ್ಣ ಬಳಸಬೇಕೆ?",
+            "kn",
+            None,
+            False,
+            True,
+            "ಪರಿಶೀಲಿಸಿದ ದಾಖಲೆಗಳಲ್ಲಿ ಸೂಕ್ತ ಮಾಹಿತಿ ದೊರೆತಿಲ್ಲ",
+        ),
+        (
+            "NM_04_KN",
+            "50 ಲೀಟರ್ ನೀರಿಗೆ ಎಷ್ಟು ಮೈಲುತುತ್ತು ಮತ್ತು ಸುಣ್ಣ ಬೇಕು?",
+            "kn",
+            "quantity_scaling",
+            True,
+            False,
+            "ಮೂಲ ವಿಧಾನವು ಒಟ್ಟು 100 ಲೀಟರ್‌ಗಳಿಗೆ ನಿಗದಿಯಾಗಿದೆ (50 ಲೀಟರ್‌ಗೆ 1 ಕೆ.ಜಿ ಮೈಲುತುತ್ತು + 50 ಲೀಟರ್‌ಗೆ 1 ಕೆ.ಜಿ ಸುಣ್ಣ). ಇತರ ಪ್ರಮಾಣಗಳಿಗಾಗಿ ನಿಮ್ಮ ಕೆವಿಕೆ / ಆರ್‌ಎಸ್‌ಕೆ ಸಂಪರ್ಕಿಸಿ.",
+        ),
+        (
+            "NM_05_KN",
+            "ಅಡಿಕೆ ಸುಳಿ ಕೊಳೆ ರೋಗದ ಚಿಕಿತ್ಸೆ ಏನು?",
+            "kn",
+            None,
+            False,
+            True,
+            "ಪರಿಶೀಲಿಸಿದ ದಾಖಲೆಗಳಲ್ಲಿ ಸೂಕ್ತ ಮಾಹಿತಿ ದೊರೆತಿಲ್ಲ",
+        ),
+    ]
+
+    for cid, q, lang, exp_intent, exp_grounded, exp_fallback, exp_phrase in cases:
+        res = rag.ask_expert(q, language=lang)
+        assert res.get("grounded") == exp_grounded, f"Failed grounded check on {cid}"
+        assert res.get("fallback") == exp_fallback, f"Failed fallback check on {cid}"
+        assert res.get("intent") == exp_intent, f"Failed intent check on {cid}"
+        assert exp_phrase in res.get("answer", ""), f"Failed phrase match on {cid}: got {res.get('answer')}"
+

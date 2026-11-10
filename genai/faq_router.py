@@ -94,6 +94,50 @@ INTENT_PATTERNS = {
 }
 
 
+UNMENTIONED_FOREIGN_ENTITIES = [
+    "mancozeb", "copper oxychloride", "coc", "carbendazim", "chlorpyrifos",
+    "quicklime", "slaked lime", "urea", "dap", "potash", "neem oil", "pseudomonas", "trichoderma",
+    "ಮ್ಯಾಂಕೋಜೆಬ್", "ಕಾಪರ್ ಆಕ್ಸಿಕ್ಲೋರೈಡ್", "ಕ್ವಿಕ್‌ಲೈಮ್", "ಅರಳಿದ ಸುಣ್ಣ", "ಕ್ಲೋರ್‌ಪೈರಿಫಾಸ್", "ಕಾರ್ಬಂಡೈಸಿಮ್", "ಯೂರಿಯಾ"
+]
+
+
+def check_quantity_guard(clean_q: str, is_kannada: bool) -> Optional[Dict[str, Any]]:
+    """Detects requests for non-standard volumes or per-acre/per-palm scalings."""
+    quantity_patterns = [
+        r"\b50\s*(l|litres?|liters?)\b",
+        r"\b200\s*(l|litres?|liters?)\b",
+        r"\b500\s*(l|litres?|liters?)\b",
+        r"\b1000\s*(l|litres?|liters?)\b",
+        r"\bper\s*acre\b",
+        r"\bfor\s*(an?|1|one)\s*acre\b",
+        r"\bper\s*palm\b",
+        r"\bper\s*tree\b",
+        r"50\s*ಲೀಟರ್",
+        r"200\s*ಲೀಟರ್",
+        r"500\s*ಲೀಟರ್",
+        r"ಪ್ರತಿ\s*ಎಕರೆ",
+        r"ಒಂದು\s*ಎಕರೆಗೆ",
+        r"ಪ್ರತಿ\s*ಮರಕ್ಕೆ",
+    ]
+    has_quantity = any(re.search(pat, clean_q) for pat in quantity_patterns)
+    has_spray_context = any(w in clean_q for w in [
+        "copper", "lime", "bordeaux", "mixture", "how much", "dose", "water",
+        "ಮೈಲುತುತ್ತು", "ಸುಣ್ಣ", "ಬೋರ್ಡೋ", "ದ್ರಾವಣ", "ಎಷ್ಟು", "ನೀರಿಗೆ"
+    ])
+    if has_quantity and has_spray_context:
+        if is_kannada:
+            ans = "ಮೂಲ ವಿಧಾನವು ಒಟ್ಟು 100 ಲೀಟರ್‌ಗಳಿಗೆ ನಿಗದಿಯಾಗಿದೆ (50 ಲೀಟರ್‌ಗೆ 1 ಕೆ.ಜಿ ಮೈಲುತುತ್ತು + 50 ಲೀಟರ್‌ಗೆ 1 ಕೆ.ಜಿ ಸುಣ್ಣ). ಇತರ ಪ್ರಮಾಣಗಳಿಗಾಗಿ ನಿಮ್ಮ ಕೆವಿಕೆ / ಆರ್‌ಎಸ್‌ಕೆ ಸಂಪರ್ಕಿಸಿ."
+        else:
+            ans = "The source recipe makes 100 litres in total (1 kg copper sulphate in 50 L + 1 kg lime in 50 L). For other quantities consult your KVK/RSK."
+        return {
+            "answer": ans,
+            "sources": ["Koleroga (Mahali) of Arecanut (Extension Folder No. 17, 1989, p. 2)"],
+            "url": "https://cpcri.gov.in/filemgr/webfs/publication/ext17.pdf",
+            "intent": "quantity_scaling",
+        }
+    return None
+
+
 def route_faq(query: str, language: str = "en") -> Optional[Dict[str, Any]]:
     """
     Checks if a user query matches one of the 9 canonical agronomic intents.
@@ -103,6 +147,20 @@ def route_faq(query: str, language: str = "en") -> Optional[Dict[str, Any]]:
     is_kannada = language.strip().lower() in ("kn", "kannada") or any(
         "\u0c80" <= c <= "\u0cff" for c in query
     )
+
+    # 1. Quantity guard check (50 L, per acre, per palm scaling)
+    q_guard = check_quantity_guard(clean_q, is_kannada)
+    if q_guard:
+        return q_guard
+
+    # 2. Entity guard check: if query mentions foreign entities (e.g. mancozeb, quicklime),
+    # do NOT route to standard canonical intents unless query specifically targets Mandipropamid tank mixing
+    has_foreign_entity = any(ent in clean_q for ent in UNMENTIONED_FOREIGN_ENTITIES)
+    is_mandipropamid = any(m in clean_q for m in ["mandipropamid", "ಮ್ಯಾಂಡಿಪ್ರೊಪಮಿಡ್"])
+
+    if has_foreign_entity and not is_mandipropamid:
+        # Fall through to similarity / entity guard for clean refusal
+        return None
 
     matched_intent = None
     for intent, patterns in INTENT_PATTERNS.items():

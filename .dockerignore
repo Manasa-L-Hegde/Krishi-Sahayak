@@ -9,4 +9,6 @@ diagnostics/*.png
 diagnostics/*.csv
 genai/corpus/*.pdf
 genai/corpus/*.html
+genai/corpus/downloads/*
+genai/corpus/**
 

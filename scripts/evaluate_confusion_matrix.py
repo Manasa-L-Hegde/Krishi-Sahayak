@@ -73,6 +73,15 @@ FARMER_QUERIES = [
     {"id": "FQ_12_KN", "q": "ಅಡಿಕೆ ಮರದ ಎಲೆ ಹಳದಿಯಾಗಿದೆ, ಯಾವ ಔಷಧಿ ಹಾಕಬೇಕು?", "lang": "Kannada", "expected": "ANSWER"},
 ]
 
+# 5 Empirical Near-Miss Queries
+NEAR_MISS_QUERIES = [
+    {"id": "NM_01_EN", "q": "Mandipropamid mixed with a micronutrient spray", "lang": "English", "expected": "ANSWER"},
+    {"id": "NM_02_EN", "q": "Can I mix Bordeaux mixture with mancozeb or copper oxychloride?", "lang": "English", "expected": "REFUSAL"},
+    {"id": "NM_03_EN", "q": "Should I use quicklime or slaked lime for Bordeaux mixture?", "lang": "English", "expected": "REFUSAL"},
+    {"id": "NM_04_EN", "q": "How much copper sulphate and lime for 50 L water?", "lang": "English", "expected": "ANSWER"},
+    {"id": "NM_05_EN", "q": "What is the treatment for bud rot?", "lang": "English", "expected": "REFUSAL"},
+]
+
 
 def evaluate():
     rag = LocalRAG(ROOT / "genai" / "index")
@@ -148,6 +157,48 @@ def evaluate():
         records.append({
             "id": qid,
             "category": "farmer_starter",
+            "question": q,
+            "language": lang,
+            "top_similarity": round(top_sim, 4),
+            "top_source": top_src,
+            "grounded": grounded,
+            "fallback": fallback,
+            "classification": classification,
+            "answer_excerpt": ans[:160],
+        })
+
+    # 3. Evaluate 5 Near-Miss Queries
+    for item in NEAR_MISS_QUERIES:
+        qid = item["id"]
+        q = item["q"]
+        lang = item["lang"]
+        exp = item["expected"]
+        hits = rag.retrieve(q, k=4, language=lang)
+        top_sim = hits[0]["similarity"] if hits else 0.0
+        top_src = hits[0]["source"] if hits else "NONE"
+
+        res = rag.ask_expert(q, language=lang)
+        ans = res.get("answer", "")
+        grounded = res.get("grounded", False)
+        fallback = res.get("fallback", False)
+
+        is_answered = grounded and not fallback
+
+        if exp == "ANSWER":
+            if is_answered:
+                classification = "CORRECT_ANSWER"
+            else:
+                classification = "WRONG_REFUSAL"
+        else:  # exp == "REFUSAL"
+            if is_answered:
+                classification = "WRONG_ACCEPTANCE"
+            else:
+                classification = "CORRECT_REFUSAL"
+
+        print(f"{qid:<12} | {lang[:2]:<4} | {top_sim:.4f}  | {exp:<10} | {classification:<18} | {q[:40]}")
+        records.append({
+            "id": qid,
+            "category": "near_miss",
             "question": q,
             "language": lang,
             "top_similarity": round(top_sim, 4),
