@@ -27,6 +27,11 @@ SOURCES = [
         "url": "https://cpcri.gov.in/filemgr/webfs/publication/disease_management_strategies_in_arecanut_and_cocoa(eng)_1.pdf",
         "sha256": "db3059ff4ec1d399af30f04c393065808b315a272cc3b6e208c0d6e62d511d7e",
     },
+    {
+        "filename": "thehindu_cpcri_koleroga_advisory_aug2024.html",
+        "url": "https://www.thehindu.com/news/cities/Mangalore/cpcri-issues-advisory-to-control-koleroga-disease-in-arecanut-plantations/article68506079.ece",
+        "sha256": None,  # News HTML has dynamic tokens, verified via text content
+    },
 ]
 
 
@@ -37,6 +42,9 @@ def fetch_sources(force: bool = False) -> None:
     for item in SOURCES:
         target = DOWNLOAD_DIR / item["filename"]
         if target.exists() and not force:
+            if item["sha256"] is None:
+                print(f"[OK] {item['filename']} already exists.")
+                continue
             # Check existing hash
             existing_hash = hashlib.sha256(target.read_bytes()).hexdigest().lower()
             if existing_hash == item["sha256"]:
@@ -48,9 +56,10 @@ def fetch_sources(force: bool = False) -> None:
         try:
             with urllib.request.urlopen(req, timeout=30) as resp:
                 data = resp.read()
-            computed_hash = hashlib.sha256(data).hexdigest().lower()
-            if computed_hash != item["sha256"]:
-                print(f"[WARN] SHA-256 hash mismatch for {item['filename']}: expected {item['sha256']}, got {computed_hash}")
+            if item["sha256"]:
+                computed_hash = hashlib.sha256(data).hexdigest().lower()
+                if computed_hash != item["sha256"]:
+                    print(f"[WARN] SHA-256 hash mismatch for {item['filename']}: expected {item['sha256']}, got {computed_hash}")
             target.write_bytes(data)
             print(f"[SUCCESS] Downloaded {item['filename']} ({len(data)} bytes).")
         except Exception as exc:
@@ -59,3 +68,4 @@ def fetch_sources(force: bool = False) -> None:
 
 if __name__ == "__main__":
     fetch_sources()
+

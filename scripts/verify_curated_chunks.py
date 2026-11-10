@@ -18,12 +18,15 @@ from __future__ import annotations
 import difflib
 import json
 import re
+import sys
 from pathlib import Path
 from typing import Dict, List, Tuple
 from pypdf import PdfReader
 from bs4 import BeautifulSoup
 
 ROOT = Path(__file__).resolve().parents[1]
+if str(ROOT) not in sys.path:
+    sys.path.insert(0, str(ROOT))
 
 # Approved edits whitelist
 APPROVED_EDITS = {
@@ -72,6 +75,9 @@ APPROVED_EDITS = {
 
 
 def get_raw_source_slices() -> Dict[str, str]:
+    from scripts.fetch_sources import fetch_sources
+    fetch_sources()
+
     # 1. Ext17 Page 2 (ext17.pdf)
     p_ext17 = ROOT / "genai" / "corpus" / "downloads" / "ext17.pdf"
     reader17 = PdfReader(str(p_ext17))
