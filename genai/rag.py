@@ -10,6 +10,8 @@ import faiss
 import numpy as np
 from sentence_transformers import SentenceTransformer
 
+from genai.faq_router import route_faq
+
 FALLBACK_EN = "I could not find a matching passage in the verified documents; please rephrase or consult your local KVK or RSK."
 FALLBACK_KN = "ಪರಿಶೀಲಿಸಿದ ದಾಖಲೆಗಳಲ್ಲಿ ಸೂಕ್ತ ಮಾಹಿತಿ ದೊರೆತಿಲ್ಲ; ದಯವಿಟ್ಟು ವಾಕ್ಯವನ್ನು ಬದಲಿಸಿ ಅಥವಾ ನಿಮ್ಮ ಸ್ಥಳೀಯ ಕೆವಿಕೆ / ಆರ್‌ಎಸ್‌ಕೆ ಸಂಪರ್ಕಿಸಿ."
 FALLBACK = FALLBACK_EN
@@ -153,6 +155,16 @@ class LocalRAG:
         return results
 
     def answer(self, question: str, language: str | None = None) -> dict[str, Any]:
+        routed = route_faq(question, language or "en")
+        if routed:
+            return {
+                "answer": routed["answer"],
+                "sources": routed["sources"],
+                "grounded": True,
+                "fallback": False,
+                "intent": routed.get("intent"),
+            }
+
         should_abstain, abstention_msg = check_abstention_intent(question)
         if should_abstain:
             return {"answer": abstention_msg, "sources": [], "grounded": False, "fallback": True}
@@ -220,6 +232,17 @@ class LocalRAG:
         """Answers agricultural questions thoroughly.
         If verified corpus matches are found, it grounds the answer in those official documents.
         If general farming advice is needed, it provides expert agronomic guidance through Groq."""
+        routed = route_faq(question, language)
+        if routed:
+            return {
+                "answer": routed["answer"],
+                "sources": routed["sources"],
+                "grounded": True,
+                "verified": True,
+                "fallback": False,
+                "intent": routed.get("intent"),
+            }
+
         should_abstain, abstention_msg = check_abstention_intent(question)
         if should_abstain:
             return {

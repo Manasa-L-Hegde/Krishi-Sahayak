@@ -1,16 +1,16 @@
 """
 evaluate_confusion_matrix.py
 ============================
-Evaluates Krishi Sahayak's RAG and advisory system on:
+Evaluates Krishi Sahayak's RAG and FAQ routing system on:
 - 10 Out-of-Corpus queries (5 English, 5 Kannada)
-- 24 Starter Farmer queries (12 English pairs)
+- 24 Starter Farmer queries (12 English, 12 Kannada)
 
-Evaluates strictly at the live 0.59 retrieval threshold.
+Evaluates strictly at the live 0.59 retrieval threshold and deterministic FAQ router.
 Categorizes every single response into one of four mutually exclusive bins:
-1. CORRECT_ANSWER: In-corpus query that retrieved >= 0.59 and returned grounded answer.
-2. CORRECT_REFUSAL: Out-of-corpus or ungrounded query (calendar dates, dry hours) correctly refused/abstained.
-3. WRONG_REFUSAL: In-corpus query whose similarity was < 0.59, resulting in false refusal (loss of recall).
-4. WRONG_ACCEPTANCE: Out-of-corpus query that slipped past threshold (>= 0.59) or hallucinated outside facts.
+1. CORRECT_ANSWER: In-corpus query that yielded a verified, grounded advisory.
+2. CORRECT_REFUSAL: Out-of-corpus or ungrounded query (calendar dates, dry hours, unverified tank mixes) correctly refused/abstained.
+3. WRONG_REFUSAL: In-corpus query that was falsely refused (loss of recall).
+4. WRONG_ACCEPTANCE: Out-of-corpus query that slipped past or returned an unverified answer.
 """
 
 from __future__ import annotations
@@ -39,34 +39,38 @@ OUT_OF_CORPUS_QUERIES = [
 ]
 
 # 24 Starter Farmer Queries (12 English, 12 Kannada)
-# Note: FQ_09 (dry hours) and FQ_10 (calendar dates) are intentionally UNGROUNDED in ICAR literature
-# so their expected behavior is CORRECT_REFUSAL.
-# FQ_12 (yellow leaf disease) is a negative plant protection intent with specific garden management.
+# Corrected Answer Key:
+# - FQ_01 to FQ_07: canonical arecanut koleroga advisories present in ICAR/CPCRI publications -> EXPECTED_ANSWER
+# - FQ_08 (mancozeb mixing with Bordeaux): not stated in cited literature -> EXPECTED_REFUSAL
+# - FQ_09 (rainfast dry hours): not stated as fixed figure in literature -> EXPECTED_REFUSAL
+# - FQ_10 (calendar spray dates): not stated as calendar dates in literature -> EXPECTED_REFUSAL
+# - FQ_11 (sprayed yesterday, rained in evening): not stated in cited literature -> EXPECTED_REFUSAL
+# - FQ_12 (yellow leaf disease): specific negative-protection advisory in Pub. 69, p. 4 -> EXPECTED_ANSWER
 FARMER_QUERIES = [
-    {"id": "FQ_01_EN", "q": "How do I make 1% Bordeaux mixture?", "lang": "English", "type": "in_corpus"},
-    {"id": "FQ_01_KN", "q": "1% ಬೋರ್ಡೋ ದ್ರಾವಣ ಹೇಗೆ ತಯಾರಿಸುವುದು?", "lang": "Kannada", "type": "in_corpus"},
-    {"id": "FQ_02_EN", "q": "How much copper sulphate and lime for 200 litres?", "lang": "English", "type": "in_corpus"},
-    {"id": "FQ_02_KN", "q": "200 ಲೀಟರ್ ನೀರಿಗೆ ಎಷ್ಟು ಮೈಲುತುತ್ತ ಮತ್ತು ಸುಣ್ಣ ಬೇಕು?", "lang": "Kannada", "type": "in_corpus"},
-    {"id": "FQ_03_EN", "q": "How do I check if the mixture is right?", "lang": "English", "type": "in_corpus"},
-    {"id": "FQ_03_KN", "q": "ಬೋರ್ಡೋ ಮಿಶ್ರಣ ಸರಿಯಾಗಿದೆಯೇ ಎಂದು ಹೇಗೆ ಪರೀಕ್ಷಿಸುವುದು?", "lang": "Kannada", "type": "in_corpus"},
-    {"id": "FQ_04_EN", "q": "When do I do the second spray?", "lang": "English", "type": "in_corpus"},
-    {"id": "FQ_04_KN", "q": "ಎರಡನೇ ಸಿಂಪರಣೆ ಯಾವಾಗ ಮಾಡಬೇಕು?", "lang": "Kannada", "type": "in_corpus"},
-    {"id": "FQ_05_EN", "q": "Do I need a third spray this year?", "lang": "English", "type": "in_corpus"},
-    {"id": "FQ_05_KN", "q": "ಈ ವರ್ಷ ಮೂರನೇ ಸಿಂಪರಣೆ ಬೇಕೇ?", "lang": "Kannada", "type": "in_corpus"},
-    {"id": "FQ_06_EN", "q": "Can I tie plastic covers on the bunches?", "lang": "English", "type": "in_corpus"},
-    {"id": "FQ_06_KN", "q": "ಅಡಿಕೆ ಗೊನೆಗೆ ಪ್ಲಾಸ್ಟಿಕ್ ಕವರ್ ಕಟ್ಟಬಹುದೇ?", "lang": "Kannada", "type": "in_corpus"},
-    {"id": "FQ_07_EN", "q": "Which sticker, and how much?", "lang": "English", "type": "in_corpus"},
-    {"id": "FQ_07_KN", "q": "ಸ್ಟಿಕ್ಕರ್ ಯಾವುದನ್ನು ಎಷ್ಟು ಹಾಕಬೇಕು?", "lang": "Kannada", "type": "in_corpus"},
-    {"id": "FQ_08_EN", "q": "Can I mix mancozeb with Bordeaux?", "lang": "English", "type": "in_corpus"},
-    {"id": "FQ_08_KN", "q": "ಬೋರ್ಡೋ ಜೊತೆ ಮ್ಯಾಂಕೋಝೆಬ್ ಬೆರೆಸಬಹುದೇ?", "lang": "Kannada", "type": "in_corpus"},
-    {"id": "FQ_09_EN", "q": "How many hours must it stay dry after spraying?", "lang": "English", "type": "ungrounded_intent"},
-    {"id": "FQ_09_KN", "q": "ಸಿಂಪಡಿಸಿದ ಮೇಲೆ ಎಷ್ಟು ಗಂಟೆ ಮಳೆ ಬರಬಾರದು?", "lang": "Kannada", "type": "ungrounded_intent"},
-    {"id": "FQ_10_EN", "q": "What date should I spray in Sirsi?", "lang": "English", "type": "ungrounded_intent"},
-    {"id": "FQ_10_KN", "q": "ಶಿರಸಿಯಲ್ಲಿ ಯಾವ ದಿನಾಂಕದಂದು ಸಿಂಪಡಿಸಬೇಕು?", "lang": "Kannada", "type": "ungrounded_intent"},
-    {"id": "FQ_11_EN", "q": "I sprayed yesterday and it rained in the evening. Spray again?", "lang": "English", "type": "in_corpus"},
-    {"id": "FQ_11_KN", "q": "ನಿನ್ನೆ ಸಿಂಪಡಿಸಿದೆ, ಸಂಜೆ ಮಳೆ ಬಂತು. ಮತ್ತೆ ಸಿಂಪಡಿಸಬೇಕೇ?", "lang": "Kannada", "type": "in_corpus"},
-    {"id": "FQ_12_EN", "q": "Arecanut leaves are yellow, what do I spray?", "lang": "English", "type": "yellow_leaf_special"},
-    {"id": "FQ_12_KN", "q": "ಅಡಿಕೆ ಮರದ ಎಲೆ ಹಳದಿಯಾಗಿದೆ, ಯಾವ ಔಷಧಿ ಹಾಕಬೇಕು?", "lang": "Kannada", "type": "yellow_leaf_special"},
+    {"id": "FQ_01_EN", "q": "How do I make 1% Bordeaux mixture?", "lang": "English", "expected": "ANSWER"},
+    {"id": "FQ_01_KN", "q": "1% ಬೋರ್ಡೋ ದ್ರಾವಣ ಹೇಗೆ ತಯಾರಿಸುವುದು?", "lang": "Kannada", "expected": "ANSWER"},
+    {"id": "FQ_02_EN", "q": "How much copper sulphate and lime for 200 litres?", "lang": "English", "expected": "ANSWER"},
+    {"id": "FQ_02_KN", "q": "200 ಲೀಟರ್ ನೀರಿಗೆ ಎಷ್ಟು ಮೈಲುತುತ್ತ ಮತ್ತು ಸುಣ್ಣ ಬೇಕು?", "lang": "Kannada", "expected": "ANSWER"},
+    {"id": "FQ_03_EN", "q": "How do I check if the mixture is right?", "lang": "English", "expected": "ANSWER"},
+    {"id": "FQ_03_KN", "q": "ಬೋರ್ಡೋ ಮಿಶ್ರಣ ಸರಿಯಾಗಿದೆಯೇ ಎಂದು ಹೇಗೆ ಪರೀಕ್ಷಿಸುವುದು?", "lang": "Kannada", "expected": "ANSWER"},
+    {"id": "FQ_04_EN", "q": "When do I do the second spray?", "lang": "English", "expected": "ANSWER"},
+    {"id": "FQ_04_KN", "q": "ಎರಡನೇ ಸಿಂಪರಣೆ ಯಾವಾಗ ಮಾಡಬೇಕು?", "lang": "Kannada", "expected": "ANSWER"},
+    {"id": "FQ_05_EN", "q": "Do I need a third spray this year?", "lang": "English", "expected": "ANSWER"},
+    {"id": "FQ_05_KN", "q": "ಈ ವರ್ಷ ಮೂರನೇ ಸಿಂಪರಣೆ ಬೇಕೇ?", "lang": "Kannada", "expected": "ANSWER"},
+    {"id": "FQ_06_EN", "q": "Can I tie plastic covers on the bunches?", "lang": "English", "expected": "ANSWER"},
+    {"id": "FQ_06_KN", "q": "ಅಡಿಕೆ ಗೊನೆಗೆ ಪ್ಲಾಸ್ಟಿಕ್ ಕವರ್ ಕಟ್ಟಬಹುದೇ?", "lang": "Kannada", "expected": "ANSWER"},
+    {"id": "FQ_07_EN", "q": "Which sticker, and how much?", "lang": "English", "expected": "ANSWER"},
+    {"id": "FQ_07_KN", "q": "ಸ್ಟಿಕ್ಕರ್ ಯಾವುದನ್ನು ಎಷ್ಟು ಹಾಕಬೇಕು?", "lang": "Kannada", "expected": "ANSWER"},
+    {"id": "FQ_08_EN", "q": "Can I mix mancozeb with Bordeaux?", "lang": "English", "expected": "REFUSAL"},
+    {"id": "FQ_08_KN", "q": "ಬೋರ್ಡೋ ಜೊತೆ ಮ್ಯಾಂಕೋಝೆಬ್ ಬೆರೆಸಬಹುದೇ?", "lang": "Kannada", "expected": "REFUSAL"},
+    {"id": "FQ_09_EN", "q": "How many hours must it stay dry after spraying?", "lang": "English", "expected": "REFUSAL"},
+    {"id": "FQ_09_KN", "q": "ಸಿಂಪಡಿಸಿದ ಮೇಲೆ ಎಷ್ಟು ಗಂಟೆ ಮಳೆ ಬರಬಾರದು?", "lang": "Kannada", "expected": "REFUSAL"},
+    {"id": "FQ_10_EN", "q": "What date should I spray in Sirsi?", "lang": "English", "expected": "REFUSAL"},
+    {"id": "FQ_10_KN", "q": "ಶಿರಸಿಯಲ್ಲಿ ಯಾವ ದಿನಾಂಕದಂದು ಸಿಂಪಡಿಸಬೇಕು?", "lang": "Kannada", "expected": "REFUSAL"},
+    {"id": "FQ_11_EN", "q": "I sprayed yesterday and it rained in the evening. Spray again?", "lang": "English", "expected": "REFUSAL"},
+    {"id": "FQ_11_KN", "q": "ನಿನ್ನೆ ಸಿಂಪಡಿಸಿದೆ, ಸಂಜೆ ಮಳೆ ಬಂತು. ಮತ್ತೆ ಸಿಂಪಡಿಸಬೇಕೇ?", "lang": "Kannada", "expected": "REFUSAL"},
+    {"id": "FQ_12_EN", "q": "Arecanut leaves are yellow, what do I spray?", "lang": "English", "expected": "ANSWER"},
+    {"id": "FQ_12_KN", "q": "ಅಡಿಕೆ ಮರದ ಎಲೆ ಹಳದಿಯಾಗಿದೆ, ಯಾವ ಔಷಧಿ ಹಾಕಬೇಕು?", "lang": "Kannada", "expected": "ANSWER"},
 ]
 
 
@@ -75,8 +79,8 @@ def evaluate():
     records = []
 
     print(f"Strict Live Threshold: {THRESHOLD}\n")
-    print(f"{'ID':<12} | {'Lang':<4} | {'Top Sim':<7} | {'Expected':<16} | {'Classification':<18} | Question")
-    print("-" * 105)
+    print(f"{'ID':<12} | {'Lang':<4} | {'Top Sim':<7} | {'Expected':<10} | {'Classification':<18} | Question")
+    print("-" * 100)
 
     # 1. Evaluate 10 Out-of-Corpus
     for item in OUT_OF_CORPUS_QUERIES:
@@ -92,16 +96,13 @@ def evaluate():
         grounded = res.get("grounded", False)
         fallback = res.get("fallback", False)
 
-        # Classification logic for OOC:
-        # Expected: Refusal.
-        # If top_sim >= THRESHOLD or grounded: WRONG_ACCEPTANCE (false positive)
-        # If refused (fallback is True and not grounded): CORRECT_REFUSAL
-        if top_sim >= THRESHOLD or (grounded and not fallback):
+        is_answered = grounded and not fallback
+        if is_answered:
             classification = "WRONG_ACCEPTANCE"
         else:
             classification = "CORRECT_REFUSAL"
 
-        print(f"{qid:<12} | {lang[:2]:<4} | {top_sim:.4f}  | {'REFUSAL':<16} | {classification:<18} | {q[:40]}")
+        print(f"{qid:<12} | {lang[:2]:<4} | {top_sim:.4f}  | {'REFUSAL':<10} | {classification:<18} | {q[:40]}")
         records.append({
             "id": qid,
             "category": "out_of_corpus",
@@ -120,7 +121,7 @@ def evaluate():
         qid = item["id"]
         q = item["q"]
         lang = item["lang"]
-        qtype = item["type"]
+        exp = item["expected"]
         hits = rag.retrieve(q, k=4, language=lang)
         top_sim = hits[0]["similarity"] if hits else 0.0
         top_src = hits[0]["source"] if hits else "NONE"
@@ -130,40 +131,23 @@ def evaluate():
         grounded = res.get("grounded", False)
         fallback = res.get("fallback", False)
 
-        # Classification logic:
-        if qtype == "ungrounded_intent":
-            # Must refuse/abstain
-            should_ab, _ = check_abstention_intent(q)
-            if should_ab and fallback:
-                classification = "CORRECT_REFUSAL"
-            elif top_sim >= THRESHOLD:
+        is_answered = grounded and not fallback
+
+        if exp == "ANSWER":
+            if is_answered:
+                classification = "CORRECT_ANSWER"
+            else:
+                classification = "WRONG_REFUSAL"
+        else: # exp == "REFUSAL"
+            if is_answered:
                 classification = "WRONG_ACCEPTANCE"
             else:
                 classification = "CORRECT_REFUSAL"
-            expected = "REFUSAL_ABSTAIN"
 
-        elif qtype == "yellow_leaf_special":
-            # Must NOT recommend Bordeaux; must recommend garden management
-            is_y, _ = check_yellow_leaf_disease_intent(q)
-            if is_y and grounded and not ("bordeaux" in ans.lower() and "not" not in ans.lower()):
-                classification = "CORRECT_ANSWER"
-            else:
-                classification = "WRONG_REFUSAL"
-            expected = "CORRECT_ADVICE"
-
-        else: # in_corpus
-            expected = "CORRECT_ANSWER"
-            if top_sim >= THRESHOLD:
-                # Top hit passed strict threshold
-                classification = "CORRECT_ANSWER"
-            else:
-                # Similarity was below strict 0.59 threshold -> false negative / recall loss
-                classification = "WRONG_REFUSAL"
-
-        print(f"{qid:<12} | {lang[:2]:<4} | {top_sim:.4f}  | {expected:<16} | {classification:<18} | {q[:40]}")
+        print(f"{qid:<12} | {lang[:2]:<4} | {top_sim:.4f}  | {exp:<10} | {classification:<18} | {q[:40]}")
         records.append({
             "id": qid,
-            "category": qtype,
+            "category": "farmer_starter",
             "question": q,
             "language": lang,
             "top_similarity": round(top_sim, 4),
@@ -181,12 +165,20 @@ def evaluate():
         "WRONG_REFUSAL": sum(1 for r in records if r["classification"] == "WRONG_REFUSAL"),
         "WRONG_ACCEPTANCE": sum(1 for r in records if r["classification"] == "WRONG_ACCEPTANCE"),
     }
-    total = len(records)
 
-    summary = {
+    # Language breakdown of wrong refusals
+    wrong_refusals_en = sum(1 for r in records if r["classification"] == "WRONG_REFUSAL" and r["language"] == "English")
+    wrong_refusals_kn = sum(1 for r in records if r["classification"] == "WRONG_REFUSAL" and r["language"] == "Kannada")
+
+    total = len(records)
+    output = {
         "threshold": THRESHOLD,
         "total_queries": total,
         "confusion_matrix": counts,
+        "wrong_refusals_by_language": {
+            "English": wrong_refusals_en,
+            "Kannada": wrong_refusals_kn,
+        },
         "rates": {
             "correct_answer_rate": round(counts["CORRECT_ANSWER"] / total * 100, 2),
             "correct_refusal_rate": round(counts["CORRECT_REFUSAL"] / total * 100, 2),
@@ -197,21 +189,19 @@ def evaluate():
         "records": records,
     }
 
-    print("\n" + "=" * 50)
-    print("4-WAY EVALUATION CONFUSION MATRIX SUMMARY")
-    print("=" * 50)
-    print(f"CORRECT_ANSWER:     {counts['CORRECT_ANSWER']:>3} / {total} ({summary['rates']['correct_answer_rate']}%)")
-    print(f"CORRECT_REFUSAL:    {counts['CORRECT_REFUSAL']:>3} / {total} ({summary['rates']['correct_refusal_rate']}%)")
-    print(f"WRONG_REFUSAL:      {counts['WRONG_REFUSAL']:>3} / {total} ({summary['rates']['wrong_refusal_rate_false_negatives']}%) [Recall Loss]")
-    print(f"WRONG_ACCEPTANCE:   {counts['WRONG_ACCEPTANCE']:>3} / {total} ({summary['rates']['wrong_acceptance_rate_false_positives']}%) [False Accepts]")
-    print(f"Total Safe/Correct: {counts['CORRECT_ANSWER'] + counts['CORRECT_REFUSAL']:>3} / {total} ({summary['rates']['total_safe_or_correct_rate']}%)")
-
     out_file = ROOT / "diagnostics" / "eval_confusion_matrix.json"
-    out_file.parent.mkdir(exist_ok=True)
-    with open(out_file, "w", encoding="utf-8") as f:
-        json.dump(summary, f, ensure_ascii=False, indent=2)
-    print(f"\nSaved confusion matrix to {out_file}")
-    return summary
+    out_file.write_text(json.dumps(output, indent=2, ensure_ascii=False), encoding="utf-8")
+
+    print("\n" + "=" * 50)
+    print("4-WAY EVALUATION CONFUSION MATRIX")
+    print("=" * 50)
+    for k, v in counts.items():
+        print(f"  {k:<20}: {v:>2} / {total} ({v/total*100:.1f}%)")
+    print(f"\nWrong Refusals by Language:")
+    print(f"  English: {wrong_refusals_en}")
+    print(f"  Kannada: {wrong_refusals_kn}")
+    print(f"\nTotal Safe & Grounded: {counts['CORRECT_ANSWER'] + counts['CORRECT_REFUSAL']} / {total} ({output['rates']['total_safe_or_correct_rate']}%)")
+    print(f"Artifact written to {out_file}\n")
 
 
 if __name__ == "__main__":

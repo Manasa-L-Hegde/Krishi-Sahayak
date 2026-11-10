@@ -84,3 +84,4 @@ def test_rate_limiting_with_forwarded_for():
     # /health and /static are exempt from rate limiting
     resp_health = client.get("/health", headers=headers)
     assert resp_health.status_code == 200
+

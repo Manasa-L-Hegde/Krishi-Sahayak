@@ -107,7 +107,36 @@ def check_pilot_mode() -> None:
 def load_artifacts() -> dict[str, Any]:
     if not ARTIFACT_PATH.exists():
         raise HTTPException(status_code=503, detail="Model artifacts are unavailable. Run python scripts/train_model.py first.")
-    return joblib.load(ARTIFACT_PATH)
+    artifacts = joblib.load(ARTIFACT_PATH)
+    rec_sklearn = artifacts.get("sklearn_version")
+    if rec_sklearn:
+        import sklearn
+        cur_mm = ".".join(sklearn.__version__.split(".")[:2])
+        rec_mm = ".".join(rec_sklearn.split(".")[:2])
+        if cur_mm != rec_mm:
+            raise RuntimeError(
+                f"scikit-learn runtime mismatch: artifact trained on {rec_sklearn}, "
+                f"runtime is {sklearn.__version__} (major.minor must match {rec_mm})"
+            )
+    return artifacts
+
+
+@lru_cache(maxsize=1)
+def load_dl_artifacts() -> dict[str, Any]:
+    if not DL_ARTIFACT_PATH.exists():
+        raise HTTPException(status_code=503, detail="DL forecast artifact is unavailable. Run dl/train_forecaster.py first.")
+    artifact = joblib.load(DL_ARTIFACT_PATH)
+    rec_torch = artifact.get("torch_version")
+    if rec_torch:
+        import torch
+        cur_torch_mm = ".".join(torch.__version__.split(".")[:2])
+        rec_torch_mm = ".".join(rec_torch.split(".")[:2])
+        if cur_torch_mm != rec_torch_mm:
+            raise RuntimeError(
+                f"PyTorch runtime mismatch: artifact trained on {rec_torch}, "
+                f"runtime is {torch.__version__} (major.minor must match {rec_torch_mm})"
+            )
+    return artifact
 
 
 def explain_prediction(artifacts: dict[str, Any], row: pd.DataFrame, class_index: int) -> list[ShapContribution]:
@@ -161,9 +190,7 @@ def predict(payload: PredictionRequest) -> PredictionResponse:
 
 @app.post("/dl/forecast", response_model=ForecastResponse)
 def forecast(payload: ForecastRequest) -> ForecastResponse:
-    if not DL_ARTIFACT_PATH.exists():
-        raise HTTPException(status_code=503, detail="DL forecast artifact is unavailable. Run dl/train_forecaster.py first.")
-    artifact = joblib.load(DL_ARTIFACT_PATH)
+    artifact = load_dl_artifacts()
     commodity = next((item for item in artifact["commodities"] if item.casefold() == payload.commodity.casefold()), None)
     if commodity is None:
         allowed = ", ".join(artifact["commodities"])
@@ -185,9 +212,7 @@ def forecast(payload: ForecastRequest) -> ForecastResponse:
 
 @app.get("/dl/commodities-data")
 def dl_commodities_data() -> dict[str, Any]:
-    if not DL_ARTIFACT_PATH.exists():
-        raise HTTPException(status_code=503, detail="DL forecaster is unavailable.")
-    artifact = joblib.load(DL_ARTIFACT_PATH)
+    artifact = load_dl_artifacts()
     return {
         "commodities": list(artifact["commodities"]),
         "default_prices": {c: artifact["models"][c]["last_prices"] for c in artifact["commodities"]},

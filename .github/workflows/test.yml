@@ -27,6 +27,10 @@ jobs:
           python -m pip install --upgrade pip
           pip install -r requirements.txt
 
+      - name: Fetch Genuine Reference Publications
+        run: |
+          python scripts/fetch_sources.py
+
       - name: Verify Curated Chunks Diffs
         run: |
           python scripts/verify_curated_chunks.py

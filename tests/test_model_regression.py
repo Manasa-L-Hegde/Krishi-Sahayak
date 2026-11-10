@@ -9,7 +9,7 @@ def test_model_prediction_regression():
     """Verify that model loading and inference produce exact deterministic outputs under pinned training sklearn version."""
     import pandas as pd
     import sklearn
-    assert sklearn.__version__ == "1.9.0", f"Expected training version 1.9.0, got {sklearn.__version__}"
+    assert sklearn.__version__.startswith("1.9."), f"Expected training major.minor 1.9.x, got {sklearn.__version__}"
 
     artifacts = load_artifacts()
     clf = artifacts["classifier"]
