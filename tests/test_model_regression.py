@@ -37,3 +37,36 @@ def test_model_prediction_regression():
     assert crop2 == "apple"
     assert 0.0 <= risk2 <= 100.0
 
+
+def test_sklearn_version_guard_fails_on_mismatch(tmp_path, monkeypatch):
+    """Verifies that loading an artifact stamped with a mismatched sklearn version raises RuntimeError."""
+    import joblib
+    import api.main
+
+    dummy_path = tmp_path / "mismatched_model.joblib"
+    joblib.dump({"sklearn_version": "0.24.2", "features": []}, dummy_path)
+    monkeypatch.setattr(api.main, "ARTIFACT_PATH", dummy_path)
+    api.main.load_artifacts.cache_clear()
+    try:
+        with pytest.raises(RuntimeError, match="scikit-learn runtime mismatch"):
+            api.main.load_artifacts()
+    finally:
+        api.main.load_artifacts.cache_clear()
+
+
+def test_torch_version_guard_fails_on_mismatch(tmp_path, monkeypatch):
+    """Verifies that loading a DL artifact stamped with a mismatched PyTorch version raises RuntimeError."""
+    import joblib
+    import api.main
+
+    dummy_dl_path = tmp_path / "mismatched_dl.joblib"
+    joblib.dump({"torch_version": "1.12.0+cpu"}, dummy_dl_path)
+    monkeypatch.setattr(api.main, "DL_ARTIFACT_PATH", dummy_dl_path)
+    api.main.load_dl_artifacts.cache_clear()
+    try:
+        with pytest.raises(RuntimeError, match="PyTorch runtime mismatch"):
+            api.main.load_dl_artifacts()
+    finally:
+        api.main.load_dl_artifacts.cache_clear()
+
+

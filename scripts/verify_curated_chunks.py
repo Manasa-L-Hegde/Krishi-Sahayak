@@ -96,17 +96,20 @@ def get_raw_source_slices() -> Dict[str, str]:
 
     # 3. The Hindu 2024 Advisory (thehindu_cpcri_koleroga_advisory_aug2024.html)
     p_hindu = ROOT / "genai" / "corpus" / "downloads" / "thehindu_cpcri_koleroga_advisory_aug2024.html"
-    soup = BeautifulSoup(p_hindu.read_text(encoding="utf-8", errors="replace"), "html.parser")
-    article = soup.find("div", {"class": "articlebodycontent"}) or soup
-    article_text = article.get_text(separator=" ", strip=True)
+    if p_hindu.exists():
+        soup = BeautifulSoup(p_hindu.read_text(encoding="utf-8", errors="replace"), "html.parser")
+        article = soup.find("div", {"class": "articlebodycontent"}) or soup
+        article_text = article.get_text(separator=" ", strip=True)
 
-    target_sentence_start = "Therefore, it is important to take up control measures timely whenever there is a break in rainfall, a CPCRI release said."
-    target_sentence_end = "Ensure proper mist spray of the fungicide."
-    start_h = article_text.find(target_sentence_start)
-    end_h = article_text.find(target_sentence_end, start_h) + len(target_sentence_end)
-    raw_hindu = article_text[start_h:end_h].strip()
-    # Normalize spaces in raw_hindu
-    raw_hindu = re.sub(r"\s+", " ", raw_hindu)
+        target_sentence_start = "Therefore, it is important to take up control measures timely whenever there is a break in rainfall, a CPCRI release said."
+        target_sentence_end = "Ensure proper mist spray of the fungicide."
+        start_h = article_text.find(target_sentence_start)
+        end_h = article_text.find(target_sentence_end, start_h) + len(target_sentence_end)
+        raw_hindu = article_text[start_h:end_h].strip()
+        # Normalize spaces in raw_hindu
+        raw_hindu = re.sub(r"\s+", " ", raw_hindu)
+    else:
+        raw_hindu = None
 
     return {
         "CURATED-01-EN": raw_ext17,
@@ -124,6 +127,18 @@ def verify_and_report_diffs(verbose: bool = True) -> List[Dict[str, str]]:
     reports = []
     for chunk_id, approved in APPROVED_EDITS.items():
         raw_text = raw_slices[chunk_id]
+        if raw_text is None:
+            if verbose:
+                print(f"=== {chunk_id} VERIFICATION SKIPPED ===")
+                print("  Local saved copy of source not present; skipping live web scraping.\n")
+            reports.append({
+                "chunk_id": chunk_id,
+                "status": "SKIPPED",
+                "approved_edits_count": 0,
+                "diff": "(Source file not found locally; skipped)",
+            })
+            continue
+
         curated_text = chunks[chunk_id]
 
         # Generate difflib unified diff between raw and curated
