@@ -141,7 +141,7 @@ An LLM/API provider for GenAI, vector search and RAG components, and Azure servi
 
 ## Azure readiness (not deployed)
 
-The project is prepared for a later Linux App Service deployment but has not been deployed. The startup command is `sh startup.sh` (Gunicorn with Uvicorn workers). Keep the generated `models/` artifacts in the deployment package and do not commit the raw Kaggle CSV. Azure ML registration and App Service deployment are intentionally deferred until the integration phase.
+The project is prepared for a later Linux App Service deployment but has not been deployed. The startup command is `sh startup.sh` (Gunicorn with Uvicorn workers). Keep the generated `models/` artifacts in the deployment package and do not commit the raw Kaggle CSV. Azure ML registration and App Service deployment are intentionally deferred until the integration phase .
 
 Deployment is not claimed by this repository: Azure subscription, region quota, App Service plan, Azure ML workspace access, and deployment credentials are environment-specific.
 
