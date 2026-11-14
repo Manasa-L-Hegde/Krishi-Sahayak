@@ -1,6 +1,6 @@
 # Krishi Sahayak
 
-**ML + DL + GenAI for intelligent agriculture advisory.**
+**ML + DL + GenAI for intelligent agriculture advisory .**
 
 Krishi Sahayak is a multi-layer agriculture advisory platform combining Machine Learning, Deep Learning, and Generative AI for crop recommendation, risk assessment, forecasting, and farmer assistance.
 
