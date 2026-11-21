@@ -279,6 +279,15 @@ def test_near_miss_entity_and_quantity_guards():
             "The source recipe makes 100 litres in total (1 kg copper sulphate in 50 L + 1 kg lime in 50 L). For other quantities consult your KVK/RSK.",
         ),
         (
+            "UNSEEN_03_EN",
+            "copper sulphate and lime for 25 litres",
+            "en",
+            "quantity_scaling",
+            True,
+            False,
+            "The source recipe makes 100 litres in total (1 kg copper sulphate in 50 L + 1 kg lime in 50 L). For other quantities consult your KVK/RSK.",
+        ),
+        (
             "NM_05_EN",
             "What is the treatment for bud rot?",
             "en",

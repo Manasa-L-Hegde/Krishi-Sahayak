@@ -103,28 +103,32 @@ UNMENTIONED_FOREIGN_ENTITIES = [
 
 def check_quantity_guard(clean_q: str, is_kannada: bool) -> Optional[Dict[str, Any]]:
     """Detects requests for non-standard volumes or per-acre/per-palm scalings."""
-    quantity_patterns = [
-        r"\b50\s*(l|litres?|liters?)\b",
-        r"\b200\s*(l|litres?|liters?)\b",
-        r"\b500\s*(l|litres?|liters?)\b",
-        r"\b1000\s*(l|litres?|liters?)\b",
+    # 1. Capture any numeric volume in litres/liters (English + Kannada)
+    vol_match = re.search(r"\b(\d+(?:\.\d+)?)\s*(l|litres?|liters?)\b", clean_q)
+    kn_vol_match = re.search(r"(\d+(?:\.\d+)?)\s*ಲೀಟರ್", clean_q)
+
+    has_non_standard_volume = False
+    if vol_match and float(vol_match.group(1)) != 100:
+        has_non_standard_volume = True
+    elif kn_vol_match and float(kn_vol_match.group(1)) != 100:
+        has_non_standard_volume = True
+
+    # 2. Capture area / tree scalings
+    area_patterns = [
         r"\bper\s*acre\b",
         r"\bfor\s*(an?|1|one)\s*acre\b",
-        r"\bper\s*palm\b",
-        r"\bper\s*tree\b",
-        r"50\s*ಲೀಟರ್",
-        r"200\s*ಲೀಟರ್",
-        r"500\s*ಲೀಟರ್",
+        r"\bper\s*(palm|tree)\b",
         r"ಪ್ರತಿ\s*ಎಕರೆ",
         r"ಒಂದು\s*ಎಕರೆಗೆ",
         r"ಪ್ರತಿ\s*ಮರಕ್ಕೆ",
     ]
-    has_quantity = any(re.search(pat, clean_q) for pat in quantity_patterns)
+    has_area_scaling = any(re.search(pat, clean_q) for pat in area_patterns)
+
     has_spray_context = any(w in clean_q for w in [
         "copper", "lime", "bordeaux", "mixture", "how much", "dose", "water",
         "ಮೈಲುತುತ್ತು", "ಸುಣ್ಣ", "ಬೋರ್ಡೋ", "ದ್ರಾವಣ", "ಎಷ್ಟು", "ನೀರಿಗೆ"
     ])
-    if has_quantity and has_spray_context:
+    if (has_non_standard_volume or has_area_scaling) and has_spray_context:
         if is_kannada:
             ans = "ಮೂಲ ವಿಧಾನವು ಒಟ್ಟು 100 ಲೀಟರ್‌ಗಳಿಗೆ ನಿಗದಿಯಾಗಿದೆ (50 ಲೀಟರ್‌ಗೆ 1 ಕೆ.ಜಿ ಮೈಲುತುತ್ತು + 50 ಲೀಟರ್‌ಗೆ 1 ಕೆ.ಜಿ ಸುಣ್ಣ). ಇತರ ಪ್ರಮಾಣಗಳಿಗಾಗಿ ನಿಮ್ಮ ಕೆವಿಕೆ / ಆರ್‌ಎಸ್‌ಕೆ ಸಂಪರ್ಕಿಸಿ."
         else:

@@ -59,7 +59,7 @@ The evaluation suite was executed against **39 test queries** (10 out-of-corpus 
 To prevent vector similarity fluctuations and avoid false negative refusals on standard agronomic queries, canonical user intents (`prep`, `knife_test`, `vessels`, `second_spray`, `third_spray`, `covers`, `sticker`, `alternative`, `no_mix`) in English and Kannada are deterministically routed to verified `ARECANUT_KOLEROGA_RULE` records with official citations.
 
 To address near-miss hazards revealed during adversarial testing, two additional guards operate upstream:
-1. **Quantity Guard:** Rejects scaling requests (e.g., 50 L, 200 L, per-acre, per-palm) and returns a fixed constraint: *"The source recipe makes 100 litres in total (1 kg copper sulphate in 50 L + 1 kg lime in 50 L). For other quantities consult your KVK/RSK."*
+1. **Quantity Guard:** Uses generic numeric volume parsing to intercept non-100L scalings (e.g., 25 L, 50 L, 200 L, per-acre, per-palm) and returns a fixed constraint: *"The source recipe makes 100 litres in total (1 kg copper sulphate in 50 L + 1 kg lime in 50 L). For other quantities consult your KVK/RSK."*
 2. **Entity Guard:** If an in-domain question names an unverified chemical entity (e.g., mancozeb, copper oxychloride, quicklime, slaked lime, chlorpyrifos, carbendazim), the passage is rejected even if vector similarity exceeds threshold ($\tau = 0.59$), returning a safe fallback refusal.
 
 ### Confusion Matrix Summary (from `diagnostics/eval_confusion_matrix.json`)
