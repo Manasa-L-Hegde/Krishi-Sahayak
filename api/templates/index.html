@@ -3,366 +3,726 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Krishi Sahayak - Smart Crop & Advisory Platform</title>
+  <title>Krishi Sahayak - Smart Crop Recommendation & Advisory</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Noto+Sans+Kannada:wght@400;600;700&display=swap" rel="stylesheet">
   <style>
     :root {
-      --primary: #15803d;
-      --primary-dark: #166534;
-      --primary-light: #dcfce7;
-      --accent: #b45309;
+      --primary: #059669;
+      --primary-dark: #047857;
+      --primary-light: #d1fae5;
+      --primary-glow: rgba(16, 185, 129, 0.25);
+      --accent: #d97706;
       --bg: #f8fafc;
-      --card-bg: #ffffff;
+      --surface: #ffffff;
+      --surface-elevated: #ffffff;
       --text: #0f172a;
       --text-muted: #64748b;
       --border: #e2e8f0;
+      --border-focus: #10b981;
       --success: #16a34a;
-      --warning: #d97706;
-      --danger: #dc2626;
-      --info: #0284c7;
+      --warning: #f59e0b;
+      --danger: #ef4444;
+      --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+      --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.07), 0 2px 4px -2px rgba(0, 0, 0, 0.05);
+      --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.08), 0 4px 6px -4px rgba(0, 0, 0, 0.04);
+      --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.04);
     }
 
-    * { box-sizing: border-box; margin: 0; padding: 0; font-family: system-ui, -apple-system, Segoe UI, Roboto, sans-serif; }
-    body { background-color: var(--bg); color: var(--text); line-height: 1.5; padding-bottom: 60px; }
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Plus Jakarta Sans', 'Noto Sans Kannada', system-ui, sans-serif; }
+    body { background-color: var(--bg); color: var(--text); line-height: 1.6; padding-bottom: 80px; -webkit-font-smoothing: antialiased; }
 
+    /* Top Navigation Header */
     header {
-      background: linear-gradient(135deg, var(--primary-dark), var(--primary));
+      background: linear-gradient(135deg, #064e3b 0%, #065f46 50%, #059669 100%);
       color: white;
-      padding: 1.25rem 1.5rem;
-      box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+      padding: 1.25rem 2rem;
+      box-shadow: 0 4px 20px rgba(6, 78, 59, 0.25);
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      backdrop-filter: blur(8px);
+    }
+    .header-content {
+      max-width: 1200px;
+      margin: 0 auto;
       display: flex;
       justify-content: space-between;
       align-items: center;
       flex-wrap: wrap;
       gap: 1rem;
     }
-
-    .brand h1 { font-size: 1.5rem; font-weight: 700; display: flex; align-items: center; gap: 0.5rem; }
-    .brand p { font-size: 0.875rem; opacity: 0.9; margin-top: 0.2rem; }
-
-    .header-links { display: flex; align-items: center; gap: 0.75rem; }
-    .nav-btn {
-      background: rgba(255, 255, 255, 0.15);
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 0.85rem;
+    }
+    .brand-icon {
+      background: rgba(255, 255, 255, 0.2);
       border: 1px solid rgba(255, 255, 255, 0.35);
+      width: 44px;
+      height: 44px;
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.5rem;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.12);
+    }
+    .brand h1 { font-size: 1.35rem; font-weight: 800; letter-spacing: -0.02em; color: #ffffff; }
+    .brand p { font-size: 0.825rem; opacity: 0.9; color: #a7f3d0; font-weight: 500; }
+
+    .header-actions { display: flex; align-items: center; gap: 0.75rem; flex-wrap: wrap; }
+    .btn-pill {
+      background: rgba(255, 255, 255, 0.15);
+      border: 1px solid rgba(255, 255, 255, 0.3);
       color: white;
       text-decoration: none;
-      padding: 0.45rem 0.9rem;
+      padding: 0.5rem 1.1rem;
       border-radius: 9999px;
       font-weight: 600;
       font-size: 0.875rem;
-      transition: all 0.2s;
+      transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
       display: inline-flex;
       align-items: center;
-      gap: 0.4rem;
+      gap: 0.5rem;
+      cursor: pointer;
     }
-    .nav-btn:hover { background: rgba(255, 255, 255, 0.25); }
-    .nav-btn.highlight {
+    .btn-pill:hover {
+      background: rgba(255, 255, 255, 0.25);
+      transform: translateY(-1px);
+    }
+    .btn-pill.featured {
       background: #fef08a;
-      color: #854d0e;
+      color: #713f12;
       border-color: #fde047;
       font-weight: 700;
+      box-shadow: 0 2px 10px rgba(234, 179, 8, 0.3);
     }
-    .nav-btn.highlight:hover { background: #fef9c3; }
+    .btn-pill.featured:hover {
+      background: #fef9c3;
+      transform: translateY(-2px);
+      box-shadow: 0 4px 14px rgba(234, 179, 8, 0.45);
+    }
 
-    .container { max-width: 1040px; margin: 2rem auto; padding: 0 1rem; }
+    .lang-switcher {
+      background: rgba(0, 0, 0, 0.25);
+      border: 1px solid rgba(255, 255, 255, 0.25);
+      color: white;
+      border-radius: 9999px;
+      padding: 0.4rem 0.8rem;
+      font-size: 0.85rem;
+      font-weight: 600;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+      transition: all 0.2s;
+    }
+    .lang-switcher:hover { background: rgba(0, 0, 0, 0.35); }
 
-    /* Top Alert Banner */
-    .banner {
-      background: linear-gradient(to right, #ecfdf5, #f0fdf4);
-      border: 1px solid #a7f3d0;
-      border-radius: 0.75rem;
-      padding: 1rem 1.25rem;
+    /* Main Container */
+    .container { max-width: 1200px; margin: 2rem auto; padding: 0 1.25rem; }
+
+    /* Hero Callout Banner */
+    .hero-banner {
+      background: linear-gradient(135deg, #ecfdf5 0%, #f0fdf4 100%);
+      border: 1.5px solid #a7f3d0;
+      border-radius: 16px;
+      padding: 1.25rem 1.75rem;
       margin-bottom: 2rem;
       display: flex;
       justify-content: space-between;
       align-items: center;
       flex-wrap: wrap;
-      gap: 1rem;
-      box-shadow: 0 1px 2px rgba(0,0,0,0.03);
+      gap: 1.25rem;
+      box-shadow: var(--shadow-sm);
+      position: relative;
+      overflow: hidden;
     }
-    .banner-text { display: flex; align-items: center; gap: 0.75rem; }
-    .banner-icon { font-size: 1.5rem; }
-    .banner-btn {
+    .hero-banner::before {
+      content: '';
+      position: absolute;
+      top: -50%;
+      right: -10%;
+      width: 250px;
+      height: 250px;
+      background: radial-gradient(circle, rgba(16, 185, 129, 0.08) 0%, transparent 70%);
+      border-radius: 50%;
+    }
+    .hero-text { display: flex; align-items: center; gap: 1rem; position: relative; z-index: 1; }
+    .hero-icon {
+      font-size: 2rem;
+      background: white;
+      width: 56px;
+      height: 56px;
+      border-radius: 14px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 2px 8px rgba(5, 150, 105, 0.15);
+      flex-shrink: 0;
+    }
+    .hero-title { font-size: 1.05rem; font-weight: 700; color: #065f46; margin-bottom: 0.2rem; }
+    .hero-desc { font-size: 0.875rem; color: #047857; }
+    .btn-action {
       background: var(--primary);
       color: white;
       text-decoration: none;
-      padding: 0.5rem 1rem;
-      border-radius: 0.5rem;
-      font-weight: 600;
-      font-size: 0.875rem;
-      transition: background 0.2s;
+      padding: 0.65rem 1.35rem;
+      border-radius: 12px;
+      font-weight: 700;
+      font-size: 0.9rem;
+      transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      box-shadow: 0 3px 10px rgba(5, 150, 105, 0.3);
+      position: relative;
+      z-index: 1;
     }
-    .banner-btn:hover { background: var(--primary-dark); }
+    .btn-action:hover {
+      background: var(--primary-dark);
+      transform: translateY(-2px);
+      box-shadow: 0 6px 16px rgba(5, 150, 105, 0.4);
+    }
 
-    .grid-layout {
+    /* 2-Column Responsive Layout */
+    .dashboard-grid {
       display: grid;
       grid-template-columns: 1fr;
       gap: 2rem;
+      align-items: start;
     }
-    @media (min-width: 860px) {
-      .grid-layout { grid-template-columns: 1.15fr 0.85fr; }
+    @media (min-width: 960px) {
+      .dashboard-grid { grid-template-columns: 1.2fr 0.9fr; }
     }
 
-    .card {
-      background: var(--card-bg);
-      border-radius: 0.75rem;
+    /* Card Panels */
+    .panel-card {
+      background: var(--surface);
+      border-radius: 20px;
       border: 1px solid var(--border);
-      padding: 1.5rem;
-      box-shadow: 0 2px 4px rgba(0,0,0,0.04);
+      padding: 1.75rem;
+      box-shadow: var(--shadow-md);
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      position: relative;
     }
-    .card-title {
-      font-size: 1.15rem;
+    .panel-card:hover {
+      box-shadow: var(--shadow-lg);
+      border-color: #cbd5e1;
+    }
+
+    .panel-header {
+      margin-bottom: 1.5rem;
+      padding-bottom: 1rem;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+    }
+    .panel-title {
+      font-size: 1.25rem;
+      font-weight: 800;
+      color: #0f172a;
+      letter-spacing: -0.01em;
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
+    }
+    .panel-subtitle { font-size: 0.85rem; color: var(--text-muted); margin-top: 0.3rem; }
+
+    /* Presets Slider Row */
+    .preset-section {
+      background: #f8fafc;
+      border: 1px solid #f1f5f9;
+      border-radius: 14px;
+      padding: 1rem;
+      margin-bottom: 1.5rem;
+    }
+    .preset-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 0.65rem;
+    }
+    .preset-title { font-size: 0.8rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; color: var(--text-muted); }
+    .preset-chips {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+    }
+    .chip {
+      background: #ffffff;
+      border: 1.5px solid #cbd5e1;
+      border-radius: 10px;
+      padding: 0.4rem 0.75rem;
+      font-size: 0.825rem;
+      font-weight: 600;
+      color: #334155;
+      cursor: pointer;
+      transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4rem;
+    }
+    .chip:hover {
+      border-color: var(--primary);
+      color: var(--primary-dark);
+      background: var(--primary-light);
+      transform: translateY(-2px);
+      box-shadow: 0 4px 8px rgba(16, 185, 129, 0.15);
+    }
+    .chip.active {
+      background: var(--primary-dark);
+      color: white;
+      border-color: var(--primary-dark);
+    }
+
+    /* Dual Control Input Groups (Slider + Input) */
+    .inputs-grid {
+      display: flex;
+      flex-direction: column;
+      gap: 1.25rem;
+    }
+    .input-row {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 0.5rem;
+      padding: 0.85rem 1rem;
+      background: #f8fafc;
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      transition: all 0.2s ease;
+    }
+    .input-row:hover {
+      background: #ffffff;
+      border-color: #cbd5e1;
+      box-shadow: var(--shadow-sm);
+    }
+    .input-row:focus-within {
+      background: #ffffff;
+      border-color: var(--border-focus);
+      box-shadow: 0 0 0 3px var(--primary-glow);
+    }
+
+    .input-label-bar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .field-name {
+      font-size: 0.9rem;
       font-weight: 700;
       color: #1e293b;
-      margin-bottom: 0.5rem;
       display: flex;
       align-items: center;
       gap: 0.5rem;
     }
-    .card-subtitle {
-      font-size: 0.85rem;
-      color: var(--text-muted);
-      margin-bottom: 1.25rem;
-    }
-
-    /* Preset Buttons */
-    .presets {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 0.5rem;
-      margin-bottom: 1.25rem;
-      padding-bottom: 1rem;
-      border-bottom: 1px dashed var(--border);
-    }
-    .preset-label { font-size: 0.8rem; font-weight: 600; color: var(--text-muted); width: 100%; }
-    .preset-chip {
-      background: #f1f5f9;
-      border: 1px solid #cbd5e1;
-      border-radius: 9999px;
-      padding: 0.25rem 0.75rem;
-      font-size: 0.8rem;
-      cursor: pointer;
+    .field-badge {
+      font-size: 0.75rem;
       font-weight: 600;
-      color: #334155;
-      transition: all 0.15s;
-    }
-    .preset-chip:hover {
-      background: var(--primary-light);
-      border-color: #86efac;
-      color: var(--primary-dark);
+      padding: 0.2rem 0.5rem;
+      border-radius: 6px;
+      background: #e2e8f0;
+      color: #475569;
     }
 
-    /* Form Fields */
-    .form-grid {
+    .field-controls {
       display: grid;
-      grid-template-columns: repeat(2, 1fr);
+      grid-template-columns: 1fr 100px;
       gap: 1rem;
+      align-items: center;
+      margin-top: 0.25rem;
     }
-    @media (max-width: 600px) {
-      .form-grid { grid-template-columns: 1fr; }
+
+    /* Custom Sliders */
+    input[type=range] {
+      -webkit-appearance: none;
+      width: 100%;
+      height: 7px;
+      border-radius: 5px;
+      background: #cbd5e1;
+      outline: none;
+      transition: background 0.2s;
     }
-    .form-group { display: flex; flex-direction: column; gap: 0.35rem; }
-    .form-group label {
-      font-size: 0.85rem;
-      font-weight: 600;
-      color: #334155;
-      display: flex;
-      justify-content: space-between;
+    input[type=range]::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      appearance: none;
+      width: 20px;
+      height: 20px;
+      border-radius: 50%;
+      background: var(--primary);
+      cursor: pointer;
+      border: 2.5px solid #ffffff;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.25);
+      transition: transform 0.15s ease, background 0.15s;
     }
-    .form-group .unit { font-weight: 400; color: var(--text-muted); font-size: 0.75rem; }
-    .form-control {
+    input[type=range]::-webkit-slider-thumb:hover {
+      transform: scale(1.25);
+      background: var(--primary-dark);
+    }
+
+    /* Numeric Boxes */
+    .num-input-wrap { position: relative; }
+    .num-input {
+      width: 100%;
+      padding: 0.5rem 0.65rem;
       font-size: 0.95rem;
-      padding: 0.65rem 0.85rem;
-      border: 1.5px solid var(--border);
-      border-radius: 0.5rem;
-      background: #ffffff;
+      font-weight: 700;
       color: #0f172a;
-      transition: border-color 0.15s, box-shadow 0.15s;
+      border: 1.5px solid var(--border);
+      border-radius: 8px;
+      text-align: right;
+      background: white;
+      transition: border-color 0.2s;
     }
-    .form-control:focus {
+    .num-input:focus {
       outline: none;
       border-color: var(--primary);
-      box-shadow: 0 0 0 3px rgba(21, 128, 61, 0.15);
+      box-shadow: 0 0 0 2px var(--primary-glow);
+    }
+    .unit-tag {
+      position: absolute;
+      left: 0.6rem;
+      top: 50%;
+      transform: translateY(-50%);
+      font-size: 0.75rem;
+      color: var(--text-muted);
+      font-weight: 500;
+      pointer-events: none;
     }
 
-    .btn-submit {
+    /* Submit Button */
+    .btn-calculate {
       width: 100%;
-      margin-top: 1.25rem;
-      padding: 0.85rem;
-      background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+      margin-top: 1.5rem;
+      padding: 1rem;
+      background: linear-gradient(135deg, #059669 0%, #047857 100%);
       color: white;
-      font-size: 1rem;
-      font-weight: 700;
+      font-size: 1.05rem;
+      font-weight: 800;
+      letter-spacing: -0.01em;
       border: none;
-      border-radius: 0.5rem;
+      border-radius: 14px;
       cursor: pointer;
       display: flex;
       align-items: center;
       justify-content: center;
-      gap: 0.5rem;
-      box-shadow: 0 2px 4px rgba(21, 128, 61, 0.25);
-      transition: all 0.2s;
+      gap: 0.6rem;
+      box-shadow: 0 4px 14px rgba(5, 150, 105, 0.35);
+      transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
     }
-    .btn-submit:hover {
-      box-shadow: 0 4px 8px rgba(21, 128, 61, 0.35);
-      transform: translateY(-1px);
+    .btn-calculate:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 24px rgba(5, 150, 105, 0.45);
+      background: linear-gradient(135deg, #10b981 0%, #059669 100%);
     }
-    .btn-submit:active { transform: translateY(0); }
+    .btn-calculate:active { transform: translateY(0); }
 
-    /* Results Card */
-    .result-placeholder {
+    /* Results Showcase Panel */
+    .result-empty {
       display: flex;
       flex-direction: column;
       align-items: center;
       justify-content: center;
-      min-height: 280px;
+      min-height: 380px;
       text-align: center;
       color: var(--text-muted);
-      border: 2px dashed var(--border);
-      border-radius: 0.75rem;
-      padding: 2rem;
+      border: 2px dashed #cbd5e1;
+      border-radius: 16px;
+      padding: 2.5rem 1.5rem;
+      background: #f8fafc;
     }
-    .result-placeholder-icon { font-size: 2.5rem; margin-bottom: 0.5rem; opacity: 0.6; }
+    .result-empty-icon {
+      font-size: 3.5rem;
+      margin-bottom: 1rem;
+      opacity: 0.7;
+      animation: pulse 2.5s infinite ease-in-out;
+    }
+    @keyframes pulse { 0%, 100% { transform: scale(1); opacity: 0.7; } 50% { transform: scale(1.08); opacity: 0.95; } }
 
-    .crop-result-card {
-      background: linear-gradient(to bottom, #f0fdf4, #ffffff);
+    .result-display {
+      display: none;
+      animation: slideIn 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    @keyframes slideIn { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } }
+
+    /* Main Crop Result Hero Card */
+    .crop-hero-card {
+      background: linear-gradient(135deg, #ecfdf5 0%, #f0fdf4 50%, #ffffff 100%);
       border: 2px solid #86efac;
-      border-radius: 0.75rem;
-      padding: 1.5rem;
-      animation: fadeIn 0.3s ease-in;
+      border-radius: 18px;
+      padding: 1.75rem;
+      box-shadow: 0 8px 20px -4px rgba(16, 185, 129, 0.15);
+      position: relative;
+      overflow: hidden;
     }
-    @keyframes fadeIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
+    .crop-hero-card::after {
+      content: 'RECOMMENDED';
+      position: absolute;
+      top: 1rem;
+      right: -2.5rem;
+      background: #10b981;
+      color: white;
+      font-size: 0.65rem;
+      font-weight: 800;
+      letter-spacing: 0.1em;
+      padding: 0.3rem 2.8rem;
+      transform: rotate(45deg);
+      box-shadow: 0 2px 6px rgba(0,0,0,0.15);
+    }
 
-    .crop-header {
+    .crop-hero-top {
       display: flex;
       align-items: center;
-      gap: 1rem;
-      padding-bottom: 1rem;
-      border-bottom: 1px solid #dcfce7;
+      gap: 1.25rem;
     }
-    .crop-icon-large {
-      font-size: 3rem;
+    .crop-avatar {
+      width: 76px;
+      height: 76px;
+      border-radius: 18px;
       background: white;
-      width: 64px;
-      height: 64px;
+      border: 2px solid #bbf7d0;
       display: flex;
       align-items: center;
       justify-content: center;
-      border-radius: 1rem;
-      box-shadow: 0 2px 5px rgba(0,0,0,0.06);
+      font-size: 3.25rem;
+      box-shadow: 0 4px 12px rgba(16, 185, 129, 0.15);
+      flex-shrink: 0;
     }
-    .crop-info h3 { font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.05em; color: var(--primary-dark); }
-    .crop-name { font-size: 1.75rem; font-weight: 800; color: #14532d; text-transform: capitalize; }
+    .crop-title-group h4 {
+      font-size: 0.8rem;
+      text-transform: uppercase;
+      font-weight: 800;
+      letter-spacing: 0.08em;
+      color: var(--primary-dark);
+    }
+    .crop-main-name {
+      font-size: 2.25rem;
+      font-weight: 800;
+      letter-spacing: -0.02em;
+      color: #064e3b;
+      line-height: 1.1;
+      margin: 0.25rem 0;
+    }
+    .crop-kn-name {
+      font-size: 1.15rem;
+      font-weight: 700;
+      color: #059669;
+    }
 
-    .metric-row {
+    /* Quick Attribute Tags */
+    .crop-tags {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.45rem;
+      margin-top: 1.25rem;
+      padding-top: 1rem;
+      border-top: 1px dashed #bbf7d0;
+    }
+    .crop-tag {
+      font-size: 0.775rem;
+      font-weight: 700;
+      padding: 0.3rem 0.65rem;
+      border-radius: 8px;
+      background: #ffffff;
+      border: 1px solid #bbf7d0;
+      color: #14532d;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.3rem;
+    }
+
+    /* Score Badges & Gauges */
+    .metrics-summary {
       display: grid;
       grid-template-columns: 1fr 1fr;
-      gap: 0.75rem;
+      gap: 1rem;
       margin: 1.25rem 0;
     }
-    .metric-card {
+    .metric-box {
+      background: white;
+      border: 1.5px solid var(--border);
+      border-radius: 14px;
+      padding: 1rem;
+      box-shadow: var(--shadow-sm);
+    }
+    .metric-box-title {
+      font-size: 0.75rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--text-muted);
+    }
+    .metric-box-val {
+      font-size: 1.5rem;
+      font-weight: 800;
+      color: #0f172a;
+      margin: 0.25rem 0 0.5rem 0;
+    }
+    .meter-rail {
+      width: 100%;
+      height: 8px;
+      background: #e2e8f0;
+      border-radius: 9999px;
+      overflow: hidden;
+    }
+    .meter-fill {
+      height: 100%;
+      border-radius: 9999px;
+      transition: width 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    .fill-green { background: linear-gradient(90deg, #10b981, #059669); }
+    .fill-amber { background: linear-gradient(90deg, #fbbf24, #d97706); }
+    .fill-red { background: linear-gradient(90deg, #f87171, #dc2626); }
+
+    /* SHAP Contribution Horizontal Bars */
+    .explain-card {
       background: white;
       border: 1px solid var(--border);
-      border-radius: 0.5rem;
-      padding: 0.75rem 1rem;
+      border-radius: 14px;
+      padding: 1.25rem;
+      margin-top: 1.25rem;
     }
-    .metric-label { font-size: 0.75rem; color: var(--text-muted); font-weight: 600; text-transform: uppercase; }
-    .metric-value { font-size: 1.25rem; font-weight: 700; color: #1e293b; margin-top: 0.2rem; }
-
-    .progress-bar-container {
+    .explain-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 0.85rem;
+    }
+    .explain-title {
+      font-size: 0.875rem;
+      font-weight: 800;
+      color: #1e293b;
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+    }
+    .shap-rows { display: flex; flex-direction: column; gap: 0.65rem; }
+    .shap-row {
+      display: flex;
+      flex-direction: column;
+      gap: 0.25rem;
+      background: #f8fafc;
+      padding: 0.5rem 0.75rem;
+      border-radius: 8px;
+      border: 1px solid #f1f5f9;
+    }
+    .shap-top {
+      display: flex;
+      justify-content: space-between;
+      font-size: 0.8rem;
+    }
+    .shap-feat { font-weight: 700; color: #334155; }
+    .shap-pct { font-weight: 800; }
+    .shap-pct.support { color: #059669; }
+    .shap-pct.oppose { color: #dc2626; }
+    .shap-bar-track {
       width: 100%;
       height: 6px;
       background: #e2e8f0;
-      border-radius: 9999px;
-      margin-top: 0.5rem;
+      border-radius: 4px;
       overflow: hidden;
     }
-    .progress-bar { height: 100%; border-radius: 9999px; transition: width 0.5s ease-out; }
-    .progress-green { background: #16a34a; }
-    .progress-yellow { background: #eab308; }
-    .progress-red { background: #ef4444; }
+    .shap-bar-val { height: 100%; border-radius: 4px; }
+    .shap-bar-val.support { background: #10b981; }
+    .shap-bar-val.oppose { background: #ef4444; }
 
-    .shap-section {
-      background: white;
-      border: 1px solid var(--border);
-      border-radius: 0.5rem;
-      padding: 1rem;
-      margin-top: 1rem;
-    }
-    .shap-title { font-size: 0.85rem; font-weight: 700; color: #334155; margin-bottom: 0.6rem; display: flex; align-items: center; gap: 0.35rem; }
-    .shap-list { display: flex; flex-direction: column; gap: 0.45rem; }
-    .shap-item {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      font-size: 0.825rem;
-      padding: 0.35rem 0.6rem;
-      border-radius: 0.35rem;
+    /* Technical Raw JSON Drawer */
+    details.tech-drawer {
+      margin-top: 1.25rem;
+      border: 1px solid #e2e8f0;
+      border-radius: 10px;
+      padding: 0.65rem 1rem;
       background: #f8fafc;
     }
-    .shap-support { color: #15803d; font-weight: 600; }
-    .shap-oppose { color: #b91c1c; font-weight: 600; }
-
-    .warning-badge {
-      background: #fef2f2;
-      border: 1px solid #fecaca;
-      color: #991b1b;
-      font-size: 0.75rem;
-      padding: 0.5rem 0.75rem;
-      border-radius: 0.35rem;
-      margin-top: 1rem;
-      line-height: 1.4;
-    }
-
-    details.json-details {
-      margin-top: 1rem;
-      font-size: 0.8rem;
-      color: var(--text-muted);
-    }
-    details.json-details summary {
+    details.tech-drawer summary {
       cursor: pointer;
-      font-weight: 600;
-      padding: 0.25rem 0;
+      font-size: 0.825rem;
+      font-weight: 700;
+      color: var(--text-muted);
+      user-select: none;
     }
-    pre.raw-json {
-      background: #1e293b;
-      color: #e2e8f0;
-      padding: 0.75rem;
-      border-radius: 0.5rem;
-      margin-top: 0.5rem;
+    pre.code-dump {
+      margin-top: 0.75rem;
+      padding: 0.85rem;
+      background: #0f172a;
+      color: #94a3b8;
+      border-radius: 8px;
       font-size: 0.75rem;
       overflow-x: auto;
+      font-family: monospace;
     }
 
-    /* Q&A Section */
-    .qa-card {
+    /* Q&A Section (Gemini Powered) */
+    .qa-box {
       margin-top: 2rem;
       background: white;
-      border-radius: 0.75rem;
+      border-radius: 20px;
       border: 1px solid var(--border);
-      padding: 1.5rem;
-      box-shadow: 0 2px 4px rgba(0,0,0,0.04);
+      padding: 1.75rem;
+      box-shadow: var(--shadow-md);
     }
-    .qa-input-row { display: flex; gap: 0.5rem; margin-top: 0.75rem; flex-wrap: wrap; }
-    .qa-input { flex: 1; min-width: 260px; }
-    .qa-select { width: 120px; }
-    .qa-btn {
-      padding: 0.65rem 1.25rem;
+    .qa-input-flex {
+      display: flex;
+      gap: 0.75rem;
+      margin-top: 1rem;
+      flex-wrap: wrap;
+    }
+    .qa-text-input {
+      flex: 1;
+      min-width: 280px;
+      padding: 0.75rem 1rem;
+      border: 1.5px solid var(--border);
+      border-radius: 12px;
+      font-size: 0.95rem;
+    }
+    .qa-text-input:focus {
+      outline: none;
+      border-color: #0284c7;
+      box-shadow: 0 0 0 3px rgba(2, 132, 199, 0.15);
+    }
+    .btn-ask {
       background: #0284c7;
       color: white;
       border: none;
-      border-radius: 0.5rem;
-      font-weight: 600;
+      border-radius: 12px;
+      padding: 0.75rem 1.5rem;
+      font-weight: 700;
+      font-size: 0.95rem;
       cursor: pointer;
+      transition: all 0.2s;
     }
-    .qa-btn:hover { background: #0369a1; }
-    .qa-response {
-      margin-top: 1rem;
-      padding: 1rem;
+    .btn-ask:hover { background: #0369a1; transform: translateY(-1px); }
+
+    .qa-pill-prompts {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.45rem;
+      margin-top: 0.75rem;
+    }
+    .qa-pill {
       background: #f0f9ff;
       border: 1px solid #bae6fd;
-      border-radius: 0.5rem;
-      font-size: 0.9rem;
       color: #0369a1;
+      border-radius: 9999px;
+      padding: 0.3rem 0.75rem;
+      font-size: 0.775rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+    .qa-pill:hover { background: #e0f2fe; border-color: #7dd3fc; }
+
+    .qa-result-area {
+      margin-top: 1rem;
+      padding: 1.25rem;
+      border-radius: 12px;
+      background: #f8fafc;
+      border: 1px solid var(--border);
+      font-size: 0.925rem;
       display: none;
     }
   </style>
@@ -370,270 +730,464 @@
 <body>
 
   <header>
-    <div class="brand">
-      <h1>🌱 Krishi Sahayak</h1>
-      <p>Intelligent Multi-Layer Agricultural Advisory & Decision Platform</p>
-    </div>
-    <div class="header-links">
-      <a href="/spray" class="nav-btn highlight">🌧️ Open Spray Advisor &rarr;</a>
-      <a href="/docs" class="nav-btn">📖 API Docs</a>
+    <div class="header-content">
+      <div class="brand">
+        <div class="brand-icon">🌱</div>
+        <div>
+          <h1 id="lbl-brand-title">Krishi Sahayak</h1>
+          <p id="lbl-brand-sub">Intelligent Crop Recommendation & Agricultural Advisory</p>
+        </div>
+      </div>
+      <div class="header-actions">
+        <button type="button" class="lang-switcher" onclick="toggleLanguage()" id="btn-lang-toggle">
+          🌐 <span>English / ಕನ್ನಡ</span>
+        </button>
+        <a href="/spray" class="btn-pill featured" id="lbl-nav-spray">🌧️ Open Spray Advisor &rarr;</a>
+        <a href="/docs" class="btn-pill">📖 API</a>
+      </div>
     </div>
   </header>
 
   <div class="container">
 
-    <!-- Direct Navigation Banner -->
-    <div class="banner">
-      <div class="banner-text">
-        <span class="banner-icon">🌦️</span>
+    <!-- Hero Callout -->
+    <div class="hero-banner">
+      <div class="hero-text">
+        <div class="hero-icon">🌦️</div>
         <div>
-          <strong style="color: #065f46;">Arecanut Koleroga Weather & Spray Advisor is Ready</strong>
-          <p style="font-size: 0.85rem; color: #047857; margin-top: 0.1rem;">Live 7-day dual-model ECMWF/GFS weather integration with verified ICAR-CPCRI spray rules.</p>
+          <div class="hero-title" id="lbl-banner-title">Need Spray Guidance for Arecanut Koleroga?</div>
+          <div class="hero-desc" id="lbl-banner-desc">Live ECMWF/GFS weather forecasting paired with verified ICAR-CPCRI agronomic rules.</div>
         </div>
       </div>
-      <a href="/spray" class="banner-btn">Go to Spray Timing Advisor &rarr;</a>
+      <a href="/spray" class="btn-action" id="lbl-banner-btn">Open Spray Timing Advisor &rarr;</a>
     </div>
 
-    <div class="grid-layout">
+    <!-- Main 2-Column Responsive Dashboard -->
+    <div class="dashboard-grid">
 
-      <!-- Left Column: Soil & Weather Input Form -->
-      <div class="card">
-        <h2 class="card-title">🧪 Crop Recommendation Engine</h2>
-        <p class="card-subtitle">Enter soil nutrients and seasonal weather metrics to determine the optimal crop pattern.</p>
-
-        <!-- Presets -->
-        <div class="presets">
-          <span class="preset-label">⚡ Quick Presets (Click to autofill):</span>
-          <button type="button" class="preset-chip" onclick="fillPreset(90, 42, 43, 25, 80, 6.5, 202)">🌾 Rice / ಭತ್ತ</button>
-          <button type="button" class="preset-chip" onclick="fillPreset(110, 45, 20, 26, 65, 6.8, 85)">🌽 Maize / ಮೆಕ್ಕೆಜೋಳ</button>
-          <button type="button" class="preset-chip" onclick="fillPreset(120, 40, 20, 24, 80, 7.0, 75)">🌿 Cotton / ಹತ್ತಿ</button>
-          <button type="button" class="preset-chip" onclick="fillPreset(105, 30, 30, 25, 78, 6.8, 160)">☕ Coffee / ಕಾಫಿ</button>
-          <button type="button" class="preset-chip" onclick="fillPreset(20, 60, 20, 18, 16, 7.2, 80)">🧆 Chickpea / ಕಡಲೆ</button>
+      <!-- LEFT COLUMN: Soil & Climate Interactive Controls -->
+      <div class="panel-card">
+        <div class="panel-header">
+          <div>
+            <h2 class="panel-title" id="lbl-soil-title">🧪 Soil & Climate Metrics</h2>
+            <p class="panel-subtitle" id="lbl-soil-sub">Drag sliders or type values to simulate field conditions.</p>
+          </div>
         </div>
 
-        <form id="prediction-form">
-          <div class="form-grid">
-            <div class="form-group">
-              <label for="input-n">Nitrogen (N) <span class="unit">kg/ha</span></label>
-              <input id="input-n" name="N" type="number" step="any" value="90" class="form-control" required>
+        <!-- 1-Click Interactive Crop Presets -->
+        <div class="preset-section">
+          <div class="preset-header">
+            <span class="preset-title" id="lbl-preset-header">⚡ One-Click Field Presets:</span>
+          </div>
+          <div class="preset-chips">
+            <button type="button" class="chip" onclick="applyPreset(90, 42, 43, 25, 80, 6.5, 202, 'rice')">🌾 Rice / ಭತ್ತ</button>
+            <button type="button" class="chip" onclick="applyPreset(110, 45, 20, 26, 65, 6.8, 85, 'maize')">🌽 Maize / ಮೆಕ್ಕೆಜೋಳ</button>
+            <button type="button" class="chip" onclick="applyPreset(120, 40, 20, 24, 80, 7.0, 75, 'cotton')">🌿 Cotton / ಹತ್ತಿ</button>
+            <button type="button" class="chip" onclick="applyPreset(105, 30, 30, 25, 78, 6.8, 160, 'coffee')">☕ Coffee / ಕಾಫಿ</button>
+            <button type="button" class="chip" onclick="applyPreset(20, 60, 20, 18, 16, 7.2, 80, 'chickpea')">🧆 Chickpea / ಕಡಲೆ</button>
+          </div>
+        </div>
+
+        <!-- Synchronized Slider & Numeric Inputs Form -->
+        <form id="crop-form">
+          <div class="inputs-grid">
+
+            <!-- Nitrogen (N) -->
+            <div class="input-row">
+              <div class="input-label-bar">
+                <span class="field-name">🌱 <span id="lbl-f-n">Nitrogen (N)</span></span>
+                <span class="field-badge" id="badge-n">Ideal: 60 - 120 kg/ha</span>
+              </div>
+              <div class="field-controls">
+                <input type="range" id="slider-n" min="0" max="200" step="1" value="90" oninput="syncVal('n', this.value)">
+                <div class="num-input-wrap">
+                  <span class="unit-tag">kg/ha</span>
+                  <input type="number" id="input-n" name="N" class="num-input" min="0" max="200" step="1" value="90" oninput="syncSlider('n', this.value)" required>
+                </div>
+              </div>
             </div>
-            <div class="form-group">
-              <label for="input-p">Phosphorus (P) <span class="unit">kg/ha</span></label>
-              <input id="input-p" name="P" type="number" step="any" value="42" class="form-control" required>
+
+            <!-- Phosphorus (P) -->
+            <div class="input-row">
+              <div class="input-label-bar">
+                <span class="field-name">🧪 <span id="lbl-f-p">Phosphorus (P)</span></span>
+                <span class="field-badge" id="badge-p">Ideal: 35 - 60 kg/ha</span>
+              </div>
+              <div class="field-controls">
+                <input type="range" id="slider-p" min="0" max="200" step="1" value="42" oninput="syncVal('p', this.value)">
+                <div class="num-input-wrap">
+                  <span class="unit-tag">kg/ha</span>
+                  <input type="number" id="input-p" name="P" class="num-input" min="0" max="200" step="1" value="42" oninput="syncSlider('p', this.value)" required>
+                </div>
+              </div>
             </div>
-            <div class="form-group">
-              <label for="input-k">Potassium (K) <span class="unit">kg/ha</span></label>
-              <input id="input-k" name="K" type="number" step="any" value="43" class="form-control" required>
+
+            <!-- Potassium (K) -->
+            <div class="input-row">
+              <div class="input-label-bar">
+                <span class="field-name">⚡ <span id="lbl-f-k">Potassium (K)</span></span>
+                <span class="field-badge" id="badge-k">Ideal: 20 - 50 kg/ha</span>
+              </div>
+              <div class="field-controls">
+                <input type="range" id="slider-k" min="0" max="250" step="1" value="43" oninput="syncVal('k', this.value)">
+                <div class="num-input-wrap">
+                  <span class="unit-tag">kg/ha</span>
+                  <input type="number" id="input-k" name="K" class="num-input" min="0" max="250" step="1" value="43" oninput="syncSlider('k', this.value)" required>
+                </div>
+              </div>
             </div>
-            <div class="form-group">
-              <label for="input-temp">Temperature <span class="unit">°C</span></label>
-              <input id="input-temp" name="temperature" type="number" step="any" value="25" class="form-control" required>
+
+            <!-- Temperature -->
+            <div class="input-row">
+              <div class="input-label-bar">
+                <span class="field-name">🌡️ <span id="lbl-f-temp">Temperature</span></span>
+                <span class="field-badge" id="badge-temp">Tropical: 20 - 32 °C</span>
+              </div>
+              <div class="field-controls">
+                <input type="range" id="slider-temp" min="0" max="50" step="0.5" value="25" oninput="syncVal('temp', this.value)">
+                <div class="num-input-wrap">
+                  <span class="unit-tag">°C</span>
+                  <input type="number" id="input-temp" name="temperature" class="num-input" min="0" max="50" step="0.5" value="25" oninput="syncSlider('temp', this.value)" required>
+                </div>
+              </div>
             </div>
-            <div class="form-group">
-              <label for="input-hum">Humidity <span class="unit">%</span></label>
-              <input id="input-hum" name="humidity" type="number" step="any" value="80" class="form-control" required>
+
+            <!-- Relative Humidity -->
+            <div class="input-row">
+              <div class="input-label-bar">
+                <span class="field-name">💧 <span id="lbl-f-hum">Relative Humidity</span></span>
+                <span class="field-badge" id="badge-hum">Normal: 60 - 85 %</span>
+              </div>
+              <div class="field-controls">
+                <input type="range" id="slider-hum" min="0" max="100" step="1" value="80" oninput="syncVal('hum', this.value)">
+                <div class="num-input-wrap">
+                  <span class="unit-tag">%</span>
+                  <input type="number" id="input-hum" name="humidity" class="num-input" min="0" max="100" step="1" value="80" oninput="syncSlider('hum', this.value)" required>
+                </div>
+              </div>
             </div>
-            <div class="form-group">
-              <label for="input-ph">Soil pH <span class="unit">scale 0-14</span></label>
-              <input id="input-ph" name="ph" type="number" step="0.1" min="0" max="14" value="6.5" class="form-control" required>
+
+            <!-- Soil pH -->
+            <div class="input-row">
+              <div class="input-label-bar">
+                <span class="field-name">⚖️ <span id="lbl-f-ph">Soil pH Level</span></span>
+                <span class="field-badge" id="badge-ph">Slightly Acidic: 6.5</span>
+              </div>
+              <div class="field-controls">
+                <input type="range" id="slider-ph" min="3" max="10" step="0.1" value="6.5" oninput="syncVal('ph', this.value)">
+                <div class="num-input-wrap">
+                  <span class="unit-tag">pH</span>
+                  <input type="number" id="input-ph" name="ph" class="num-input" min="3" max="10" step="0.1" value="6.5" oninput="syncSlider('ph', this.value)" required>
+                </div>
+              </div>
             </div>
-            <div class="form-group" style="grid-column: 1 / -1;">
-              <label for="input-rain">Rainfall <span class="unit">mm / season</span></label>
-              <input id="input-rain" name="rainfall" type="number" step="any" value="200" class="form-control" required>
+
+            <!-- Rainfall -->
+            <div class="input-row">
+              <div class="input-label-bar">
+                <span class="field-name">🌧️ <span id="lbl-f-rain">Seasonal Rainfall</span></span>
+                <span class="field-badge" id="badge-rain">Wetland: > 180 mm</span>
+              </div>
+              <div class="field-controls">
+                <input type="range" id="slider-rain" min="10" max="400" step="1" value="200" oninput="syncVal('rain', this.value)">
+                <div class="num-input-wrap">
+                  <span class="unit-tag">mm</span>
+                  <input type="number" id="input-rain" name="rainfall" class="num-input" min="10" max="400" step="1" value="200" oninput="syncSlider('rain', this.value)" required>
+                </div>
+              </div>
             </div>
+
           </div>
 
-          <button type="submit" id="submit-btn" class="btn-submit">
-            <span>✨ Recommend Crop</span>
+          <button type="submit" id="btn-submit-calc" class="btn-calculate">
+            <span>✨ <span id="lbl-btn-recommend">Evaluate & Recommend Optimal Crop</span></span>
           </button>
         </form>
       </div>
 
-      <!-- Right Column: Visual Prediction Result -->
-      <div class="card">
-        <h2 class="card-title">🎯 Recommendation Result</h2>
-        <p class="card-subtitle">Machine learning prediction with explainable SHAP contribution analysis.</p>
-
-        <div id="result-placeholder" class="result-placeholder">
-          <span class="result-placeholder-icon">🌱</span>
-          <p><strong>No crop evaluated yet</strong></p>
-          <p style="font-size: 0.8rem; margin-top: 0.25rem;">Fill the soil & climate form on the left and click <strong>"Recommend Crop"</strong> to see the result.</p>
+      <!-- RIGHT COLUMN: Interactive Prediction Showcase -->
+      <div class="panel-card">
+        <div class="panel-header">
+          <div>
+            <h2 class="panel-title" id="lbl-res-title">🎯 AI Recommendation</h2>
+            <p class="panel-subtitle" id="lbl-res-sub">Predictive pattern matching with agronomic explainability.</p>
+          </div>
         </div>
 
-        <div id="result-card" class="crop-result-card" style="display: none;">
-          <div class="crop-header">
-            <div class="crop-icon-large" id="res-crop-icon">🌾</div>
-            <div class="crop-info">
-              <h3>Recommended Optimal Crop</h3>
-              <div class="crop-name" id="res-crop-name">Rice</div>
-            </div>
-          </div>
+        <!-- Initial Placeholder -->
+        <div id="view-empty" class="result-empty">
+          <div class="result-empty-icon">🌾</div>
+          <h3 style="font-weight: 700; color: #1e293b;" id="lbl-empty-title">Ready for Soil Evaluation</h3>
+          <p style="font-size: 0.875rem; margin-top: 0.35rem; max-width: 280px;" id="lbl-empty-sub">
+            Select a quick preset on the left or adjust soil sliders and click <strong>"Recommend Optimal Crop"</strong>.
+          </p>
+        </div>
 
-          <div class="metric-row">
-            <div class="metric-card">
-              <div class="metric-label">Model Confidence</div>
-              <div class="metric-value" id="res-confidence">96.0%</div>
-              <div class="progress-bar-container">
-                <div id="conf-bar" class="progress-bar progress-green" style="width: 96%;"></div>
+        <!-- Live Visual Result View -->
+        <div id="view-result" class="result-display">
+
+          <!-- Hero Crop Result Card -->
+          <div class="crop-hero-card">
+            <div class="crop-hero-top">
+              <div class="crop-avatar" id="disp-avatar">🌾</div>
+              <div class="crop-title-group">
+                <h4 id="lbl-optimal-heading">OPTIMAL CROP MATCH</h4>
+                <div class="crop-main-name" id="disp-crop-name">Rice</div>
+                <div class="crop-kn-name" id="disp-crop-kn">ಭತ್ತ</div>
               </div>
             </div>
 
-            <div class="metric-card">
-              <div class="metric-label">Climate Mismatch Risk</div>
-              <div class="metric-value" id="res-risk">55.3 / 100</div>
-              <div class="progress-bar-container">
-                <div id="risk-bar" class="progress-bar progress-yellow" style="width: 55%;"></div>
+            <!-- Agronomic Metadata Badges -->
+            <div class="crop-tags">
+              <span class="crop-tag" id="tag-season">☀️ Season: Kharif</span>
+              <span class="crop-tag" id="tag-soil">🌱 Soil: Clayey / Alluvial</span>
+              <span class="crop-tag" id="tag-water">💧 Water: High Moisture</span>
+            </div>
+          </div>
+
+          <!-- Meters Row -->
+          <div class="metrics-summary">
+            <!-- Confidence Meter -->
+            <div class="metric-box">
+              <div class="metric-box-title" id="lbl-conf-heading">Model Confidence</div>
+              <div class="metric-box-val" id="disp-conf-val">96.0%</div>
+              <div class="meter-rail">
+                <div class="meter-fill fill-green" id="disp-conf-fill" style="width: 96%;"></div>
+              </div>
+            </div>
+
+            <!-- Climate Mismatch Risk -->
+            <div class="metric-box">
+              <div class="metric-box-title" id="lbl-risk-heading">Climate Mismatch Risk</div>
+              <div class="metric-box-val" id="disp-risk-val">22 / 100</div>
+              <div class="meter-rail">
+                <div class="meter-fill fill-green" id="disp-risk-fill" style="width: 22%;"></div>
               </div>
             </div>
           </div>
 
-          <div class="shap-section">
-            <div class="shap-title">
-              <span>📊 Key Deciding Factors (SHAP Analysis)</span>
+          <!-- SHAP Explanations -->
+          <div class="explain-card">
+            <div class="explain-header">
+              <span class="explain-title">📊 <span id="lbl-shap-heading">Key Contributing Factors (SHAP)</span></span>
             </div>
-            <div class="shap-list" id="shap-list">
-              <!-- Dynamically populated -->
+            <div class="shap-rows" id="shap-container">
+              <!-- Dynamically rendered -->
             </div>
           </div>
 
-          <div id="warning-box" class="warning-badge" style="display: none;"></div>
+          <!-- Experimental Notice if in Pilot Mode -->
+          <div id="disp-warning" style="display: none; background: #fffbeb; border: 1px solid #fef3c7; border-radius: 10px; padding: 0.75rem 1rem; color: #92400e; font-size: 0.775rem; margin-top: 1rem;">
+          </div>
 
-          <details class="json-details">
-            <summary>⚙️ View Raw Technical JSON Response</summary>
-            <pre class="raw-json" id="raw-json-output"></pre>
+          <!-- Raw JSON Details for Reviewers -->
+          <details class="tech-drawer">
+            <summary id="lbl-json-toggle">⚙️ Inspect Raw API Payload & SHAP Values</summary>
+            <pre class="code-dump" id="disp-raw-json"></pre>
           </details>
+
         </div>
       </div>
 
     </div>
 
-    <!-- Bottom Section: Agricultural Advisory (Gemini Powered) -->
-    <div class="qa-card">
-      <h2 class="card-title">🤖 Verified Agricultural Q&A (Google Gemini + ICAR Grounding)</h2>
-      <p class="card-subtitle">Ask general farming questions verified against ICAR and official government guidelines.</p>
+    <!-- Verified Agricultural Advisory (Gemini Powered) -->
+    <div class="qa-box">
+      <div class="panel-header" style="margin-bottom: 0.75rem; border: none;">
+        <div>
+          <h2 class="panel-title" style="color: #0369a1;">🤖 <span id="lbl-gemini-title">Ask Krishi Sahayak (Google Gemini + ICAR Grounding)</span></h2>
+          <p class="panel-subtitle" id="lbl-gemini-sub">Free-text agricultural queries grounded in authentic ICAR agronomic literature.</p>
+        </div>
+      </div>
 
       {% if pilot_mode %}
-      <div style="background: #fffbeb; border: 1px solid #fef3c7; border-radius: 0.5rem; padding: 0.85rem 1rem; color: #92400e; font-size: 0.875rem;">
-        <strong>🔒 Field Pilot Mode Active:</strong> Free-text LLM chat is restricted to prevent field hallucinations. 
-        For spray timing and fungicide decisions, please use the <a href="/spray" style="color: #b45309; font-weight: 700; text-decoration: underline;">Spray Timing Advisor</a>.
+      <div style="background: #fffbeb; border: 1px solid #fde68a; border-radius: 12px; padding: 1rem 1.25rem; color: #92400e; font-size: 0.875rem;">
+        <strong>🔒 Strict Field Pilot Mode Active:</strong> Free-text generative chat is restricted in pilot mode to prevent unreviewed field hallucinations.
+        For koleroga fungicide schedules, open the <a href="/spray" style="color: #b45309; font-weight: 700; text-decoration: underline;">Spray Timing Advisor</a>.
       </div>
       {% else %}
-      <form id="advisory-form">
-        <div class="qa-input-row">
-          <input id="qa-question" name="question" type="text" value="How to prepare 1% neutral Bordeaux mixture?" class="form-control qa-input" placeholder="Type farming question..." required>
-          <select name="language" class="form-control qa-select">
-            <option value="en">English</option>
-            <option value="kn">ಕನ್ನಡ (Kannada)</option>
-          </select>
-          <button type="submit" id="qa-submit-btn" class="qa-btn">Ask Advisor</button>
+      <form id="form-qa">
+        <div class="qa-input-flex">
+          <input type="text" id="qa-text" name="question" class="qa-text-input" placeholder="Ask about crop diseases, bordeaux mixture, fertilizers..." value="How to prepare 1% neutral Bordeaux mixture?" required>
+          <button type="submit" id="btn-ask-gemini" class="btn-ask"><span>Ask Advisor</span></button>
+        </div>
+        <div class="qa-pill-prompts">
+          <span style="font-size: 0.75rem; font-weight: 700; color: var(--text-muted); align-self: center;">Suggested:</span>
+          <button type="button" class="qa-pill" onclick="setQAPrompt('How to prepare 1% neutral Bordeaux mixture?')">🧪 1% Bordeaux Recipe</button>
+          <button type="button" class="qa-pill" onclick="setQAPrompt('What is the knife test for Bordeaux mixture neutrality?')">🔪 Knife Neutrality Test</button>
+          <button type="button" class="qa-pill" onclick="setQAPrompt('ಬೋರ್ಡೋ ದ್ರಾವಣ ಹೇಗೆ ತಯಾರಿಸುವುದು?')">ಕನ್ನಡ: ಬೋರ್ಡೋ ದ್ರಾವಣ</button>
+          <button type="button" class="qa-pill" onclick="setQAPrompt('What are the symptoms of Arecanut Koleroga?')">🥥 Koleroga Symptoms</button>
         </div>
       </form>
-      <div id="qa-response" class="qa-response"></div>
+      <div id="qa-result-box" class="qa-result-area"></div>
       {% endif %}
     </div>
 
   </div>
 
   <script>
-    const CROP_ICONS = {
-      'rice': '🌾',
-      'maize': '🌽',
-      'chickpea': '🧆',
-      'kidneybeans': '🫘',
-      'pigeonpeas': '🫘',
-      'mothbeans': '🫘',
-      'mungbean': '🌱',
-      'blackgram': '🌱',
-      'lentil': '🥣',
-      'pomegranate': '🍎',
-      'banana': '🍌',
-      'mango': '🥭',
-      'grapes': '🍇',
-      'watermelon': '🍉',
-      'muskmelon': '🍈',
-      'apple': '🍏',
-      'orange': '🍊',
-      'papaya': '🍈',
-      'coconut': '🥥',
-      'cotton': '🌿',
-      'jute': '🌾',
-      'coffee': '☕'
+    // Agronomic Profiles Dictionary (22 Crops)
+    const CROP_DATABASE = {
+      'rice': { icon: '🌾', kn: 'ಭತ್ತ', season: 'Kharif', soil: 'Clayey / Alluvial', water: 'High (>180 mm)' },
+      'maize': { icon: '🌽', kn: 'ಮೆಕ್ಕೆಜೋಳ', season: 'Kharif / Rabi', soil: 'Loamy Alluvial', water: 'Moderate (60-100 mm)' },
+      'chickpea': { icon: '🧆', kn: 'ಕಡಲೆ', season: 'Rabi', soil: 'Deep Loam / Black Soil', water: 'Low (40-80 mm)' },
+      'kidneybeans': { icon: '🫘', kn: 'ರಾಜ್ಮಾ', season: 'Kharif', soil: 'Rich Sandy Loam', water: 'Moderate (60-120 mm)' },
+      'pigeonpeas': { icon: '🫘', kn: 'ತೊಗರಿ', season: 'Kharif', soil: 'Well-drained Loam', water: 'Low to Moderate' },
+      'mothbeans': { icon: '🫘', kn: 'ಮಡಿಕೆ ಕಾಳು', season: 'Kharif', soil: 'Sandy Loam', water: 'Very Low (Dryland)' },
+      'mungbean': { icon: '🌱', kn: 'ಹೆಸರು ಕಾಳು', season: 'Kharif / Summer', soil: 'Loamy to Sandy Loam', water: 'Low (40-70 mm)' },
+      'blackgram': { icon: '🌱', kn: 'ಉದ್ದು', season: 'Kharif / Rabi', soil: 'Black Cotton Soil', water: 'Moderate' },
+      'lentil': { icon: '🥣', kn: 'ಮಸೂರ ಕಾಳು', season: 'Rabi', soil: 'Alluvial Loam', water: 'Low' },
+      'pomegranate': { icon: '🍎', kn: 'ದಾಳಿಂಬೆ', season: 'Perennial', soil: 'Deep Heavy Loam', water: 'Moderate' },
+      'banana': { icon: '🍌', kn: 'ಬಾಳೆ', season: 'All-Year', soil: 'Rich Alluvial Clay', water: 'Very High Moisture' },
+      'mango': { icon: '🥭', kn: 'ಮಾವಿನ ಹಣ್ಣು', season: 'Summer', soil: 'Deep Rich Loam', water: 'Moderate' },
+      'grapes': { icon: '🍇', kn: 'ದ್ರಾಕ್ಷಿ', season: 'Spring / Summer', soil: 'Sandy Loam with Gravel', water: 'Controlled Drip' },
+      'watermelon': { icon: '🍉', kn: 'ಕಲ್ಲಂಗಡಿ', season: 'Zaid / Summer', soil: 'Sandy River Loam', water: 'Moderate Moisture' },
+      'muskmelon': { icon: '🍈', kn: 'ಕರಬೂಜ', season: 'Summer', soil: 'Warm Sandy Loam', water: 'Moderate' },
+      'apple': { icon: '🍏', kn: 'ಸೇಬು', season: 'Temperate', soil: 'Loamy Mountain Soil', water: 'Moderate' },
+      'orange': { icon: '🍊', kn: 'ಕಿತ್ತಳೆ', season: 'Winter / Spring', soil: 'Light Loam', water: 'Moderate' },
+      'papaya': { icon: '🍈', kn: 'ಪಪ್ಪಾಯಿ', season: 'All-Year', soil: 'Well-Drained Loam', water: 'Moderate' },
+      'coconut': { icon: '🥥', kn: 'ತೆಂಗು', season: 'Perennial', soil: 'Coastal Sandy Loam', water: 'High Rainfall' },
+      'cotton': { icon: '🌿', kn: 'ಹತ್ತಿ', season: 'Kharif', soil: 'Deep Black Cotton Soil', water: 'Moderate (60-100 mm)' },
+      'jute': { icon: '🌾', kn: 'ಸೆಣಬು', season: 'Kharif (Monsoon)', soil: 'Clay Loam / Alluvial', water: 'High Moisture' },
+      'coffee': { icon: '☕', kn: 'ಕಾಫಿ', season: 'Western Ghats', soil: 'Humus-rich Forest Loam', water: 'High (150-250 mm)' }
     };
 
-    function fillPreset(n, p, k, temp, hum, ph, rain) {
-      document.getElementById('input-n').value = n;
-      document.getElementById('input-p').value = p;
-      document.getElementById('input-k').value = k;
-      document.getElementById('input-temp').value = temp;
-      document.getElementById('input-hum').value = hum;
-      document.getElementById('input-ph').value = ph;
-      document.getElementById('input-rain').value = rain;
-      document.getElementById('prediction-form').dispatchEvent(new Event('submit'));
+    let currentLang = 'en';
+
+    // Synchronize Slider <-> Number Box
+    function syncVal(key, val) {
+      document.getElementById('input-' + key).value = val;
+      updateBadge(key, val);
+    }
+    function syncSlider(key, val) {
+      document.getElementById('slider-' + key).value = val;
+      updateBadge(key, val);
     }
 
-    document.getElementById('prediction-form').addEventListener('submit', async function (event) {
-      event.preventDefault();
-      const btn = document.getElementById('submit-btn');
-      btn.innerHTML = '<span>⏳ Evaluating Patterns...</span>';
+    // Dynamic Context Badges
+    function updateBadge(key, val) {
+      const v = parseFloat(val);
+      const badge = document.getElementById('badge-' + key);
+      if (!badge) return;
+
+      if (key === 'ph') {
+        if (v < 6.0) { badge.textContent = 'Acidic (' + v + ')'; badge.style.background = '#fef2f2'; badge.style.color = '#b91c1c'; }
+        else if (v <= 7.5) { badge.textContent = 'Neutral / Ideal (' + v + ')'; badge.style.background = '#f0fdf4'; badge.style.color = '#15803d'; }
+        else { badge.textContent = 'Alkaline (' + v + ')'; badge.style.background = '#eff6ff'; badge.style.color = '#1d4ed8'; }
+      } else if (key === 'rain') {
+        if (v < 80) { badge.textContent = 'Dryland (<80 mm)'; }
+        else if (v <= 160) { badge.textContent = 'Moderate (' + Math.round(v) + ' mm)'; }
+        else { badge.textContent = 'Wetland / Heavy (' + Math.round(v) + ' mm)'; }
+      } else if (key === 'temp') {
+        if (v < 20) { badge.textContent = 'Cool (' + v + ' °C)'; }
+        else if (v <= 32) { badge.textContent = 'Tropical / Warm (' + v + ' °C)'; }
+        else { badge.textContent = 'Hot (' + v + ' °C)'; }
+      }
+    }
+
+    // Preset One-Click Trigger
+    function applyPreset(n, p, k, temp, hum, ph, rain, cropKey) {
+      document.getElementById('input-n').value = n;
+      document.getElementById('slider-n').value = n;
+      document.getElementById('input-p').value = p;
+      document.getElementById('slider-p').value = p;
+      document.getElementById('input-k').value = k;
+      document.getElementById('slider-k').value = k;
+      document.getElementById('input-temp').value = temp;
+      document.getElementById('slider-temp').value = temp;
+      document.getElementById('input-hum').value = hum;
+      document.getElementById('slider-hum').value = hum;
+      document.getElementById('input-ph').value = ph;
+      document.getElementById('slider-ph').value = ph;
+      document.getElementById('input-rain').value = rain;
+      document.getElementById('slider-rain').value = rain;
+
+      ['n', 'p', 'k', 'temp', 'hum', 'ph', 'rain'].forEach(k => updateBadge(k, document.getElementById('input-' + k).value));
+
+      document.getElementById('crop-form').dispatchEvent(new Event('submit'));
+    }
+
+    // Submit & Animate Evaluation
+    document.getElementById('crop-form').addEventListener('submit', async function (e) {
+      e.preventDefault();
+      const btn = document.getElementById('btn-submit-calc');
+      btn.innerHTML = '<span>⏳ Evaluating Agronomic Patterns...</span>';
       btn.disabled = true;
 
-      const data = Object.fromEntries(new FormData(event.target).entries());
-      Object.keys(data).forEach(key => data[key] = Number(data[key]));
+      const data = Object.fromEntries(new FormData(e.target).entries());
+      Object.keys(data).forEach(k => data[k] = Number(data[k]));
 
       try {
         const response = await fetch('/predict', {
           method: 'POST',
-          headers: {'Content-Type': 'application/json'},
+          headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(data)
         });
 
-        if (!response.ok) {
-          throw new Error('Prediction service returned an error.');
-        }
-
+        if (!response.ok) throw new Error('Model evaluation service failed.');
         const res = await response.json();
 
-        // 1. Render Crop Header
-        const cropLower = (res.crop || '').toLowerCase();
-        document.getElementById('res-crop-name').textContent = res.crop || 'Unknown';
-        document.getElementById('res-crop-icon').textContent = CROP_ICONS[cropLower] || '🌱';
+        // Reveal view
+        document.getElementById('view-empty').style.display = 'none';
+        const resultView = document.getElementById('view-result');
+        resultView.style.display = 'block';
 
-        // 2. Render Confidence
-        const confPct = Math.round((res.confidence || 0) * 100);
-        document.getElementById('res-confidence').textContent = confPct + '%';
-        const confBar = document.getElementById('conf-bar');
-        confBar.style.width = confPct + '%';
-        confBar.className = 'progress-bar ' + (confPct >= 70 ? 'progress-green' : confPct >= 40 ? 'progress-yellow' : 'progress-red');
+        // 1. Populate Crop Details
+        const cropKey = (res.crop || '').toLowerCase();
+        const profile = CROP_DATABASE[cropKey] || { icon: '🌱', kn: res.crop, season: 'Seasonal', soil: 'Agricultural', water: 'Regular' };
 
-        // 3. Render Risk
-        const riskVal = Math.round(res.risk_score || 0);
-        document.getElementById('res-risk').textContent = riskVal + ' / 100';
-        const riskBar = document.getElementById('risk-bar');
-        riskBar.style.width = riskVal + '%';
-        riskBar.className = 'progress-bar ' + (riskVal <= 30 ? 'progress-green' : riskVal <= 60 ? 'progress-yellow' : 'progress-red');
+        document.getElementById('disp-avatar').textContent = profile.icon;
+        document.getElementById('disp-crop-name').textContent = res.crop.charAt(0).toUpperCase() + res.crop.slice(1);
+        document.getElementById('disp-crop-kn').textContent = profile.kn;
+
+        document.getElementById('tag-season').textContent = '☀️ Season: ' + profile.season;
+        document.getElementById('tag-soil').textContent = '🌱 Soil: ' + profile.soil;
+        document.getElementById('tag-water').textContent = '💧 Water: ' + profile.water;
+
+        // 2. Animate Confidence Meter
+        const confPct = Math.min(100, Math.max(0, Math.round((res.confidence || 0) * 100)));
+        document.getElementById('disp-conf-val').textContent = confPct + '%';
+        const confFill = document.getElementById('disp-conf-fill');
+        confFill.style.width = '0%';
+        setTimeout(() => { confFill.style.width = confPct + '%'; }, 50);
+        confFill.className = 'meter-fill ' + (confPct >= 70 ? 'fill-green' : confPct >= 40 ? 'fill-amber' : 'fill-red');
+
+        // 3. Animate Climate Mismatch Risk
+        const riskScore = Math.min(100, Math.max(0, Math.round(res.risk_score || 0)));
+        document.getElementById('disp-risk-val').textContent = riskScore + ' / 100';
+        const riskFill = document.getElementById('disp-risk-fill');
+        riskFill.style.width = '0%';
+        setTimeout(() => { riskFill.style.width = riskScore + '%'; }, 50);
+        riskFill.className = 'meter-fill ' + (riskScore <= 35 ? 'fill-green' : riskScore <= 65 ? 'fill-amber' : 'fill-red');
 
         // 4. Render SHAP Contributions
-        const shapList = document.getElementById('shap-list');
-        shapList.innerHTML = '';
+        const shapContainer = document.getElementById('shap-container');
+        shapContainer.innerHTML = '';
         if (res.shap_contributions && res.shap_contributions.length > 0) {
           res.shap_contributions.forEach(item => {
             const isSupport = item.direction === 'supports';
             const sign = isSupport ? '+' : '-';
-            const pctVal = Math.round(Math.abs(item.value || 0) * 100);
+            const pct = Math.round(Math.abs(item.value || 0) * 100);
+
             const row = document.createElement('div');
-            row.className = 'shap-item';
+            row.className = 'shap-row';
             row.innerHTML = `
-              <span><strong>${item.feature.toUpperCase()}</strong>: ${pctVal}% ${isSupport ? 'supporting' : 'opposing'}</span>
-              <span class="${isSupport ? 'shap-support' : 'shap-oppose'}">${sign}${pctVal}%</span>
+              <div class="shap-top">
+                <span class="shap-feat">${item.feature.toUpperCase()}</span>
+                <span class="shap-pct ${isSupport ? 'support' : 'oppose'}">${sign}${pct}% ${isSupport ? 'supports' : 'opposes'}</span>
+              </div>
+              <div class="shap-bar-track">
+                <div class="shap-bar-val ${isSupport ? 'support' : 'oppose'}" style="width: ${Math.min(100, pct * 3)}%;"></div>
+              </div>
             `;
-            shapList.appendChild(row);
+            shapContainer.appendChild(row);
           });
         } else {
-          shapList.innerHTML = '<span style="font-size:0.8rem;color:#64748b;">No individual factor variance calculated.</span>';
+          shapContainer.innerHTML = '<span style="font-size:0.8rem;color:#64748b;">Even balance across inputs.</span>';
         }
 
-        // 5. Warning / Experimental Badge
-        const warnBox = document.getElementById('warning-box');
+        // 5. Warning box
+        const warnBox = document.getElementById('disp-warning');
         if (res.warning) {
           warnBox.textContent = res.warning;
           warnBox.style.display = 'block';
@@ -641,49 +1195,103 @@
           warnBox.style.display = 'none';
         }
 
-        // 6. Raw JSON
-        document.getElementById('raw-json-output').textContent = JSON.stringify(res, null, 2);
+        // 6. Raw JSON Code
+        document.getElementById('disp-raw-json').textContent = JSON.stringify(res, null, 2);
 
-        // Switch Views
-        document.getElementById('result-placeholder').style.display = 'none';
-        document.getElementById('result-card').style.display = 'block';
+        // Smooth scroll on small screens
+        if (window.innerWidth < 860) {
+          resultView.scrollIntoView({ behavior: 'smooth' });
+        }
 
       } catch (err) {
-        alert('Error getting recommendation: ' + err.message);
+        alert('Evaluation failed: ' + err.message);
       } finally {
-        btn.innerHTML = '<span>✨ Recommend Crop</span>';
+        btn.innerHTML = '<span>✨ <span id="lbl-btn-recommend">Evaluate & Recommend Optimal Crop</span></span>';
         btn.disabled = false;
       }
     });
 
-    const advisoryForm = document.getElementById('advisory-form');
-    if (advisoryForm) {
-      advisoryForm.addEventListener('submit', async function (event) {
-        event.preventDefault();
-        const qaBtn = document.getElementById('qa-submit-btn');
-        const qaBox = document.getElementById('qa-response');
-        qaBtn.textContent = 'Searching...';
-        qaBtn.disabled = true;
-        qaBox.style.display = 'block';
-        qaBox.innerHTML = '<em>Consulting ICAR verified corpus through Google Gemini...</em>';
+    // Gemini Q&A Handling
+    function setQAPrompt(text) {
+      const qInput = document.getElementById('qa-text');
+      if (qInput) {
+        qInput.value = text;
+        document.getElementById('form-qa').dispatchEvent(new Event('submit'));
+      }
+    }
 
-        const data = Object.fromEntries(new FormData(event.target).entries());
+    const formQA = document.getElementById('form-qa');
+    if (formQA) {
+      formQA.addEventListener('submit', async function(e) {
+        e.preventDefault();
+        const btn = document.getElementById('btn-ask-gemini');
+        const resBox = document.getElementById('qa-result-box');
+        btn.textContent = 'Searching...';
+        btn.disabled = true;
+        resBox.style.display = 'block';
+        resBox.innerHTML = '<em style="color:#0284c7;">Consulting ICAR publications through Google Gemini...</em>';
+
+        const q = document.getElementById('qa-text').value;
+        const lang = currentLang;
+
         try {
-          const response = await fetch('/genai/ask', {
+          const resp = await fetch('/genai/ask', {
             method: 'POST',
-            headers: {'Content-Type': 'application/json'},
-            body: JSON.stringify(data)
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ question: q, language: lang })
           });
-          const res = await response.json();
-          qaBox.innerHTML = `<strong>Answer:</strong><p style="margin-top:0.4rem;white-space:pre-wrap;">${res.answer}</p>` +
-            (res.sources && res.sources.length ? `<p style="font-size:0.75rem;margin-top:0.5rem;color:#0284c7;"><strong>Verified Sources:</strong> ${res.sources.join(', ')}</p>` : '');
+          const result = await resp.json();
+          resBox.innerHTML = `
+            <div style="font-weight: 700; color: #0369a1; margin-bottom: 0.4rem;">Advisory Response:</div>
+            <div style="white-space: pre-wrap; color: #1e293b; line-height: 1.6;">${result.answer}</div>
+            ${result.sources && result.sources.length ? `<div style="font-size: 0.775rem; color: #0284c7; margin-top: 0.75rem; padding-top: 0.5rem; border-top: 1px dashed #bae6fd;"><strong>Official Sources:</strong> ${result.sources.join(', ')}</div>` : ''}
+          `;
         } catch (err) {
-          qaBox.innerHTML = '<span style="color:#dc2626;">Failed to fetch advisory response.</span>';
+          resBox.innerHTML = '<span style="color:#dc2626;">Failed to query advisory service.</span>';
         } finally {
-          qaBtn.textContent = 'Ask Advisor';
-          qaBtn.disabled = false;
+          btn.textContent = 'Ask Advisor';
+          btn.disabled = false;
         }
       });
+    }
+
+    // Bilingual English/Kannada Toggle
+    function toggleLanguage() {
+      currentLang = currentLang === 'en' ? 'kn' : 'en';
+      const isKn = currentLang === 'kn';
+
+      document.getElementById('lbl-brand-title').textContent = isKn ? 'ಕೃಷಿ ಸಹಾಯಕ' : 'Krishi Sahayak';
+      document.getElementById('lbl-brand-sub').textContent = isKn ? 'ಸ್ಮಾರ್ಟ್ ಬೆಳೆ ಶಿಫಾರಸು ಮತ್ತು ಕೃಷಿ ಸಲಹಾ ವೇದಿಕೆ' : 'Intelligent Crop Recommendation & Agricultural Advisory';
+      document.getElementById('lbl-nav-spray').textContent = isKn ? '🌧️ ಸಿಂಪರಣಾ ಸಲಹೆಗಾರ ತೆರೆಯಿರಿ →' : '🌧️ Open Spray Advisor →';
+      document.getElementById('lbl-banner-title').textContent = isKn ? 'ಅಡಿಕೆ ಕೊಳೆ ರೋಗದ ಸಿಂಪರಣಾ ಮಾರ್ಗದರ್ಶನ ಬೇಕೇ?' : 'Need Spray Guidance for Arecanut Koleroga?';
+      document.getElementById('lbl-banner-desc').textContent = isKn ? 'ಲೈವ್ ಹವಾಮಾನ ಮುನ್ಸೂಚನೆ ಹಾಗೂ ಐಸಿಎಆರ್-ಸಿಪಿಸಿಆರ್‌ಐ ಅಧಿಕೃತ ನಿಯಮಗಳು.' : 'Live ECMWF/GFS weather forecasting paired with verified ICAR-CPCRI agronomic rules.';
+      document.getElementById('lbl-banner-btn').textContent = isKn ? 'ಸಿಂಪರಣಾ ಸಲಹೆಗಾರ ತೆರೆಯಿರಿ →' : 'Open Spray Timing Advisor →';
+
+      document.getElementById('lbl-soil-title').textContent = isKn ? '🧪 ಮಣ್ಣು ಮತ್ತು ಹವಾಮಾನ ಮಾನದಂಡಗಳು' : '🧪 Soil & Climate Metrics';
+      document.getElementById('lbl-soil-sub').textContent = isKn ? 'ನಿಮ್ಮ ತೋಟದ ಮಣ್ಣಿನ ಫಲವತ್ತತೆ ಹಾಗೂ ಮಳೆ ವಿವರ ನಮೂದಿಸಿ.' : 'Drag sliders or type values to simulate field conditions.';
+      document.getElementById('lbl-preset-header').textContent = isKn ? '⚡ ತ್ವರಿತ ಬೆಳೆ ಆಯ್ಕೆಗಳು:' : '⚡ One-Click Field Presets:';
+
+      document.getElementById('lbl-f-n').textContent = isKn ? 'ಸಾರಜನಕ (N)' : 'Nitrogen (N)';
+      document.getElementById('lbl-f-p').textContent = isKn ? 'ರಂಜಕ (P)' : 'Phosphorus (P)';
+      document.getElementById('lbl-f-k').textContent = isKn ? 'ಪೊಟ್ಯಾಶ್ (K)' : 'Potassium (K)';
+      document.getElementById('lbl-f-temp').textContent = isKn ? 'ತಾಪಮಾನ' : 'Temperature';
+      document.getElementById('lbl-f-hum').textContent = isKn ? 'ಆರ್ದ್ರತೆ' : 'Relative Humidity';
+      document.getElementById('lbl-f-ph').textContent = isKn ? 'ಮಣ್ಣಿನ pH ಮೌಲ್ಯ' : 'Soil pH Level';
+      document.getElementById('lbl-f-rain').textContent = isKn ? 'ಋತುಮಾನದ ಮಳೆ' : 'Seasonal Rainfall';
+      document.getElementById('lbl-btn-recommend').textContent = isKn ? 'ಸೂಕ್ತ ಬೆಳೆ ಪರಿಶೀಲಿಸಿ ಶಿಫಾರಸು ಪಡೆಯಿರಿ' : 'Evaluate & Recommend Optimal Crop';
+
+      document.getElementById('lbl-res-title').textContent = isKn ? '🎯 ಬೆಳೆ ಶಿಫಾರಸು ಫಲಿತಾಂಶ' : '🎯 AI Recommendation';
+      document.getElementById('lbl-res-sub').textContent = isKn ? 'ಕೃಷಿ ಮಾದರಿ ವಿಶ್ಲೇಷಣೆ ಮತ್ತು ನಿರ್ಣಾಯಕ ಅಂಶಗಳು.' : 'Predictive pattern matching with agronomic explainability.';
+      document.getElementById('lbl-empty-title').textContent = isKn ? 'ಮಣ್ಣಿನ ವಿವರಗಳ ಪರಿಶೀಲನೆಗೆ ಸಿದ್ಧ' : 'Ready for Soil Evaluation';
+      document.getElementById('lbl-empty-sub').textContent = isKn ? 'ಎಡಭಾಗದಲ್ಲಿರುವ ಪೂರ್ವನಿಗದಿಗಳನ್ನು ಆರಿಸಿ ಅಥವಾ ಮಾನದಂಡಗಳನ್ನು ಬದಲಿಸಿ.' : 'Select a quick preset on the left or adjust soil sliders and click "Recommend Optimal Crop".';
+      document.getElementById('lbl-optimal-heading').textContent = isKn ? 'ಶಿಫಾರಸು ಮಾಡಿದ ಅತ್ಯುತ್ತಮ ಬೆಳೆ' : 'OPTIMAL CROP MATCH';
+      document.getElementById('lbl-conf-heading').textContent = isKn ? 'ಮಾದರಿಯ ವಿಶ್ವಾಸಾರ್ಹತೆ' : 'Model Confidence';
+      document.getElementById('lbl-risk-heading').textContent = isKn ? 'ಹವಾಮಾನ ವೈಪರೀತ್ಯದ ಅಪಾಯ' : 'Climate Mismatch Risk';
+      document.getElementById('lbl-shap-heading').textContent = isKn ? 'ನಿರ್ಧಾರಕ್ಕೆ ಮುಖ್ಯ ಕಾರಣಗಳು (SHAP)' : 'Key Contributing Factors (SHAP)';
+      document.getElementById('lbl-json-toggle').textContent = isKn ? '⚙️ ತಾಂತ್ರಿಕ JSON ಡೇಟಾ ವೀಕ್ಷಿಸಿ' : '⚙️ Inspect Raw API Payload & SHAP Values';
+
+      document.getElementById('lbl-gemini-title').textContent = isKn ? 'ಕೃಷಿ ಸಹಾಯಕನ್ನು ಕೇಳಿ (ಗೂಗಲ್ ಜೆಮಿನಿ + ಐಸಿಎಆರ್)' : 'Ask Krishi Sahayak (Google Gemini + ICAR Grounding)';
+      document.getElementById('lbl-gemini-sub').textContent = isKn ? 'ಅಧಿಕೃತ ಕೃಷಿ ದಾಖಲೆಗಳ ಆಧಾರದ ಮೇಲೆ ನೇರ ಪ್ರಶ್ನೋತ್ತರ.' : 'Free-text agricultural queries grounded in authentic ICAR agronomic literature.';
     }
   </script>
 </body>
