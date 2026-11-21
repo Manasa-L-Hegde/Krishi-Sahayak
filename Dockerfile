@@ -28,8 +28,8 @@ EXPOSE 8000
 
 # Deep probe container health check
 HEALTHCHECK --interval=30s --timeout=5s --start-period=15s --retries=3 \
-    CMD curl -f http://localhost:8000/health || exit 1
+    CMD curl -f http://localhost:${PORT:-8000}/health || exit 1
 
-# Start Uvicorn ASGI server
-ENTRYPOINT ["uvicorn", "api.main:app", "--host", "0.0.0.0", "--port", "8000"]
+# Start Uvicorn ASGI server (dynamically respects cloud provider $PORT e.g. Render, Railway, Cloud Run)
+CMD ["sh", "-c", "uvicorn api.main:app --host 0.0.0.0 --port ${PORT:-8000}"]
 
