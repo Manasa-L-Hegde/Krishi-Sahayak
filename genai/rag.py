@@ -219,20 +219,34 @@ class LocalRAG:
                 "fallback": True,
             }
 
-        api_key = os.getenv("GROQ_API_KEY")
-        if not api_key:
-            return {"answer": "Verified context was retrieved, but no Groq API key is configured. " + low_fb,
+        gemini_key = os.getenv("GEMINI_API_KEY")
+        groq_key = os.getenv("GROQ_API_KEY")
+        if not gemini_key and not groq_key:
+            return {"answer": "Verified context was retrieved, but no Gemini or Groq API key is configured. " + low_fb,
                     "sources": sorted({hit["source"] for hit in qualifying}), "grounded": False, "fallback": True}
-        from groq import Groq
         context = "\n\n".join(f"SOURCE: {hit['source']}\n{hit['text']}" for hit in qualifying)
         prompt = ("Answer ONLY from the provided context. If the context does not contain the answer, say so explicitly; "
                   "never guess or add outside facts. Cite the source names. English and Kannada are allowed.\n\n"
                   f"CONTEXT:\n{context}\n\nQUESTION: {question}")
         try:
-            response = Groq(api_key=api_key).chat.completions.create(
-                model=os.getenv("GROQ_MODEL", "llama-3.1-8b-instant"),
+            if gemini_key:
+                from openai import OpenAI
+                client = OpenAI(
+                    base_url="https://generativelanguage.googleapis.com/v1beta/openai/",
+                    api_key=gemini_key,
+                )
+                model_name = os.getenv("GEMINI_MODEL", "gemini-flash-latest")
+            else:
+                from groq import Groq
+                client = Groq(api_key=groq_key)
+                model_name = os.getenv("GROQ_MODEL", "llama-3.1-8b-instant")
+
+            response = client.chat.completions.create(
+                model=model_name,
                 messages=[{"role": "system", "content": "You are a strictly grounded agricultural information assistant."},
-                          {"role": "user", "content": prompt}], temperature=0)
+                          {"role": "user", "content": prompt}],
+                temperature=0,
+            )
             content = response.choices[0].message.content or ""
             lower_content = content.lower()
             if any(phrase in lower_content for phrase in [
@@ -329,7 +343,8 @@ class LocalRAG:
                 "fallback": True,
             }
 
-        api_key = os.getenv("GROQ_API_KEY")
+        gemini_key = os.getenv("GEMINI_API_KEY")
+        groq_key = os.getenv("GROQ_API_KEY")
         sources = sorted({hit["source"] for hit in qualifying})
         context = "\n\n".join(f"SOURCE: {hit['source']}\n{hit['text']}" for hit in qualifying)
         prompt = (
@@ -342,7 +357,7 @@ class LocalRAG:
             f"Use bullet points and bold key terms. Explicitly mention official scheme benefits or ICAR guidelines if relevant."
         )
 
-        if not api_key:
+        if not gemini_key and not groq_key:
             return {
                 "answer": f"**Verified Information Found ({', '.join(sources)}):**\n\n" + qualifying[0]["text"][:600] + "...",
                 "sources": sources,
@@ -351,10 +366,19 @@ class LocalRAG:
                 "fallback": False
             }
 
-        from groq import Groq
-        model_name = os.getenv("GROQ_MODEL", "llama-3.1-8b-instant")
         try:
-            client = Groq(api_key=api_key)
+            if gemini_key:
+                from openai import OpenAI
+                client = OpenAI(
+                    base_url="https://generativelanguage.googleapis.com/v1beta/openai/",
+                    api_key=gemini_key,
+                )
+                model_name = os.getenv("GEMINI_MODEL", "gemini-flash-latest")
+            else:
+                from groq import Groq
+                client = Groq(api_key=groq_key)
+                model_name = os.getenv("GROQ_MODEL", "llama-3.1-8b-instant")
+
             response = client.chat.completions.create(
                 model=model_name,
                 messages=[

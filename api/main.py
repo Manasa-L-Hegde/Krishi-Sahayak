@@ -243,12 +243,20 @@ def ask_expert(payload: ChatAdvisoryRequest) -> ChatAdvisoryResponse:
 
 
 def describe_plant_symptoms(image_bytes: bytes, content_type: str = "image/jpeg") -> str:
-    api_key = os.getenv("MODEL_API_KEY")
-    if not api_key:
-        raise HTTPException(status_code=500, detail="MODEL_API_KEY is not configured.")
+    gemini_key = os.getenv("GEMINI_API_KEY")
+    model_api_key = os.getenv("MODEL_API_KEY")
+    if not gemini_key and not model_api_key:
+        raise HTTPException(status_code=500, detail="Neither GEMINI_API_KEY nor MODEL_API_KEY is configured.")
     from openai import OpenAI
-    client = OpenAI(base_url="https://api.meta.ai/v1", api_key=api_key)
-    model = os.getenv("META_MODEL", "muse-spark-1.1")
+    if model_api_key:
+        client = OpenAI(base_url="https://api.meta.ai/v1", api_key=model_api_key)
+        model = os.getenv("META_MODEL", "muse-spark-1.1")
+    else:
+        client = OpenAI(
+            base_url="https://generativelanguage.googleapis.com/v1beta/openai/",
+            api_key=gemini_key,
+        )
+        model = os.getenv("GEMINI_MODEL", "gemini-flash-latest")
     b64_image = base64.b64encode(image_bytes).decode("utf-8")
     mime = content_type or "image/jpeg"
     response = client.chat.completions.create(
