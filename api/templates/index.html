@@ -3,51 +3,688 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Krishi Sahayak</title>
-  <style>body{font:16px system-ui,sans-serif;max-width:760px;margin:2rem auto;padding:0 1rem;color:#1f2933}form{display:grid;grid-template-columns:repeat(2,1fr);gap:1rem}label{display:grid;gap:.35rem}input,button{font:inherit;padding:.6rem}button{grid-column:1/-1;cursor:pointer;background:#176b45;color:white;border:0;border-radius:4px}pre{white-space:pre-wrap;background:#f2f5f3;padding:1rem;border-radius:4px}a{color:#176b45}</style>
+  <title>Krishi Sahayak - Smart Crop & Advisory Platform</title>
+  <style>
+    :root {
+      --primary: #15803d;
+      --primary-dark: #166534;
+      --primary-light: #dcfce7;
+      --accent: #b45309;
+      --bg: #f8fafc;
+      --card-bg: #ffffff;
+      --text: #0f172a;
+      --text-muted: #64748b;
+      --border: #e2e8f0;
+      --success: #16a34a;
+      --warning: #d97706;
+      --danger: #dc2626;
+      --info: #0284c7;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: system-ui, -apple-system, Segoe UI, Roboto, sans-serif; }
+    body { background-color: var(--bg); color: var(--text); line-height: 1.5; padding-bottom: 60px; }
+
+    header {
+      background: linear-gradient(135deg, var(--primary-dark), var(--primary));
+      color: white;
+      padding: 1.25rem 1.5rem;
+      box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 1rem;
+    }
+
+    .brand h1 { font-size: 1.5rem; font-weight: 700; display: flex; align-items: center; gap: 0.5rem; }
+    .brand p { font-size: 0.875rem; opacity: 0.9; margin-top: 0.2rem; }
+
+    .header-links { display: flex; align-items: center; gap: 0.75rem; }
+    .nav-btn {
+      background: rgba(255, 255, 255, 0.15);
+      border: 1px solid rgba(255, 255, 255, 0.35);
+      color: white;
+      text-decoration: none;
+      padding: 0.45rem 0.9rem;
+      border-radius: 9999px;
+      font-weight: 600;
+      font-size: 0.875rem;
+      transition: all 0.2s;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4rem;
+    }
+    .nav-btn:hover { background: rgba(255, 255, 255, 0.25); }
+    .nav-btn.highlight {
+      background: #fef08a;
+      color: #854d0e;
+      border-color: #fde047;
+      font-weight: 700;
+    }
+    .nav-btn.highlight:hover { background: #fef9c3; }
+
+    .container { max-width: 1040px; margin: 2rem auto; padding: 0 1rem; }
+
+    /* Top Alert Banner */
+    .banner {
+      background: linear-gradient(to right, #ecfdf5, #f0fdf4);
+      border: 1px solid #a7f3d0;
+      border-radius: 0.75rem;
+      padding: 1rem 1.25rem;
+      margin-bottom: 2rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 1rem;
+      box-shadow: 0 1px 2px rgba(0,0,0,0.03);
+    }
+    .banner-text { display: flex; align-items: center; gap: 0.75rem; }
+    .banner-icon { font-size: 1.5rem; }
+    .banner-btn {
+      background: var(--primary);
+      color: white;
+      text-decoration: none;
+      padding: 0.5rem 1rem;
+      border-radius: 0.5rem;
+      font-weight: 600;
+      font-size: 0.875rem;
+      transition: background 0.2s;
+    }
+    .banner-btn:hover { background: var(--primary-dark); }
+
+    .grid-layout {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 2rem;
+    }
+    @media (min-width: 860px) {
+      .grid-layout { grid-template-columns: 1.15fr 0.85fr; }
+    }
+
+    .card {
+      background: var(--card-bg);
+      border-radius: 0.75rem;
+      border: 1px solid var(--border);
+      padding: 1.5rem;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.04);
+    }
+    .card-title {
+      font-size: 1.15rem;
+      font-weight: 700;
+      color: #1e293b;
+      margin-bottom: 0.5rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+    .card-subtitle {
+      font-size: 0.85rem;
+      color: var(--text-muted);
+      margin-bottom: 1.25rem;
+    }
+
+    /* Preset Buttons */
+    .presets {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+      margin-bottom: 1.25rem;
+      padding-bottom: 1rem;
+      border-bottom: 1px dashed var(--border);
+    }
+    .preset-label { font-size: 0.8rem; font-weight: 600; color: var(--text-muted); width: 100%; }
+    .preset-chip {
+      background: #f1f5f9;
+      border: 1px solid #cbd5e1;
+      border-radius: 9999px;
+      padding: 0.25rem 0.75rem;
+      font-size: 0.8rem;
+      cursor: pointer;
+      font-weight: 600;
+      color: #334155;
+      transition: all 0.15s;
+    }
+    .preset-chip:hover {
+      background: var(--primary-light);
+      border-color: #86efac;
+      color: var(--primary-dark);
+    }
+
+    /* Form Fields */
+    .form-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 1rem;
+    }
+    @media (max-width: 600px) {
+      .form-grid { grid-template-columns: 1fr; }
+    }
+    .form-group { display: flex; flex-direction: column; gap: 0.35rem; }
+    .form-group label {
+      font-size: 0.85rem;
+      font-weight: 600;
+      color: #334155;
+      display: flex;
+      justify-content: space-between;
+    }
+    .form-group .unit { font-weight: 400; color: var(--text-muted); font-size: 0.75rem; }
+    .form-control {
+      font-size: 0.95rem;
+      padding: 0.65rem 0.85rem;
+      border: 1.5px solid var(--border);
+      border-radius: 0.5rem;
+      background: #ffffff;
+      color: #0f172a;
+      transition: border-color 0.15s, box-shadow 0.15s;
+    }
+    .form-control:focus {
+      outline: none;
+      border-color: var(--primary);
+      box-shadow: 0 0 0 3px rgba(21, 128, 61, 0.15);
+    }
+
+    .btn-submit {
+      width: 100%;
+      margin-top: 1.25rem;
+      padding: 0.85rem;
+      background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+      color: white;
+      font-size: 1rem;
+      font-weight: 700;
+      border: none;
+      border-radius: 0.5rem;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.5rem;
+      box-shadow: 0 2px 4px rgba(21, 128, 61, 0.25);
+      transition: all 0.2s;
+    }
+    .btn-submit:hover {
+      box-shadow: 0 4px 8px rgba(21, 128, 61, 0.35);
+      transform: translateY(-1px);
+    }
+    .btn-submit:active { transform: translateY(0); }
+
+    /* Results Card */
+    .result-placeholder {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      min-height: 280px;
+      text-align: center;
+      color: var(--text-muted);
+      border: 2px dashed var(--border);
+      border-radius: 0.75rem;
+      padding: 2rem;
+    }
+    .result-placeholder-icon { font-size: 2.5rem; margin-bottom: 0.5rem; opacity: 0.6; }
+
+    .crop-result-card {
+      background: linear-gradient(to bottom, #f0fdf4, #ffffff);
+      border: 2px solid #86efac;
+      border-radius: 0.75rem;
+      padding: 1.5rem;
+      animation: fadeIn 0.3s ease-in;
+    }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
+
+    .crop-header {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      padding-bottom: 1rem;
+      border-bottom: 1px solid #dcfce7;
+    }
+    .crop-icon-large {
+      font-size: 3rem;
+      background: white;
+      width: 64px;
+      height: 64px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 1rem;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.06);
+    }
+    .crop-info h3 { font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.05em; color: var(--primary-dark); }
+    .crop-name { font-size: 1.75rem; font-weight: 800; color: #14532d; text-transform: capitalize; }
+
+    .metric-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 0.75rem;
+      margin: 1.25rem 0;
+    }
+    .metric-card {
+      background: white;
+      border: 1px solid var(--border);
+      border-radius: 0.5rem;
+      padding: 0.75rem 1rem;
+    }
+    .metric-label { font-size: 0.75rem; color: var(--text-muted); font-weight: 600; text-transform: uppercase; }
+    .metric-value { font-size: 1.25rem; font-weight: 700; color: #1e293b; margin-top: 0.2rem; }
+
+    .progress-bar-container {
+      width: 100%;
+      height: 6px;
+      background: #e2e8f0;
+      border-radius: 9999px;
+      margin-top: 0.5rem;
+      overflow: hidden;
+    }
+    .progress-bar { height: 100%; border-radius: 9999px; transition: width 0.5s ease-out; }
+    .progress-green { background: #16a34a; }
+    .progress-yellow { background: #eab308; }
+    .progress-red { background: #ef4444; }
+
+    .shap-section {
+      background: white;
+      border: 1px solid var(--border);
+      border-radius: 0.5rem;
+      padding: 1rem;
+      margin-top: 1rem;
+    }
+    .shap-title { font-size: 0.85rem; font-weight: 700; color: #334155; margin-bottom: 0.6rem; display: flex; align-items: center; gap: 0.35rem; }
+    .shap-list { display: flex; flex-direction: column; gap: 0.45rem; }
+    .shap-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 0.825rem;
+      padding: 0.35rem 0.6rem;
+      border-radius: 0.35rem;
+      background: #f8fafc;
+    }
+    .shap-support { color: #15803d; font-weight: 600; }
+    .shap-oppose { color: #b91c1c; font-weight: 600; }
+
+    .warning-badge {
+      background: #fef2f2;
+      border: 1px solid #fecaca;
+      color: #991b1b;
+      font-size: 0.75rem;
+      padding: 0.5rem 0.75rem;
+      border-radius: 0.35rem;
+      margin-top: 1rem;
+      line-height: 1.4;
+    }
+
+    details.json-details {
+      margin-top: 1rem;
+      font-size: 0.8rem;
+      color: var(--text-muted);
+    }
+    details.json-details summary {
+      cursor: pointer;
+      font-weight: 600;
+      padding: 0.25rem 0;
+    }
+    pre.raw-json {
+      background: #1e293b;
+      color: #e2e8f0;
+      padding: 0.75rem;
+      border-radius: 0.5rem;
+      margin-top: 0.5rem;
+      font-size: 0.75rem;
+      overflow-x: auto;
+    }
+
+    /* Q&A Section */
+    .qa-card {
+      margin-top: 2rem;
+      background: white;
+      border-radius: 0.75rem;
+      border: 1px solid var(--border);
+      padding: 1.5rem;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.04);
+    }
+    .qa-input-row { display: flex; gap: 0.5rem; margin-top: 0.75rem; flex-wrap: wrap; }
+    .qa-input { flex: 1; min-width: 260px; }
+    .qa-select { width: 120px; }
+    .qa-btn {
+      padding: 0.65rem 1.25rem;
+      background: #0284c7;
+      color: white;
+      border: none;
+      border-radius: 0.5rem;
+      font-weight: 600;
+      cursor: pointer;
+    }
+    .qa-btn:hover { background: #0369a1; }
+    .qa-response {
+      margin-top: 1rem;
+      padding: 1rem;
+      background: #f0f9ff;
+      border: 1px solid #bae6fd;
+      border-radius: 0.5rem;
+      font-size: 0.9rem;
+      color: #0369a1;
+      display: none;
+    }
+  </style>
 </head>
 <body>
-  <h1>Krishi Sahayak</h1>
-  <p>Pattern-based crop recommendation and climate mismatch risk. <a href="/docs">API documentation</a></p>
-  <div style="background: #ecfdf5; border: 1px solid #a7f3d0; border-radius: 6px; padding: 0.75rem 1rem; margin: 1rem 0;">
-    <strong>🌧️ Spray Advisor:</strong> <a href="/spray" style="color: #047857; font-weight: 600;">Open Arecanut Koleroga Spray Timing Advisor &rarr;</a> (ICAR-CPCRI Grounded)
+
+  <header>
+    <div class="brand">
+      <h1>🌱 Krishi Sahayak</h1>
+      <p>Intelligent Multi-Layer Agricultural Advisory & Decision Platform</p>
+    </div>
+    <div class="header-links">
+      <a href="/spray" class="nav-btn highlight">🌧️ Open Spray Advisor &rarr;</a>
+      <a href="/docs" class="nav-btn">📖 API Docs</a>
+    </div>
+  </header>
+
+  <div class="container">
+
+    <!-- Direct Navigation Banner -->
+    <div class="banner">
+      <div class="banner-text">
+        <span class="banner-icon">🌦️</span>
+        <div>
+          <strong style="color: #065f46;">Arecanut Koleroga Weather & Spray Advisor is Ready</strong>
+          <p style="font-size: 0.85rem; color: #047857; margin-top: 0.1rem;">Live 7-day dual-model ECMWF/GFS weather integration with verified ICAR-CPCRI spray rules.</p>
+        </div>
+      </div>
+      <a href="/spray" class="banner-btn">Go to Spray Timing Advisor &rarr;</a>
+    </div>
+
+    <div class="grid-layout">
+
+      <!-- Left Column: Soil & Weather Input Form -->
+      <div class="card">
+        <h2 class="card-title">🧪 Crop Recommendation Engine</h2>
+        <p class="card-subtitle">Enter soil nutrients and seasonal weather metrics to determine the optimal crop pattern.</p>
+
+        <!-- Presets -->
+        <div class="presets">
+          <span class="preset-label">⚡ Quick Presets (Click to autofill):</span>
+          <button type="button" class="preset-chip" onclick="fillPreset(90, 42, 43, 25, 80, 6.5, 202)">🌾 Rice / ಭತ್ತ</button>
+          <button type="button" class="preset-chip" onclick="fillPreset(110, 45, 20, 26, 65, 6.8, 85)">🌽 Maize / ಮೆಕ್ಕೆಜೋಳ</button>
+          <button type="button" class="preset-chip" onclick="fillPreset(120, 40, 20, 24, 80, 7.0, 75)">🌿 Cotton / ಹತ್ತಿ</button>
+          <button type="button" class="preset-chip" onclick="fillPreset(105, 30, 30, 25, 78, 6.8, 160)">☕ Coffee / ಕಾಫಿ</button>
+          <button type="button" class="preset-chip" onclick="fillPreset(20, 60, 20, 18, 16, 7.2, 80)">🧆 Chickpea / ಕಡಲೆ</button>
+        </div>
+
+        <form id="prediction-form">
+          <div class="form-grid">
+            <div class="form-group">
+              <label for="input-n">Nitrogen (N) <span class="unit">kg/ha</span></label>
+              <input id="input-n" name="N" type="number" step="any" value="90" class="form-control" required>
+            </div>
+            <div class="form-group">
+              <label for="input-p">Phosphorus (P) <span class="unit">kg/ha</span></label>
+              <input id="input-p" name="P" type="number" step="any" value="42" class="form-control" required>
+            </div>
+            <div class="form-group">
+              <label for="input-k">Potassium (K) <span class="unit">kg/ha</span></label>
+              <input id="input-k" name="K" type="number" step="any" value="43" class="form-control" required>
+            </div>
+            <div class="form-group">
+              <label for="input-temp">Temperature <span class="unit">°C</span></label>
+              <input id="input-temp" name="temperature" type="number" step="any" value="25" class="form-control" required>
+            </div>
+            <div class="form-group">
+              <label for="input-hum">Humidity <span class="unit">%</span></label>
+              <input id="input-hum" name="humidity" type="number" step="any" value="80" class="form-control" required>
+            </div>
+            <div class="form-group">
+              <label for="input-ph">Soil pH <span class="unit">scale 0-14</span></label>
+              <input id="input-ph" name="ph" type="number" step="0.1" min="0" max="14" value="6.5" class="form-control" required>
+            </div>
+            <div class="form-group" style="grid-column: 1 / -1;">
+              <label for="input-rain">Rainfall <span class="unit">mm / season</span></label>
+              <input id="input-rain" name="rainfall" type="number" step="any" value="200" class="form-control" required>
+            </div>
+          </div>
+
+          <button type="submit" id="submit-btn" class="btn-submit">
+            <span>✨ Recommend Crop</span>
+          </button>
+        </form>
+      </div>
+
+      <!-- Right Column: Visual Prediction Result -->
+      <div class="card">
+        <h2 class="card-title">🎯 Recommendation Result</h2>
+        <p class="card-subtitle">Machine learning prediction with explainable SHAP contribution analysis.</p>
+
+        <div id="result-placeholder" class="result-placeholder">
+          <span class="result-placeholder-icon">🌱</span>
+          <p><strong>No crop evaluated yet</strong></p>
+          <p style="font-size: 0.8rem; margin-top: 0.25rem;">Fill the soil & climate form on the left and click <strong>"Recommend Crop"</strong> to see the result.</p>
+        </div>
+
+        <div id="result-card" class="crop-result-card" style="display: none;">
+          <div class="crop-header">
+            <div class="crop-icon-large" id="res-crop-icon">🌾</div>
+            <div class="crop-info">
+              <h3>Recommended Optimal Crop</h3>
+              <div class="crop-name" id="res-crop-name">Rice</div>
+            </div>
+          </div>
+
+          <div class="metric-row">
+            <div class="metric-card">
+              <div class="metric-label">Model Confidence</div>
+              <div class="metric-value" id="res-confidence">96.0%</div>
+              <div class="progress-bar-container">
+                <div id="conf-bar" class="progress-bar progress-green" style="width: 96%;"></div>
+              </div>
+            </div>
+
+            <div class="metric-card">
+              <div class="metric-label">Climate Mismatch Risk</div>
+              <div class="metric-value" id="res-risk">55.3 / 100</div>
+              <div class="progress-bar-container">
+                <div id="risk-bar" class="progress-bar progress-yellow" style="width: 55%;"></div>
+              </div>
+            </div>
+          </div>
+
+          <div class="shap-section">
+            <div class="shap-title">
+              <span>📊 Key Deciding Factors (SHAP Analysis)</span>
+            </div>
+            <div class="shap-list" id="shap-list">
+              <!-- Dynamically populated -->
+            </div>
+          </div>
+
+          <div id="warning-box" class="warning-badge" style="display: none;"></div>
+
+          <details class="json-details">
+            <summary>⚙️ View Raw Technical JSON Response</summary>
+            <pre class="raw-json" id="raw-json-output"></pre>
+          </details>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Bottom Section: Agricultural Advisory (Gemini Powered) -->
+    <div class="qa-card">
+      <h2 class="card-title">🤖 Verified Agricultural Q&A (Google Gemini + ICAR Grounding)</h2>
+      <p class="card-subtitle">Ask general farming questions verified against ICAR and official government guidelines.</p>
+
+      {% if pilot_mode %}
+      <div style="background: #fffbeb; border: 1px solid #fef3c7; border-radius: 0.5rem; padding: 0.85rem 1rem; color: #92400e; font-size: 0.875rem;">
+        <strong>🔒 Field Pilot Mode Active:</strong> Free-text LLM chat is restricted to prevent field hallucinations. 
+        For spray timing and fungicide decisions, please use the <a href="/spray" style="color: #b45309; font-weight: 700; text-decoration: underline;">Spray Timing Advisor</a>.
+      </div>
+      {% else %}
+      <form id="advisory-form">
+        <div class="qa-input-row">
+          <input id="qa-question" name="question" type="text" value="How to prepare 1% neutral Bordeaux mixture?" class="form-control qa-input" placeholder="Type farming question..." required>
+          <select name="language" class="form-control qa-select">
+            <option value="en">English</option>
+            <option value="kn">ಕನ್ನಡ (Kannada)</option>
+          </select>
+          <button type="submit" id="qa-submit-btn" class="qa-btn">Ask Advisor</button>
+        </div>
+      </form>
+      <div id="qa-response" class="qa-response"></div>
+      {% endif %}
+    </div>
+
   </div>
-  <form id="prediction-form">
-    {% for field, value, label in [("N",90,"Nitrogen (N)"),("P",42,"Phosphorus (P)"),("K",43,"Potassium (K)"),("temperature",25,"Temperature"),("humidity",80,"Humidity"),("ph",6.5,"Soil pH"),("rainfall",200,"Rainfall")] %}
-    <label>{{ label }}<input name="{{ field }}" type="number" step="any" value="{{ value }}" required></label>
-    {% endfor %}
-    <button type="submit">Recommend crop</button>
-  </form>
-  <h2>Result</h2><pre id="result">Submit the example values to see a prediction.</pre>
-  <h2>Government agricultural advisory</h2>
-  {% if pilot_mode %}
-  <div style="background: #fff3cd; color: #856404; padding: 0.75rem 1rem; border-radius: 4px; margin: 1rem 0; border: 1px solid #ffeeba;">
-    <strong>🔒 Field Pilot Mode Active:</strong> Free-text agricultural Q&A is disabled for the field pilot.
-    Please use the <a href="/spray" style="color: #533f03; font-weight: bold; text-decoration: underline;">Krishi Sahayak Spray Timing Advisor</a> for deterministic, ICAR-grounded spray scheduling.
-  </div>
-  {% else %}
-  <form id="advisory-form">
-    <label>Question<input name="question" type="text" value="What is PM-KISAN?" required></label>
-    <label>Language<select name="language"><option>English</option><option>Kannada</option></select></label>
-    <button type="submit">Ask verified advisory</button>
-  </form>
-  <pre id="advisory-result">Ask a question to search the verified government corpus.</pre>
-  <p><small>Limitation: this matches a fixed dataset; it is not live agronomic simulation.</small></p>
-  {% endif %}
+
   <script>
+    const CROP_ICONS = {
+      'rice': '🌾',
+      'maize': '🌽',
+      'chickpea': '🧆',
+      'kidneybeans': '🫘',
+      'pigeonpeas': '🫘',
+      'mothbeans': '🫘',
+      'mungbean': '🌱',
+      'blackgram': '🌱',
+      'lentil': '🥣',
+      'pomegranate': '🍎',
+      'banana': '🍌',
+      'mango': '🥭',
+      'grapes': '🍇',
+      'watermelon': '🍉',
+      'muskmelon': '🍈',
+      'apple': '🍏',
+      'orange': '🍊',
+      'papaya': '🍈',
+      'coconut': '🥥',
+      'cotton': '🌿',
+      'jute': '🌾',
+      'coffee': '☕'
+    };
+
+    function fillPreset(n, p, k, temp, hum, ph, rain) {
+      document.getElementById('input-n').value = n;
+      document.getElementById('input-p').value = p;
+      document.getElementById('input-k').value = k;
+      document.getElementById('input-temp').value = temp;
+      document.getElementById('input-hum').value = hum;
+      document.getElementById('input-ph').value = ph;
+      document.getElementById('input-rain').value = rain;
+      document.getElementById('prediction-form').dispatchEvent(new Event('submit'));
+    }
+
     document.getElementById('prediction-form').addEventListener('submit', async function (event) {
       event.preventDefault();
+      const btn = document.getElementById('submit-btn');
+      btn.innerHTML = '<span>⏳ Evaluating Patterns...</span>';
+      btn.disabled = true;
+
       const data = Object.fromEntries(new FormData(event.target).entries());
       Object.keys(data).forEach(key => data[key] = Number(data[key]));
-      const response = await fetch('/predict', {method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(data)});
-      document.getElementById('result').textContent = JSON.stringify(await response.json(), null, 2);
+
+      try {
+        const response = await fetch('/predict', {
+          method: 'POST',
+          headers: {'Content-Type': 'application/json'},
+          body: JSON.stringify(data)
+        });
+
+        if (!response.ok) {
+          throw new Error('Prediction service returned an error.');
+        }
+
+        const res = await response.json();
+
+        // 1. Render Crop Header
+        const cropLower = (res.crop || '').toLowerCase();
+        document.getElementById('res-crop-name').textContent = res.crop || 'Unknown';
+        document.getElementById('res-crop-icon').textContent = CROP_ICONS[cropLower] || '🌱';
+
+        // 2. Render Confidence
+        const confPct = Math.round((res.confidence || 0) * 100);
+        document.getElementById('res-confidence').textContent = confPct + '%';
+        const confBar = document.getElementById('conf-bar');
+        confBar.style.width = confPct + '%';
+        confBar.className = 'progress-bar ' + (confPct >= 70 ? 'progress-green' : confPct >= 40 ? 'progress-yellow' : 'progress-red');
+
+        // 3. Render Risk
+        const riskVal = Math.round(res.risk_score || 0);
+        document.getElementById('res-risk').textContent = riskVal + ' / 100';
+        const riskBar = document.getElementById('risk-bar');
+        riskBar.style.width = riskVal + '%';
+        riskBar.className = 'progress-bar ' + (riskVal <= 30 ? 'progress-green' : riskVal <= 60 ? 'progress-yellow' : 'progress-red');
+
+        // 4. Render SHAP Contributions
+        const shapList = document.getElementById('shap-list');
+        shapList.innerHTML = '';
+        if (res.shap_contributions && res.shap_contributions.length > 0) {
+          res.shap_contributions.forEach(item => {
+            const isSupport = item.direction === 'supports';
+            const sign = isSupport ? '+' : '-';
+            const pctVal = Math.round(Math.abs(item.value || 0) * 100);
+            const row = document.createElement('div');
+            row.className = 'shap-item';
+            row.innerHTML = `
+              <span><strong>${item.feature.toUpperCase()}</strong>: ${pctVal}% ${isSupport ? 'supporting' : 'opposing'}</span>
+              <span class="${isSupport ? 'shap-support' : 'shap-oppose'}">${sign}${pctVal}%</span>
+            `;
+            shapList.appendChild(row);
+          });
+        } else {
+          shapList.innerHTML = '<span style="font-size:0.8rem;color:#64748b;">No individual factor variance calculated.</span>';
+        }
+
+        // 5. Warning / Experimental Badge
+        const warnBox = document.getElementById('warning-box');
+        if (res.warning) {
+          warnBox.textContent = res.warning;
+          warnBox.style.display = 'block';
+        } else {
+          warnBox.style.display = 'none';
+        }
+
+        // 6. Raw JSON
+        document.getElementById('raw-json-output').textContent = JSON.stringify(res, null, 2);
+
+        // Switch Views
+        document.getElementById('result-placeholder').style.display = 'none';
+        document.getElementById('result-card').style.display = 'block';
+
+      } catch (err) {
+        alert('Error getting recommendation: ' + err.message);
+      } finally {
+        btn.innerHTML = '<span>✨ Recommend Crop</span>';
+        btn.disabled = false;
+      }
     });
-    document.getElementById('advisory-form').addEventListener('submit', async function (event) {
-      event.preventDefault();
-      const data = Object.fromEntries(new FormData(event.target).entries());
-      const response = await fetch('/genai/advise', {method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(data)});
-      document.getElementById('advisory-result').textContent = JSON.stringify(await response.json(), null, 2);
-    });
+
+    const advisoryForm = document.getElementById('advisory-form');
+    if (advisoryForm) {
+      advisoryForm.addEventListener('submit', async function (event) {
+        event.preventDefault();
+        const qaBtn = document.getElementById('qa-submit-btn');
+        const qaBox = document.getElementById('qa-response');
+        qaBtn.textContent = 'Searching...';
+        qaBtn.disabled = true;
+        qaBox.style.display = 'block';
+        qaBox.innerHTML = '<em>Consulting ICAR verified corpus through Google Gemini...</em>';
+
+        const data = Object.fromEntries(new FormData(event.target).entries());
+        try {
+          const response = await fetch('/genai/ask', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify(data)
+          });
+          const res = await response.json();
+          qaBox.innerHTML = `<strong>Answer:</strong><p style="margin-top:0.4rem;white-space:pre-wrap;">${res.answer}</p>` +
+            (res.sources && res.sources.length ? `<p style="font-size:0.75rem;margin-top:0.5rem;color:#0284c7;"><strong>Verified Sources:</strong> ${res.sources.join(', ')}</p>` : '');
+        } catch (err) {
+          qaBox.innerHTML = '<span style="color:#dc2626;">Failed to fetch advisory response.</span>';
+        } finally {
+          qaBtn.textContent = 'Ask Advisor';
+          qaBtn.disabled = false;
+        }
+      });
+    }
   </script>
 </body>
 </html>
