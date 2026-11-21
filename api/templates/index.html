@@ -11,38 +11,39 @@
     :root {
       --primary: #059669;
       --primary-dark: #047857;
-      --primary-light: #d1fae5;
-      --primary-glow: rgba(16, 185, 129, 0.25);
-      --accent: #d97706;
+      --primary-light: #ecfdf5;
+      --navy: #0f172a;
+      --navy-light: #1e293b;
+      --accent-gold: #f59e0b;
+      --accent-blue: #0284c7;
+      --accent-purple: #7c3aed;
+      --accent-coral: #ea580c;
       --bg: #f8fafc;
       --surface: #ffffff;
-      --surface-elevated: #ffffff;
       --text: #0f172a;
       --text-muted: #64748b;
       --border: #e2e8f0;
-      --border-focus: #10b981;
-      --success: #16a34a;
-      --warning: #f59e0b;
-      --danger: #ef4444;
+      --border-hover: #cbd5e1;
       --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
-      --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.07), 0 2px 4px -2px rgba(0, 0, 0, 0.05);
-      --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.08), 0 4px 6px -4px rgba(0, 0, 0, 0.04);
-      --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.04);
+      --shadow-md: 0 4px 12px -2px rgba(15, 23, 42, 0.08);
+      --shadow-lg: 0 12px 24px -4px rgba(15, 23, 42, 0.1);
+      --shadow-xl: 0 20px 30px -6px rgba(15, 23, 42, 0.12);
     }
 
     * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Plus Jakarta Sans', 'Noto Sans Kannada', system-ui, sans-serif; }
-    body { background-color: var(--bg); color: var(--text); line-height: 1.6; padding-bottom: 80px; -webkit-font-smoothing: antialiased; }
+    body { background-color: var(--bg); color: var(--text); line-height: 1.6; padding-bottom: 90px; -webkit-font-smoothing: antialiased; }
 
-    /* Top Navigation Header */
+    /* Premium Modern Dark Slate Header with Gold & Emerald Highlights */
     header {
-      background: linear-gradient(135deg, #064e3b 0%, #065f46 50%, #059669 100%);
+      background: linear-gradient(135deg, #090d16 0%, #0f172a 60%, #1e293b 100%);
       color: white;
-      padding: 1.25rem 2rem;
-      box-shadow: 0 4px 20px rgba(6, 78, 59, 0.25);
+      padding: 1.15rem 2rem;
+      box-shadow: 0 4px 20px rgba(15, 23, 42, 0.4);
       position: sticky;
       top: 0;
       z-index: 100;
-      backdrop-filter: blur(8px);
+      border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+      backdrop-filter: blur(12px);
     }
     .header-content {
       max-width: 1200px;
@@ -56,63 +57,66 @@
     .brand {
       display: flex;
       align-items: center;
-      gap: 0.85rem;
+      gap: 0.9rem;
     }
     .brand-icon {
-      background: rgba(255, 255, 255, 0.2);
-      border: 1px solid rgba(255, 255, 255, 0.35);
-      width: 44px;
-      height: 44px;
+      background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+      width: 42px;
+      height: 42px;
       border-radius: 12px;
       display: flex;
       align-items: center;
       justify-content: center;
-      font-size: 1.5rem;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.12);
+      font-size: 1.4rem;
+      box-shadow: 0 2px 10px rgba(16, 185, 129, 0.35);
+      border: 1px solid rgba(255, 255, 255, 0.2);
     }
     .brand h1 { font-size: 1.35rem; font-weight: 800; letter-spacing: -0.02em; color: #ffffff; }
-    .brand p { font-size: 0.825rem; opacity: 0.9; color: #a7f3d0; font-weight: 500; }
+    .brand p { font-size: 0.8rem; color: #94a3b8; font-weight: 500; }
 
     .header-actions { display: flex; align-items: center; gap: 0.75rem; flex-wrap: wrap; }
-    .btn-pill {
-      background: rgba(255, 255, 255, 0.15);
-      border: 1px solid rgba(255, 255, 255, 0.3);
-      color: white;
+    
+    .btn-spray-nav {
+      background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+      color: #ffffff;
       text-decoration: none;
-      padding: 0.5rem 1.1rem;
+      padding: 0.5rem 1.15rem;
       border-radius: 9999px;
-      font-weight: 600;
+      font-weight: 700;
       font-size: 0.875rem;
       transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
       display: inline-flex;
       align-items: center;
       gap: 0.5rem;
-      cursor: pointer;
+      box-shadow: 0 2px 10px rgba(245, 158, 11, 0.35);
+      border: 1px solid rgba(255, 255, 255, 0.2);
     }
-    .btn-pill:hover {
-      background: rgba(255, 255, 255, 0.25);
-      transform: translateY(-1px);
-    }
-    .btn-pill.featured {
-      background: #fef08a;
-      color: #713f12;
-      border-color: #fde047;
-      font-weight: 700;
-      box-shadow: 0 2px 10px rgba(234, 179, 8, 0.3);
-    }
-    .btn-pill.featured:hover {
-      background: #fef9c3;
+    .btn-spray-nav:hover {
+      background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%);
       transform: translateY(-2px);
-      box-shadow: 0 4px 14px rgba(234, 179, 8, 0.45);
+      box-shadow: 0 4px 16px rgba(245, 158, 11, 0.5);
     }
 
-    .lang-switcher {
-      background: rgba(0, 0, 0, 0.25);
-      border: 1px solid rgba(255, 255, 255, 0.25);
-      color: white;
+    .btn-nav-plain {
+      background: rgba(255, 255, 255, 0.08);
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      color: #e2e8f0;
+      text-decoration: none;
+      padding: 0.5rem 1rem;
       border-radius: 9999px;
-      padding: 0.4rem 0.8rem;
+      font-weight: 600;
       font-size: 0.85rem;
+      transition: all 0.2s;
+    }
+    .btn-nav-plain:hover { background: rgba(255, 255, 255, 0.18); color: white; }
+
+    .lang-switcher {
+      background: rgba(255, 255, 255, 0.1);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      color: #f1f5f9;
+      border-radius: 9999px;
+      padding: 0.45rem 0.85rem;
+      font-size: 0.825rem;
       font-weight: 600;
       cursor: pointer;
       display: flex;
@@ -120,75 +124,87 @@
       gap: 0.4rem;
       transition: all 0.2s;
     }
-    .lang-switcher:hover { background: rgba(0, 0, 0, 0.35); }
+    .lang-switcher:hover { background: rgba(255, 255, 255, 0.2); }
 
-    /* Main Container */
+    /* Main Content Container */
     .container { max-width: 1200px; margin: 2rem auto; padding: 0 1.25rem; }
 
-    /* Hero Callout Banner */
-    .hero-banner {
-      background: linear-gradient(135deg, #ecfdf5 0%, #f0fdf4 100%);
-      border: 1.5px solid #a7f3d0;
-      border-radius: 16px;
-      padding: 1.25rem 1.75rem;
-      margin-bottom: 2rem;
+    /* Sleek Weather Banner (Dark Slate Blue & Sky Accent) */
+    .weather-card-banner {
+      background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 20px;
+      padding: 1.35rem 2rem;
+      margin-bottom: 2.25rem;
       display: flex;
       justify-content: space-between;
       align-items: center;
       flex-wrap: wrap;
       gap: 1.25rem;
-      box-shadow: var(--shadow-sm);
+      box-shadow: 0 10px 25px -5px rgba(15, 23, 42, 0.2);
       position: relative;
       overflow: hidden;
     }
-    .hero-banner::before {
+    .weather-card-banner::before {
       content: '';
       position: absolute;
-      top: -50%;
-      right: -10%;
-      width: 250px;
-      height: 250px;
-      background: radial-gradient(circle, rgba(16, 185, 129, 0.08) 0%, transparent 70%);
+      top: -60%;
+      right: 15%;
+      width: 280px;
+      height: 280px;
+      background: radial-gradient(circle, rgba(56, 189, 248, 0.12) 0%, transparent 70%);
       border-radius: 50%;
     }
-    .hero-text { display: flex; align-items: center; gap: 1rem; position: relative; z-index: 1; }
-    .hero-icon {
-      font-size: 2rem;
-      background: white;
-      width: 56px;
-      height: 56px;
-      border-radius: 14px;
+    .weather-card-banner::after {
+      content: '';
+      position: absolute;
+      bottom: -40%;
+      left: 10%;
+      width: 220px;
+      height: 220px;
+      background: radial-gradient(circle, rgba(245, 158, 11, 0.08) 0%, transparent 70%);
+      border-radius: 50%;
+    }
+    .banner-content { display: flex; align-items: center; gap: 1.25rem; position: relative; z-index: 1; }
+    .banner-badge-icon {
+      font-size: 2.2rem;
+      background: rgba(255, 255, 255, 0.1);
+      width: 60px;
+      height: 60px;
+      border-radius: 16px;
       display: flex;
       align-items: center;
       justify-content: center;
-      box-shadow: 0 2px 8px rgba(5, 150, 105, 0.15);
+      box-shadow: 0 4px 12px rgba(0,0,0,0.25);
+      border: 1px solid rgba(255, 255, 255, 0.15);
       flex-shrink: 0;
     }
-    .hero-title { font-size: 1.05rem; font-weight: 700; color: #065f46; margin-bottom: 0.2rem; }
-    .hero-desc { font-size: 0.875rem; color: #047857; }
-    .btn-action {
-      background: var(--primary);
+    .banner-title { font-size: 1.1rem; font-weight: 800; color: #ffffff; letter-spacing: -0.01em; }
+    .banner-desc { font-size: 0.875rem; color: #94a3b8; margin-top: 0.2rem; }
+    .btn-launch-spray {
+      background: linear-gradient(135deg, #0ea5e9 0%, #0284c7 100%);
       color: white;
       text-decoration: none;
-      padding: 0.65rem 1.35rem;
+      padding: 0.75rem 1.5rem;
       border-radius: 12px;
       font-weight: 700;
-      font-size: 0.9rem;
-      transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+      font-size: 0.925rem;
+      transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
       display: inline-flex;
       align-items: center;
       gap: 0.5rem;
-      box-shadow: 0 3px 10px rgba(5, 150, 105, 0.3);
+      box-shadow: 0 4px 14px rgba(14, 165, 233, 0.4);
       position: relative;
       z-index: 1;
+      border: 1px solid rgba(255, 255, 255, 0.2);
     }
-    .btn-action:hover {
-      background: var(--primary-dark);
+    .btn-launch-spray:hover {
+      background: linear-gradient(135deg, #38bdf8 0%, #0ea5e9 100%);
       transform: translateY(-2px);
-      box-shadow: 0 6px 16px rgba(5, 150, 105, 0.4);
+      box-shadow: 0 8px 20px rgba(14, 165, 233, 0.5);
     }
 
-    /* 2-Column Responsive Layout */
+    /* 2-Column Responsive Dashboard */
     .dashboard-grid {
       display: grid;
       grid-template-columns: 1fr;
@@ -196,15 +212,15 @@
       align-items: start;
     }
     @media (min-width: 960px) {
-      .dashboard-grid { grid-template-columns: 1.2fr 0.9fr; }
+      .dashboard-grid { grid-template-columns: 1.25fr 0.95fr; }
     }
 
-    /* Card Panels */
+    /* Panels */
     .panel-card {
       background: var(--surface);
-      border-radius: 20px;
+      border-radius: 22px;
       border: 1px solid var(--border);
-      padding: 1.75rem;
+      padding: 1.85rem;
       box-shadow: var(--shadow-md);
       transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
       position: relative;
@@ -217,7 +233,7 @@
     .panel-header {
       margin-bottom: 1.5rem;
       padding-bottom: 1rem;
-      border-bottom: 1px solid var(--border);
+      border-bottom: 1px solid #f1f5f9;
       display: flex;
       justify-content: space-between;
       align-items: flex-start;
@@ -226,85 +242,90 @@
       font-size: 1.25rem;
       font-weight: 800;
       color: #0f172a;
-      letter-spacing: -0.01em;
+      letter-spacing: -0.015em;
       display: flex;
       align-items: center;
       gap: 0.6rem;
     }
     .panel-subtitle { font-size: 0.85rem; color: var(--text-muted); margin-top: 0.3rem; }
 
-    /* Presets Slider Row */
-    .preset-section {
+    /* Preset Selection Chips with Colorful Crop Accents */
+    .preset-box {
       background: #f8fafc;
-      border: 1px solid #f1f5f9;
-      border-radius: 14px;
-      padding: 1rem;
+      border: 1px solid #e2e8f0;
+      border-radius: 16px;
+      padding: 1.15rem;
       margin-bottom: 1.5rem;
     }
-    .preset-header {
+    .preset-title {
+      font-size: 0.775rem;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: var(--text-muted);
+      margin-bottom: 0.75rem;
       display: flex;
-      justify-content: space-between;
       align-items: center;
-      margin-bottom: 0.65rem;
+      gap: 0.4rem;
     }
-    .preset-title { font-size: 0.8rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; color: var(--text-muted); }
     .preset-chips {
       display: flex;
       flex-wrap: wrap;
-      gap: 0.5rem;
+      gap: 0.55rem;
     }
     .chip {
       background: #ffffff;
       border: 1.5px solid #cbd5e1;
-      border-radius: 10px;
-      padding: 0.4rem 0.75rem;
+      border-radius: 12px;
+      padding: 0.45rem 0.85rem;
       font-size: 0.825rem;
-      font-weight: 600;
+      font-weight: 700;
       color: #334155;
       cursor: pointer;
       transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
       display: inline-flex;
       align-items: center;
-      gap: 0.4rem;
+      gap: 0.45rem;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.03);
     }
     .chip:hover {
-      border-color: var(--primary);
-      color: var(--primary-dark);
-      background: var(--primary-light);
+      border-color: #0284c7;
+      color: #0369a1;
+      background: #f0f9ff;
       transform: translateY(-2px);
-      box-shadow: 0 4px 8px rgba(16, 185, 129, 0.15);
+      box-shadow: 0 4px 10px rgba(2, 132, 199, 0.15);
     }
     .chip.active {
-      background: var(--primary-dark);
+      background: #0f172a;
       color: white;
-      border-color: var(--primary-dark);
+      border-color: #0f172a;
     }
 
-    /* Dual Control Input Groups (Slider + Input) */
+    /* Input Groups */
     .inputs-grid {
       display: flex;
       flex-direction: column;
-      gap: 1.25rem;
+      gap: 1.15rem;
     }
     .input-row {
       display: grid;
       grid-template-columns: 1fr;
-      gap: 0.5rem;
-      padding: 0.85rem 1rem;
-      background: #f8fafc;
-      border: 1px solid var(--border);
-      border-radius: 14px;
-      transition: all 0.2s ease;
-    }
-    .input-row:hover {
+      gap: 0.45rem;
+      padding: 0.9rem 1.15rem;
       background: #ffffff;
-      border-color: #cbd5e1;
+      border: 1.5px solid #e2e8f0;
+      border-radius: 16px;
+      transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
       box-shadow: var(--shadow-sm);
     }
+    .input-row:hover {
+      border-color: #94a3b8;
+      box-shadow: var(--shadow-md);
+      transform: translateY(-1px);
+    }
     .input-row:focus-within {
-      background: #ffffff;
-      border-color: var(--border-focus);
-      box-shadow: 0 0 0 3px var(--primary-glow);
+      border-color: #0284c7;
+      box-shadow: 0 0 0 3px rgba(2, 132, 199, 0.15);
     }
 
     .input-label-bar {
@@ -322,116 +343,124 @@
     }
     .field-badge {
       font-size: 0.75rem;
-      font-weight: 600;
-      padding: 0.2rem 0.5rem;
-      border-radius: 6px;
-      background: #e2e8f0;
+      font-weight: 700;
+      padding: 0.2rem 0.6rem;
+      border-radius: 8px;
+      background: #f1f5f9;
       color: #475569;
+      border: 1px solid #e2e8f0;
+      transition: all 0.2s;
     }
 
     .field-controls {
       display: grid;
-      grid-template-columns: 1fr 100px;
-      gap: 1rem;
+      grid-template-columns: 1fr 105px;
+      gap: 1.25rem;
       align-items: center;
-      margin-top: 0.25rem;
+      margin-top: 0.35rem;
     }
 
-    /* Custom Sliders */
+    /* Individual Color Accents for Sliders */
     input[type=range] {
       -webkit-appearance: none;
       width: 100%;
-      height: 7px;
-      border-radius: 5px;
-      background: #cbd5e1;
+      height: 8px;
+      border-radius: 6px;
+      background: #e2e8f0;
       outline: none;
       transition: background 0.2s;
     }
     input[type=range]::-webkit-slider-thumb {
       -webkit-appearance: none;
       appearance: none;
-      width: 20px;
-      height: 20px;
+      width: 22px;
+      height: 22px;
       border-radius: 50%;
-      background: var(--primary);
       cursor: pointer;
       border: 2.5px solid #ffffff;
-      box-shadow: 0 2px 6px rgba(0,0,0,0.25);
+      box-shadow: 0 2px 6px rgba(0,0,0,0.22);
       transition: transform 0.15s ease, background 0.15s;
     }
-    input[type=range]::-webkit-slider-thumb:hover {
-      transform: scale(1.25);
-      background: var(--primary-dark);
-    }
+    input[type=range]::-webkit-slider-thumb:hover { transform: scale(1.2); }
 
-    /* Numeric Boxes */
+    /* Nutrient Accent Colors */
+    #slider-n::-webkit-slider-thumb { background: #10b981; }
+    #slider-p::-webkit-slider-thumb { background: #6366f1; }
+    #slider-k::-webkit-slider-thumb { background: #f59e0b; }
+    #slider-temp::-webkit-slider-thumb { background: #f97316; }
+    #slider-hum::-webkit-slider-thumb { background: #0ea5e9; }
+    #slider-ph::-webkit-slider-thumb { background: #8b5cf6; }
+    #slider-rain::-webkit-slider-thumb { background: #2563eb; }
+
+    /* Number input boxes */
     .num-input-wrap { position: relative; }
     .num-input {
       width: 100%;
-      padding: 0.5rem 0.65rem;
+      padding: 0.55rem 0.7rem;
       font-size: 0.95rem;
       font-weight: 700;
       color: #0f172a;
-      border: 1.5px solid var(--border);
-      border-radius: 8px;
+      border: 1.5px solid #cbd5e1;
+      border-radius: 10px;
       text-align: right;
-      background: white;
-      transition: border-color 0.2s;
+      background: #f8fafc;
+      transition: all 0.2s;
     }
     .num-input:focus {
       outline: none;
-      border-color: var(--primary);
-      box-shadow: 0 0 0 2px var(--primary-glow);
+      border-color: #0284c7;
+      background: #ffffff;
+      box-shadow: 0 0 0 2px rgba(2, 132, 199, 0.15);
     }
     .unit-tag {
       position: absolute;
-      left: 0.6rem;
+      left: 0.65rem;
       top: 50%;
       transform: translateY(-50%);
       font-size: 0.75rem;
       color: var(--text-muted);
-      font-weight: 500;
+      font-weight: 600;
       pointer-events: none;
     }
 
-    /* Submit Button */
+    /* Submit Button (Vibrant Indigo-Emerald Gradient) */
     .btn-calculate {
       width: 100%;
       margin-top: 1.5rem;
-      padding: 1rem;
-      background: linear-gradient(135deg, #059669 0%, #047857 100%);
+      padding: 1.05rem;
+      background: linear-gradient(135deg, #059669 0%, #0d9488 50%, #0284c7 100%);
       color: white;
       font-size: 1.05rem;
       font-weight: 800;
       letter-spacing: -0.01em;
       border: none;
-      border-radius: 14px;
+      border-radius: 16px;
       cursor: pointer;
       display: flex;
       align-items: center;
       justify-content: center;
-      gap: 0.6rem;
-      box-shadow: 0 4px 14px rgba(5, 150, 105, 0.35);
+      gap: 0.65rem;
+      box-shadow: 0 6px 18px rgba(13, 148, 136, 0.35);
       transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
     }
     .btn-calculate:hover {
       transform: translateY(-2px);
-      box-shadow: 0 8px 24px rgba(5, 150, 105, 0.45);
-      background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+      box-shadow: 0 10px 25px rgba(13, 148, 136, 0.5);
+      background: linear-gradient(135deg, #10b981 0%, #14b8a6 50%, #0ea5e9 100%);
     }
     .btn-calculate:active { transform: translateY(0); }
 
-    /* Results Showcase Panel */
+    /* Results Showcase View */
     .result-empty {
       display: flex;
       flex-direction: column;
       align-items: center;
       justify-content: center;
-      min-height: 380px;
+      min-height: 420px;
       text-align: center;
       color: var(--text-muted);
       border: 2px dashed #cbd5e1;
-      border-radius: 16px;
+      border-radius: 20px;
       padding: 2.5rem 1.5rem;
       background: #f8fafc;
     }
@@ -449,118 +478,119 @@
     }
     @keyframes slideIn { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } }
 
-    /* Main Crop Result Hero Card */
-    .crop-hero-card {
-      background: linear-gradient(135deg, #ecfdf5 0%, #f0fdf4 50%, #ffffff 100%);
-      border: 2px solid #86efac;
-      border-radius: 18px;
-      padding: 1.75rem;
-      box-shadow: 0 8px 20px -4px rgba(16, 185, 129, 0.15);
+    /* Crop Showcase Card (Modern Clean Elevation) */
+    .crop-showcase-card {
+      background: #ffffff;
+      border: 2px solid #e2e8f0;
+      border-radius: 20px;
+      padding: 1.85rem;
+      box-shadow: var(--shadow-lg);
       position: relative;
       overflow: hidden;
     }
-    .crop-hero-card::after {
-      content: 'RECOMMENDED';
+    .crop-showcase-card::before {
+      content: '';
       position: absolute;
-      top: 1rem;
-      right: -2.5rem;
-      background: #10b981;
-      color: white;
-      font-size: 0.65rem;
-      font-weight: 800;
-      letter-spacing: 0.1em;
-      padding: 0.3rem 2.8rem;
-      transform: rotate(45deg);
-      box-shadow: 0 2px 6px rgba(0,0,0,0.15);
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 6px;
+      background: linear-gradient(90deg, #10b981, #06b6d4, #f59e0b);
     }
 
-    .crop-hero-top {
+    .crop-showcase-top {
       display: flex;
       align-items: center;
       gap: 1.25rem;
+      margin-top: 0.25rem;
     }
     .crop-avatar {
-      width: 76px;
-      height: 76px;
-      border-radius: 18px;
-      background: white;
-      border: 2px solid #bbf7d0;
+      width: 78px;
+      height: 78px;
+      border-radius: 20px;
+      background: #f8fafc;
+      border: 2px solid #e2e8f0;
       display: flex;
       align-items: center;
       justify-content: center;
       font-size: 3.25rem;
-      box-shadow: 0 4px 12px rgba(16, 185, 129, 0.15);
+      box-shadow: var(--shadow-md);
       flex-shrink: 0;
     }
     .crop-title-group h4 {
-      font-size: 0.8rem;
+      font-size: 0.75rem;
       text-transform: uppercase;
       font-weight: 800;
-      letter-spacing: 0.08em;
-      color: var(--primary-dark);
+      letter-spacing: 0.09em;
+      color: #0284c7;
     }
     .crop-main-name {
-      font-size: 2.25rem;
+      font-size: 2.35rem;
       font-weight: 800;
-      letter-spacing: -0.02em;
-      color: #064e3b;
+      letter-spacing: -0.025em;
+      color: #0f172a;
       line-height: 1.1;
-      margin: 0.25rem 0;
+      margin: 0.2rem 0;
     }
     .crop-kn-name {
-      font-size: 1.15rem;
+      font-size: 1.2rem;
       font-weight: 700;
       color: #059669;
     }
 
-    /* Quick Attribute Tags */
+    /* Agronomic Profile Badges */
     .crop-tags {
       display: flex;
       flex-wrap: wrap;
-      gap: 0.45rem;
-      margin-top: 1.25rem;
+      gap: 0.5rem;
+      margin-top: 1.35rem;
       padding-top: 1rem;
-      border-top: 1px dashed #bbf7d0;
+      border-top: 1px dashed #e2e8f0;
     }
     .crop-tag {
       font-size: 0.775rem;
       font-weight: 700;
-      padding: 0.3rem 0.65rem;
-      border-radius: 8px;
-      background: #ffffff;
-      border: 1px solid #bbf7d0;
-      color: #14532d;
+      padding: 0.35rem 0.75rem;
+      border-radius: 10px;
+      background: #f8fafc;
+      border: 1px solid #e2e8f0;
+      color: #334155;
       display: inline-flex;
       align-items: center;
-      gap: 0.3rem;
+      gap: 0.35rem;
     }
 
-    /* Score Badges & Gauges */
+    /* Metrics Dual Meter Boxes */
     .metrics-summary {
       display: grid;
       grid-template-columns: 1fr 1fr;
       gap: 1rem;
-      margin: 1.25rem 0;
+      margin: 1.35rem 0;
     }
     .metric-box {
-      background: white;
-      border: 1.5px solid var(--border);
-      border-radius: 14px;
-      padding: 1rem;
+      background: #f8fafc;
+      border: 1.5px solid #e2e8f0;
+      border-radius: 16px;
+      padding: 1.1rem;
+      transition: all 0.2s;
+    }
+    .metric-box:hover {
+      background: #ffffff;
+      border-color: #cbd5e1;
       box-shadow: var(--shadow-sm);
     }
     .metric-box-title {
-      font-size: 0.75rem;
-      font-weight: 700;
+      font-size: 0.725rem;
+      font-weight: 800;
       text-transform: uppercase;
-      letter-spacing: 0.05em;
+      letter-spacing: 0.06em;
       color: var(--text-muted);
     }
     .metric-box-val {
-      font-size: 1.5rem;
+      font-size: 1.6rem;
       font-weight: 800;
       color: #0f172a;
-      margin: 0.25rem 0 0.5rem 0;
+      margin: 0.25rem 0 0.55rem 0;
     }
     .meter-rail {
       width: 100%;
@@ -578,11 +608,11 @@
     .fill-amber { background: linear-gradient(90deg, #fbbf24, #d97706); }
     .fill-red { background: linear-gradient(90deg, #f87171, #dc2626); }
 
-    /* SHAP Contribution Horizontal Bars */
+    /* SHAP Explanations */
     .explain-card {
-      background: white;
-      border: 1px solid var(--border);
-      border-radius: 14px;
+      background: #ffffff;
+      border: 1.5px solid #e2e8f0;
+      border-radius: 16px;
       padding: 1.25rem;
       margin-top: 1.25rem;
     }
@@ -595,19 +625,19 @@
     .explain-title {
       font-size: 0.875rem;
       font-weight: 800;
-      color: #1e293b;
+      color: #0f172a;
       display: flex;
       align-items: center;
-      gap: 0.4rem;
+      gap: 0.45rem;
     }
     .shap-rows { display: flex; flex-direction: column; gap: 0.65rem; }
     .shap-row {
       display: flex;
       flex-direction: column;
-      gap: 0.25rem;
+      gap: 0.3rem;
       background: #f8fafc;
-      padding: 0.5rem 0.75rem;
-      border-radius: 8px;
+      padding: 0.6rem 0.85rem;
+      border-radius: 10px;
       border: 1px solid #f1f5f9;
     }
     .shap-top {
@@ -615,7 +645,7 @@
       justify-content: space-between;
       font-size: 0.8rem;
     }
-    .shap-feat { font-weight: 700; color: #334155; }
+    .shap-feat { font-weight: 700; color: #1e293b; }
     .shap-pct { font-weight: 800; }
     .shap-pct.support { color: #059669; }
     .shap-pct.oppose { color: #dc2626; }
@@ -630,17 +660,17 @@
     .shap-bar-val.support { background: #10b981; }
     .shap-bar-val.oppose { background: #ef4444; }
 
-    /* Technical Raw JSON Drawer */
+    /* Details Accordion */
     details.tech-drawer {
       margin-top: 1.25rem;
       border: 1px solid #e2e8f0;
-      border-radius: 10px;
-      padding: 0.65rem 1rem;
+      border-radius: 12px;
+      padding: 0.75rem 1rem;
       background: #f8fafc;
     }
     details.tech-drawer summary {
       cursor: pointer;
-      font-size: 0.825rem;
+      font-size: 0.8rem;
       font-weight: 700;
       color: var(--text-muted);
       user-select: none;
@@ -650,19 +680,19 @@
       padding: 0.85rem;
       background: #0f172a;
       color: #94a3b8;
-      border-radius: 8px;
+      border-radius: 10px;
       font-size: 0.75rem;
       overflow-x: auto;
       font-family: monospace;
     }
 
-    /* Q&A Section (Gemini Powered) */
+    /* Q&A Section with Blue/Indigo Tech Style */
     .qa-box {
-      margin-top: 2rem;
-      background: white;
-      border-radius: 20px;
-      border: 1px solid var(--border);
-      padding: 1.75rem;
+      margin-top: 2.25rem;
+      background: #ffffff;
+      border-radius: 22px;
+      border: 1.5px solid #e2e8f0;
+      padding: 1.85rem;
       box-shadow: var(--shadow-md);
     }
     .qa-input-flex {
@@ -674,10 +704,11 @@
     .qa-text-input {
       flex: 1;
       min-width: 280px;
-      padding: 0.75rem 1rem;
-      border: 1.5px solid var(--border);
+      padding: 0.8rem 1.15rem;
+      border: 1.5px solid #cbd5e1;
       border-radius: 12px;
       font-size: 0.95rem;
+      transition: all 0.2s;
     }
     .qa-text-input:focus {
       outline: none;
@@ -685,43 +716,52 @@
       box-shadow: 0 0 0 3px rgba(2, 132, 199, 0.15);
     }
     .btn-ask {
-      background: #0284c7;
+      background: linear-gradient(135deg, #0284c7 0%, #0369a1 100%);
       color: white;
       border: none;
       border-radius: 12px;
-      padding: 0.75rem 1.5rem;
+      padding: 0.8rem 1.6rem;
       font-weight: 700;
       font-size: 0.95rem;
       cursor: pointer;
+      box-shadow: 0 3px 10px rgba(2, 132, 199, 0.3);
       transition: all 0.2s;
     }
-    .btn-ask:hover { background: #0369a1; transform: translateY(-1px); }
+    .btn-ask:hover {
+      background: linear-gradient(135deg, #0ea5e9 0%, #0284c7 100%);
+      transform: translateY(-1px);
+      box-shadow: 0 6px 14px rgba(2, 132, 199, 0.4);
+    }
 
     .qa-pill-prompts {
       display: flex;
       flex-wrap: wrap;
-      gap: 0.45rem;
-      margin-top: 0.75rem;
+      gap: 0.5rem;
+      margin-top: 0.85rem;
     }
     .qa-pill {
       background: #f0f9ff;
       border: 1px solid #bae6fd;
       color: #0369a1;
       border-radius: 9999px;
-      padding: 0.3rem 0.75rem;
+      padding: 0.35rem 0.85rem;
       font-size: 0.775rem;
-      font-weight: 600;
+      font-weight: 700;
       cursor: pointer;
       transition: all 0.15s;
     }
-    .qa-pill:hover { background: #e0f2fe; border-color: #7dd3fc; }
+    .qa-pill:hover {
+      background: #e0f2fe;
+      border-color: #38bdf8;
+      transform: translateY(-1px);
+    }
 
     .qa-result-area {
-      margin-top: 1rem;
-      padding: 1.25rem;
-      border-radius: 12px;
+      margin-top: 1.25rem;
+      padding: 1.35rem;
+      border-radius: 14px;
       background: #f8fafc;
-      border: 1px solid var(--border);
+      border: 1px solid #e2e8f0;
       font-size: 0.925rem;
       display: none;
     }
@@ -729,56 +769,55 @@
 </head>
 <body>
 
+  <!-- Sleek Modern Slate Header -->
   <header>
     <div class="header-content">
       <div class="brand">
         <div class="brand-icon">🌱</div>
         <div>
           <h1 id="lbl-brand-title">Krishi Sahayak</h1>
-          <p id="lbl-brand-sub">Intelligent Crop Recommendation & Agricultural Advisory</p>
+          <p id="lbl-brand-sub">Intelligent Crop Recommendation & Advisory Platform</p>
         </div>
       </div>
       <div class="header-actions">
         <button type="button" class="lang-switcher" onclick="toggleLanguage()" id="btn-lang-toggle">
           🌐 <span>English / ಕನ್ನಡ</span>
         </button>
-        <a href="/spray" class="btn-pill featured" id="lbl-nav-spray">🌧️ Open Spray Advisor &rarr;</a>
-        <a href="/docs" class="btn-pill">📖 API</a>
+        <a href="/spray" class="btn-spray-nav" id="lbl-nav-spray">🌧️ Open Spray Advisor &rarr;</a>
+        <a href="/docs" class="btn-nav-plain">📖 API Docs</a>
       </div>
     </div>
   </header>
 
   <div class="container">
 
-    <!-- Hero Callout -->
-    <div class="hero-banner">
-      <div class="hero-text">
-        <div class="hero-icon">🌦️</div>
+    <!-- Sleek High-Contrast Weather Card Banner -->
+    <div class="weather-card-banner">
+      <div class="banner-content">
+        <div class="banner-badge-icon">🌦️</div>
         <div>
-          <div class="hero-title" id="lbl-banner-title">Need Spray Guidance for Arecanut Koleroga?</div>
-          <div class="hero-desc" id="lbl-banner-desc">Live ECMWF/GFS weather forecasting paired with verified ICAR-CPCRI agronomic rules.</div>
+          <div class="banner-title" id="lbl-banner-title">Arecanut Koleroga Weather & Spray Advisor</div>
+          <div class="banner-desc" id="lbl-banner-desc">Live ECMWF/GFS weather models combined with official ICAR-CPCRI plant protection rules.</div>
         </div>
       </div>
-      <a href="/spray" class="btn-action" id="lbl-banner-btn">Open Spray Timing Advisor &rarr;</a>
+      <a href="/spray" class="btn-launch-spray" id="lbl-banner-btn">Launch Spray Advisor &rarr;</a>
     </div>
 
-    <!-- Main 2-Column Responsive Dashboard -->
+    <!-- 2-Column Responsive Dashboard -->
     <div class="dashboard-grid">
 
-      <!-- LEFT COLUMN: Soil & Climate Interactive Controls -->
+      <!-- LEFT COLUMN: Soil & Climate Controls -->
       <div class="panel-card">
         <div class="panel-header">
           <div>
-            <h2 class="panel-title" id="lbl-soil-title">🧪 Soil & Climate Metrics</h2>
-            <p class="panel-subtitle" id="lbl-soil-sub">Drag sliders or type values to simulate field conditions.</p>
+            <h2 class="panel-title" id="lbl-soil-title">🧪 Soil & Environmental Metrics</h2>
+            <p class="panel-subtitle" id="lbl-soil-sub">Adjust parameters with sliders or number inputs to evaluate crops.</p>
           </div>
         </div>
 
-        <!-- 1-Click Interactive Crop Presets -->
-        <div class="preset-section">
-          <div class="preset-header">
-            <span class="preset-title" id="lbl-preset-header">⚡ One-Click Field Presets:</span>
-          </div>
+        <!-- Preset Chips -->
+        <div class="preset-box">
+          <div class="preset-title" id="lbl-preset-header">⚡ One-Click Field Presets:</div>
           <div class="preset-chips">
             <button type="button" class="chip" onclick="applyPreset(90, 42, 43, 25, 80, 6.5, 202, 'rice')">🌾 Rice / ಭತ್ತ</button>
             <button type="button" class="chip" onclick="applyPreset(110, 45, 20, 26, 65, 6.8, 85, 'maize')">🌽 Maize / ಮೆಕ್ಕೆಜೋಳ</button>
@@ -788,15 +827,15 @@
           </div>
         </div>
 
-        <!-- Synchronized Slider & Numeric Inputs Form -->
+        <!-- Dual Control Inputs -->
         <form id="crop-form">
           <div class="inputs-grid">
 
-            <!-- Nitrogen (N) -->
+            <!-- Nitrogen (Emerald Accent) -->
             <div class="input-row">
               <div class="input-label-bar">
-                <span class="field-name">🌱 <span id="lbl-f-n">Nitrogen (N)</span></span>
-                <span class="field-badge" id="badge-n">Ideal: 60 - 120 kg/ha</span>
+                <span class="field-name"><span style="color:#059669;">🌱</span> <span id="lbl-f-n">Nitrogen (N)</span></span>
+                <span class="field-badge" id="badge-n">Standard: 60 - 120 kg/ha</span>
               </div>
               <div class="field-controls">
                 <input type="range" id="slider-n" min="0" max="200" step="1" value="90" oninput="syncVal('n', this.value)">
@@ -807,11 +846,11 @@
               </div>
             </div>
 
-            <!-- Phosphorus (P) -->
+            <!-- Phosphorus (Indigo Accent) -->
             <div class="input-row">
               <div class="input-label-bar">
-                <span class="field-name">🧪 <span id="lbl-f-p">Phosphorus (P)</span></span>
-                <span class="field-badge" id="badge-p">Ideal: 35 - 60 kg/ha</span>
+                <span class="field-name"><span style="color:#6366f1;">🧪</span> <span id="lbl-f-p">Phosphorus (P)</span></span>
+                <span class="field-badge" id="badge-p">Standard: 35 - 60 kg/ha</span>
               </div>
               <div class="field-controls">
                 <input type="range" id="slider-p" min="0" max="200" step="1" value="42" oninput="syncVal('p', this.value)">
@@ -822,11 +861,11 @@
               </div>
             </div>
 
-            <!-- Potassium (K) -->
+            <!-- Potassium (Amber Accent) -->
             <div class="input-row">
               <div class="input-label-bar">
-                <span class="field-name">⚡ <span id="lbl-f-k">Potassium (K)</span></span>
-                <span class="field-badge" id="badge-k">Ideal: 20 - 50 kg/ha</span>
+                <span class="field-name"><span style="color:#f59e0b;">⚡</span> <span id="lbl-f-k">Potassium (K)</span></span>
+                <span class="field-badge" id="badge-k">Standard: 20 - 50 kg/ha</span>
               </div>
               <div class="field-controls">
                 <input type="range" id="slider-k" min="0" max="250" step="1" value="43" oninput="syncVal('k', this.value)">
@@ -837,10 +876,10 @@
               </div>
             </div>
 
-            <!-- Temperature -->
+            <!-- Temperature (Coral Accent) -->
             <div class="input-row">
               <div class="input-label-bar">
-                <span class="field-name">🌡️ <span id="lbl-f-temp">Temperature</span></span>
+                <span class="field-name"><span style="color:#f97316;">🌡️</span> <span id="lbl-f-temp">Temperature</span></span>
                 <span class="field-badge" id="badge-temp">Tropical: 20 - 32 °C</span>
               </div>
               <div class="field-controls">
@@ -852,10 +891,10 @@
               </div>
             </div>
 
-            <!-- Relative Humidity -->
+            <!-- Relative Humidity (Sky Blue Accent) -->
             <div class="input-row">
               <div class="input-label-bar">
-                <span class="field-name">💧 <span id="lbl-f-hum">Relative Humidity</span></span>
+                <span class="field-name"><span style="color:#0ea5e9;">💧</span> <span id="lbl-f-hum">Relative Humidity</span></span>
                 <span class="field-badge" id="badge-hum">Normal: 60 - 85 %</span>
               </div>
               <div class="field-controls">
@@ -867,10 +906,10 @@
               </div>
             </div>
 
-            <!-- Soil pH -->
+            <!-- Soil pH (Purple Accent) -->
             <div class="input-row">
               <div class="input-label-bar">
-                <span class="field-name">⚖️ <span id="lbl-f-ph">Soil pH Level</span></span>
+                <span class="field-name"><span style="color:#8b5cf6;">⚖️</span> <span id="lbl-f-ph">Soil pH Level</span></span>
                 <span class="field-badge" id="badge-ph">Slightly Acidic: 6.5</span>
               </div>
               <div class="field-controls">
@@ -882,10 +921,10 @@
               </div>
             </div>
 
-            <!-- Rainfall -->
+            <!-- Rainfall (Ocean Blue Accent) -->
             <div class="input-row">
               <div class="input-label-bar">
-                <span class="field-name">🌧️ <span id="lbl-f-rain">Seasonal Rainfall</span></span>
+                <span class="field-name"><span style="color:#2563eb;">🌧️</span> <span id="lbl-f-rain">Seasonal Rainfall</span></span>
                 <span class="field-badge" id="badge-rain">Wetland: > 180 mm</span>
               </div>
               <div class="field-controls">
@@ -905,7 +944,7 @@
         </form>
       </div>
 
-      <!-- RIGHT COLUMN: Interactive Prediction Showcase -->
+      <!-- RIGHT COLUMN: Results Display -->
       <div class="panel-card">
         <div class="panel-header">
           <div>
@@ -919,19 +958,19 @@
           <div class="result-empty-icon">🌾</div>
           <h3 style="font-weight: 700; color: #1e293b;" id="lbl-empty-title">Ready for Soil Evaluation</h3>
           <p style="font-size: 0.875rem; margin-top: 0.35rem; max-width: 280px;" id="lbl-empty-sub">
-            Select a quick preset on the left or adjust soil sliders and click <strong>"Recommend Optimal Crop"</strong>.
+            Click a preset on the left or customize parameters and click <strong>"Recommend Optimal Crop"</strong>.
           </p>
         </div>
 
         <!-- Live Visual Result View -->
         <div id="view-result" class="result-display">
 
-          <!-- Hero Crop Result Card -->
-          <div class="crop-hero-card">
-            <div class="crop-hero-top">
+          <!-- Crop Showcase Hero Card -->
+          <div class="crop-showcase-card">
+            <div class="crop-showcase-top">
               <div class="crop-avatar" id="disp-avatar">🌾</div>
               <div class="crop-title-group">
-                <h4 id="lbl-optimal-heading">OPTIMAL CROP MATCH</h4>
+                <h4 id="lbl-optimal-heading">OPTIMAL CROP RECOMMENDATION</h4>
                 <div class="crop-main-name" id="disp-crop-name">Rice</div>
                 <div class="crop-kn-name" id="disp-crop-kn">ಭತ್ತ</div>
               </div>
@@ -945,7 +984,7 @@
             </div>
           </div>
 
-          <!-- Meters Row -->
+          <!-- Dual Meters Row -->
           <div class="metrics-summary">
             <!-- Confidence Meter -->
             <div class="metric-box">
@@ -972,15 +1011,15 @@
               <span class="explain-title">📊 <span id="lbl-shap-heading">Key Contributing Factors (SHAP)</span></span>
             </div>
             <div class="shap-rows" id="shap-container">
-              <!-- Dynamically rendered -->
+              <!-- Dynamically populated -->
             </div>
           </div>
 
-          <!-- Experimental Notice if in Pilot Mode -->
-          <div id="disp-warning" style="display: none; background: #fffbeb; border: 1px solid #fef3c7; border-radius: 10px; padding: 0.75rem 1rem; color: #92400e; font-size: 0.775rem; margin-top: 1rem;">
+          <!-- Experimental Warning -->
+          <div id="disp-warning" style="display: none; background: #fffbeb; border: 1px solid #fef3c7; border-radius: 12px; padding: 0.75rem 1rem; color: #92400e; font-size: 0.775rem; margin-top: 1.25rem;">
           </div>
 
-          <!-- Raw JSON Details for Reviewers -->
+          <!-- Collapsible Raw JSON -->
           <details class="tech-drawer">
             <summary id="lbl-json-toggle">⚙️ Inspect Raw API Payload & SHAP Values</summary>
             <pre class="code-dump" id="disp-raw-json"></pre>
@@ -991,19 +1030,19 @@
 
     </div>
 
-    <!-- Verified Agricultural Advisory (Gemini Powered) -->
+    <!-- Verified Agricultural Advisory (Google Gemini Powered) -->
     <div class="qa-box">
       <div class="panel-header" style="margin-bottom: 0.75rem; border: none;">
         <div>
-          <h2 class="panel-title" style="color: #0369a1;">🤖 <span id="lbl-gemini-title">Ask Krishi Sahayak (Google Gemini + ICAR Grounding)</span></h2>
-          <p class="panel-subtitle" id="lbl-gemini-sub">Free-text agricultural queries grounded in authentic ICAR agronomic literature.</p>
+          <h2 class="panel-title" style="color: #0284c7;">🤖 <span id="lbl-gemini-title">Ask Krishi Sahayak (Google Gemini + ICAR Grounding)</span></h2>
+          <p class="panel-subtitle" id="lbl-gemini-sub">Free-text agricultural queries verified against authentic ICAR agronomic literature.</p>
         </div>
       </div>
 
       {% if pilot_mode %}
-      <div style="background: #fffbeb; border: 1px solid #fde68a; border-radius: 12px; padding: 1rem 1.25rem; color: #92400e; font-size: 0.875rem;">
+      <div style="background: #fffbeb; border: 1px solid #fde68a; border-radius: 14px; padding: 1rem 1.25rem; color: #92400e; font-size: 0.875rem;">
         <strong>🔒 Strict Field Pilot Mode Active:</strong> Free-text generative chat is restricted in pilot mode to prevent unreviewed field hallucinations.
-        For koleroga fungicide schedules, open the <a href="/spray" style="color: #b45309; font-weight: 700; text-decoration: underline;">Spray Timing Advisor</a>.
+        For Koleroga fungicide schedules, open the <a href="/spray" style="color: #b45309; font-weight: 700; text-decoration: underline;">Spray Timing Advisor</a>.
       </div>
       {% else %}
       <form id="form-qa">
@@ -1026,7 +1065,6 @@
   </div>
 
   <script>
-    // Agronomic Profiles Dictionary (22 Crops)
     const CROP_DATABASE = {
       'rice': { icon: '🌾', kn: 'ಭತ್ತ', season: 'Kharif', soil: 'Clayey / Alluvial', water: 'High (>180 mm)' },
       'maize': { icon: '🌽', kn: 'ಮೆಕ್ಕೆಜೋಳ', season: 'Kharif / Rabi', soil: 'Loamy Alluvial', water: 'Moderate (60-100 mm)' },
@@ -1054,7 +1092,6 @@
 
     let currentLang = 'en';
 
-    // Synchronize Slider <-> Number Box
     function syncVal(key, val) {
       document.getElementById('input-' + key).value = val;
       updateBadge(key, val);
@@ -1064,16 +1101,15 @@
       updateBadge(key, val);
     }
 
-    // Dynamic Context Badges
     function updateBadge(key, val) {
       const v = parseFloat(val);
       const badge = document.getElementById('badge-' + key);
       if (!badge) return;
 
       if (key === 'ph') {
-        if (v < 6.0) { badge.textContent = 'Acidic (' + v + ')'; badge.style.background = '#fef2f2'; badge.style.color = '#b91c1c'; }
-        else if (v <= 7.5) { badge.textContent = 'Neutral / Ideal (' + v + ')'; badge.style.background = '#f0fdf4'; badge.style.color = '#15803d'; }
-        else { badge.textContent = 'Alkaline (' + v + ')'; badge.style.background = '#eff6ff'; badge.style.color = '#1d4ed8'; }
+        if (v < 6.0) { badge.textContent = 'Acidic (' + v + ')'; badge.style.background = '#fef2f2'; badge.style.color = '#b91c1c'; badge.style.borderColor = '#fecaca'; }
+        else if (v <= 7.5) { badge.textContent = 'Neutral / Ideal (' + v + ')'; badge.style.background = '#f0fdf4'; badge.style.color = '#15803d'; badge.style.borderColor = '#bbf7d0'; }
+        else { badge.textContent = 'Alkaline (' + v + ')'; badge.style.background = '#eff6ff'; badge.style.color = '#1d4ed8'; badge.style.borderColor = '#bfdbfe'; }
       } else if (key === 'rain') {
         if (v < 80) { badge.textContent = 'Dryland (<80 mm)'; }
         else if (v <= 160) { badge.textContent = 'Moderate (' + Math.round(v) + ' mm)'; }
@@ -1085,7 +1121,6 @@
       }
     }
 
-    // Preset One-Click Trigger
     function applyPreset(n, p, k, temp, hum, ph, rain, cropKey) {
       document.getElementById('input-n').value = n;
       document.getElementById('slider-n').value = n;
@@ -1103,11 +1138,9 @@
       document.getElementById('slider-rain').value = rain;
 
       ['n', 'p', 'k', 'temp', 'hum', 'ph', 'rain'].forEach(k => updateBadge(k, document.getElementById('input-' + k).value));
-
       document.getElementById('crop-form').dispatchEvent(new Event('submit'));
     }
 
-    // Submit & Animate Evaluation
     document.getElementById('crop-form').addEventListener('submit', async function (e) {
       e.preventDefault();
       const btn = document.getElementById('btn-submit-calc');
@@ -1127,12 +1160,10 @@
         if (!response.ok) throw new Error('Model evaluation service failed.');
         const res = await response.json();
 
-        // Reveal view
         document.getElementById('view-empty').style.display = 'none';
         const resultView = document.getElementById('view-result');
         resultView.style.display = 'block';
 
-        // 1. Populate Crop Details
         const cropKey = (res.crop || '').toLowerCase();
         const profile = CROP_DATABASE[cropKey] || { icon: '🌱', kn: res.crop, season: 'Seasonal', soil: 'Agricultural', water: 'Regular' };
 
@@ -1144,7 +1175,6 @@
         document.getElementById('tag-soil').textContent = '🌱 Soil: ' + profile.soil;
         document.getElementById('tag-water').textContent = '💧 Water: ' + profile.water;
 
-        // 2. Animate Confidence Meter
         const confPct = Math.min(100, Math.max(0, Math.round((res.confidence || 0) * 100)));
         document.getElementById('disp-conf-val').textContent = confPct + '%';
         const confFill = document.getElementById('disp-conf-fill');
@@ -1152,7 +1182,6 @@
         setTimeout(() => { confFill.style.width = confPct + '%'; }, 50);
         confFill.className = 'meter-fill ' + (confPct >= 70 ? 'fill-green' : confPct >= 40 ? 'fill-amber' : 'fill-red');
 
-        // 3. Animate Climate Mismatch Risk
         const riskScore = Math.min(100, Math.max(0, Math.round(res.risk_score || 0)));
         document.getElementById('disp-risk-val').textContent = riskScore + ' / 100';
         const riskFill = document.getElementById('disp-risk-fill');
@@ -1160,7 +1189,6 @@
         setTimeout(() => { riskFill.style.width = riskScore + '%'; }, 50);
         riskFill.className = 'meter-fill ' + (riskScore <= 35 ? 'fill-green' : riskScore <= 65 ? 'fill-amber' : 'fill-red');
 
-        // 4. Render SHAP Contributions
         const shapContainer = document.getElementById('shap-container');
         shapContainer.innerHTML = '';
         if (res.shap_contributions && res.shap_contributions.length > 0) {
@@ -1186,7 +1214,6 @@
           shapContainer.innerHTML = '<span style="font-size:0.8rem;color:#64748b;">Even balance across inputs.</span>';
         }
 
-        // 5. Warning box
         const warnBox = document.getElementById('disp-warning');
         if (res.warning) {
           warnBox.textContent = res.warning;
@@ -1195,10 +1222,8 @@
           warnBox.style.display = 'none';
         }
 
-        // 6. Raw JSON Code
         document.getElementById('disp-raw-json').textContent = JSON.stringify(res, null, 2);
 
-        // Smooth scroll on small screens
         if (window.innerWidth < 860) {
           resultView.scrollIntoView({ behavior: 'smooth' });
         }
@@ -1211,7 +1236,6 @@
       }
     });
 
-    // Gemini Q&A Handling
     function setQAPrompt(text) {
       const qInput = document.getElementById('qa-text');
       if (qInput) {
@@ -1242,8 +1266,8 @@
           });
           const result = await resp.json();
           resBox.innerHTML = `
-            <div style="font-weight: 700; color: #0369a1; margin-bottom: 0.4rem;">Advisory Response:</div>
-            <div style="white-space: pre-wrap; color: #1e293b; line-height: 1.6;">${result.answer}</div>
+            <div style="font-weight: 700; color: #0284c7; margin-bottom: 0.4rem;">Advisory Response:</div>
+            <div style="white-space: pre-wrap; color: #0f172a; line-height: 1.6;">${result.answer}</div>
             ${result.sources && result.sources.length ? `<div style="font-size: 0.775rem; color: #0284c7; margin-top: 0.75rem; padding-top: 0.5rem; border-top: 1px dashed #bae6fd;"><strong>Official Sources:</strong> ${result.sources.join(', ')}</div>` : ''}
           `;
         } catch (err) {
@@ -1255,20 +1279,19 @@
       });
     }
 
-    // Bilingual English/Kannada Toggle
     function toggleLanguage() {
       currentLang = currentLang === 'en' ? 'kn' : 'en';
       const isKn = currentLang === 'kn';
 
       document.getElementById('lbl-brand-title').textContent = isKn ? 'ಕೃಷಿ ಸಹಾಯಕ' : 'Krishi Sahayak';
-      document.getElementById('lbl-brand-sub').textContent = isKn ? 'ಸ್ಮಾರ್ಟ್ ಬೆಳೆ ಶಿಫಾರಸು ಮತ್ತು ಕೃಷಿ ಸಲಹಾ ವೇದಿಕೆ' : 'Intelligent Crop Recommendation & Agricultural Advisory';
+      document.getElementById('lbl-brand-sub').textContent = isKn ? 'ಸ್ಮಾರ್ಟ್ ಬೆಳೆ ಶಿಫಾರಸು ಮತ್ತು ಕೃಷಿ ಸಲಹಾ ವೇದಿಕೆ' : 'Intelligent Crop Recommendation & Advisory Platform';
       document.getElementById('lbl-nav-spray').textContent = isKn ? '🌧️ ಸಿಂಪರಣಾ ಸಲಹೆಗಾರ ತೆರೆಯಿರಿ →' : '🌧️ Open Spray Advisor →';
-      document.getElementById('lbl-banner-title').textContent = isKn ? 'ಅಡಿಕೆ ಕೊಳೆ ರೋಗದ ಸಿಂಪರಣಾ ಮಾರ್ಗದರ್ಶನ ಬೇಕೇ?' : 'Need Spray Guidance for Arecanut Koleroga?';
-      document.getElementById('lbl-banner-desc').textContent = isKn ? 'ಲೈವ್ ಹವಾಮಾನ ಮುನ್ಸೂಚನೆ ಹಾಗೂ ಐಸಿಎಆರ್-ಸಿಪಿಸಿಆರ್‌ಐ ಅಧಿಕೃತ ನಿಯಮಗಳು.' : 'Live ECMWF/GFS weather forecasting paired with verified ICAR-CPCRI agronomic rules.';
-      document.getElementById('lbl-banner-btn').textContent = isKn ? 'ಸಿಂಪರಣಾ ಸಲಹೆಗಾರ ತೆರೆಯಿರಿ →' : 'Open Spray Timing Advisor →';
+      document.getElementById('lbl-banner-title').textContent = isKn ? 'ಅಡಿಕೆ ಕೊಳೆ ರೋಗದ ಸಿಂಪರಣಾ ಮಾರ್ಗದರ್ಶನ' : 'Arecanut Koleroga Weather & Spray Advisor';
+      document.getElementById('lbl-banner-desc').textContent = isKn ? 'ಲೈವ್ ಹವಾಮಾನ ಮುನ್ಸೂಚನೆ ಹಾಗೂ ಐಸಿಎಆರ್-ಸಿಪಿಸಿಆರ್‌ಐ ಅಧಿಕೃತ ನಿಯಮಗಳು.' : 'Live ECMWF/GFS weather models combined with official ICAR-CPCRI plant protection rules.';
+      document.getElementById('lbl-banner-btn').textContent = isKn ? 'ಸಿಂಪರಣಾ ಸಲಹೆಗಾರ ತೆರೆಯಿರಿ →' : 'Launch Spray Advisor →';
 
-      document.getElementById('lbl-soil-title').textContent = isKn ? '🧪 ಮಣ್ಣು ಮತ್ತು ಹವಾಮಾನ ಮಾನದಂಡಗಳು' : '🧪 Soil & Climate Metrics';
-      document.getElementById('lbl-soil-sub').textContent = isKn ? 'ನಿಮ್ಮ ತೋಟದ ಮಣ್ಣಿನ ಫಲವತ್ತತೆ ಹಾಗೂ ಮಳೆ ವಿವರ ನಮೂದಿಸಿ.' : 'Drag sliders or type values to simulate field conditions.';
+      document.getElementById('lbl-soil-title').textContent = isKn ? '🧪 ಮಣ್ಣು ಮತ್ತು ಪರಿಸರ ಮಾನದಂಡಗಳು' : '🧪 Soil & Environmental Metrics';
+      document.getElementById('lbl-soil-sub').textContent = isKn ? 'ನಿಮ್ಮ ತೋಟದ ಮಣ್ಣಿನ ಫಲವತ್ತತೆ ಹಾಗೂ ಹವಾಮಾನ ವಿವರ ನಮೂದಿಸಿ.' : 'Adjust parameters with sliders or number inputs to evaluate crops.';
       document.getElementById('lbl-preset-header').textContent = isKn ? '⚡ ತ್ವರಿತ ಬೆಳೆ ಆಯ್ಕೆಗಳು:' : '⚡ One-Click Field Presets:';
 
       document.getElementById('lbl-f-n').textContent = isKn ? 'ಸಾರಜನಕ (N)' : 'Nitrogen (N)';
@@ -1283,15 +1306,15 @@
       document.getElementById('lbl-res-title').textContent = isKn ? '🎯 ಬೆಳೆ ಶಿಫಾರಸು ಫಲಿತಾಂಶ' : '🎯 AI Recommendation';
       document.getElementById('lbl-res-sub').textContent = isKn ? 'ಕೃಷಿ ಮಾದರಿ ವಿಶ್ಲೇಷಣೆ ಮತ್ತು ನಿರ್ಣಾಯಕ ಅಂಶಗಳು.' : 'Predictive pattern matching with agronomic explainability.';
       document.getElementById('lbl-empty-title').textContent = isKn ? 'ಮಣ್ಣಿನ ವಿವರಗಳ ಪರಿಶೀಲನೆಗೆ ಸಿದ್ಧ' : 'Ready for Soil Evaluation';
-      document.getElementById('lbl-empty-sub').textContent = isKn ? 'ಎಡಭಾಗದಲ್ಲಿರುವ ಪೂರ್ವನಿಗದಿಗಳನ್ನು ಆರಿಸಿ ಅಥವಾ ಮಾನದಂಡಗಳನ್ನು ಬದಲಿಸಿ.' : 'Select a quick preset on the left or adjust soil sliders and click "Recommend Optimal Crop".';
-      document.getElementById('lbl-optimal-heading').textContent = isKn ? 'ಶಿಫಾರಸು ಮಾಡಿದ ಅತ್ಯುತ್ತಮ ಬೆಳೆ' : 'OPTIMAL CROP MATCH';
+      document.getElementById('lbl-empty-sub').textContent = isKn ? 'ಎಡಭಾಗದಲ್ಲಿರುವ ಪೂರ್ವನಿಗದಿಗಳನ್ನು ಆರಿಸಿ ಅಥವಾ ಮಾನದಂಡಗಳನ್ನು ಬದಲಿಸಿ.' : 'Click a preset on the left or customize parameters and click "Recommend Optimal Crop".';
+      document.getElementById('lbl-optimal-heading').textContent = isKn ? 'ಶಿಫಾರಸು ಮಾಡಿದ ಅತ್ಯುತ್ತಮ ಬೆಳೆ' : 'OPTIMAL CROP RECOMMENDATION';
       document.getElementById('lbl-conf-heading').textContent = isKn ? 'ಮಾದರಿಯ ವಿಶ್ವಾಸಾರ್ಹತೆ' : 'Model Confidence';
       document.getElementById('lbl-risk-heading').textContent = isKn ? 'ಹವಾಮಾನ ವೈಪರೀತ್ಯದ ಅಪಾಯ' : 'Climate Mismatch Risk';
       document.getElementById('lbl-shap-heading').textContent = isKn ? 'ನಿರ್ಧಾರಕ್ಕೆ ಮುಖ್ಯ ಕಾರಣಗಳು (SHAP)' : 'Key Contributing Factors (SHAP)';
       document.getElementById('lbl-json-toggle').textContent = isKn ? '⚙️ ತಾಂತ್ರಿಕ JSON ಡೇಟಾ ವೀಕ್ಷಿಸಿ' : '⚙️ Inspect Raw API Payload & SHAP Values';
 
       document.getElementById('lbl-gemini-title').textContent = isKn ? 'ಕೃಷಿ ಸಹಾಯಕನ್ನು ಕೇಳಿ (ಗೂಗಲ್ ಜೆಮಿನಿ + ಐಸಿಎಆರ್)' : 'Ask Krishi Sahayak (Google Gemini + ICAR Grounding)';
-      document.getElementById('lbl-gemini-sub').textContent = isKn ? 'ಅಧಿಕೃತ ಕೃಷಿ ದಾಖಲೆಗಳ ಆಧಾರದ ಮೇಲೆ ನೇರ ಪ್ರಶ್ನೋತ್ತರ.' : 'Free-text agricultural queries grounded in authentic ICAR agronomic literature.';
+      document.getElementById('lbl-gemini-sub').textContent = isKn ? 'ಅಧಿಕೃತ ಕೃಷಿ ದಾಖಲೆಗಳ ಆಧಾರದ ಮೇಲೆ ನೇರ ಪ್ರಶ್ನೋತ್ತರ.' : 'Free-text agricultural queries verified against authentic ICAR agronomic literature.';
     }
   </script>
 </body>
