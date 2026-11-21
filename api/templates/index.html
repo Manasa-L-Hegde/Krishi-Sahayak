@@ -11,42 +11,53 @@
     :root {
       --primary: #059669;
       --primary-dark: #047857;
-      --primary-light: #ecfdf5;
-      --navy: #0f172a;
-      --navy-light: #1e293b;
       --accent-gold: #f59e0b;
       --accent-blue: #0284c7;
-      --accent-purple: #7c3aed;
+      --accent-indigo: #6366f1;
+      --accent-purple: #8b5cf6;
       --accent-coral: #ea580c;
-      --bg: #f8fafc;
-      --surface: #ffffff;
-      --text: #0f172a;
-      --text-muted: #64748b;
-      --border: #e2e8f0;
-      --border-hover: #cbd5e1;
-      --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
-      --shadow-md: 0 4px 12px -2px rgba(15, 23, 42, 0.08);
-      --shadow-lg: 0 12px 24px -4px rgba(15, 23, 42, 0.1);
-      --shadow-xl: 0 20px 30px -6px rgba(15, 23, 42, 0.12);
+      --text-main: #0f172a;
+      --text-muted: #526071;
+      --border-soft: rgba(203, 213, 225, 0.65);
+      --border-focus: #0284c7;
+      --radius-panel: 24px;
+      --radius-card: 18px;
     }
 
     * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Plus Jakarta Sans', 'Noto Sans Kannada', system-ui, sans-serif; }
-    body { background-color: var(--bg); color: var(--text); line-height: 1.6; padding-bottom: 90px; -webkit-font-smoothing: antialiased; }
+    
+    /* Rich Harmonic Ambient Mesh: Warm Almond + Soft Celadon + Lavender Mist + Peach Champagne */
+    body {
+      background-color: #f5f3ec;
+      background-image: 
+        radial-gradient(at 0% 0%, rgba(209, 247, 225, 0.7) 0px, transparent 48%),
+        radial-gradient(at 100% 0%, rgba(254, 239, 205, 0.65) 0px, transparent 45%),
+        radial-gradient(at 50% 35%, rgba(228, 237, 252, 0.6) 0px, transparent 55%),
+        radial-gradient(at 90% 85%, rgba(254, 226, 215, 0.6) 0px, transparent 50%),
+        radial-gradient(at 10% 90%, rgba(230, 245, 236, 0.75) 0px, transparent 55%),
+        radial-gradient(at 50% 100%, rgba(243, 239, 230, 0.8) 0px, transparent 50%);
+      background-attachment: fixed;
+      color: var(--text-main);
+      line-height: 1.6;
+      padding-bottom: 90px;
+      -webkit-font-smoothing: antialiased;
+    }
 
-    /* Premium Modern Dark Slate Header with Gold & Emerald Highlights */
+    /* Premium Midnight Emerald-Slate Glassmorphism Header */
     header {
-      background: linear-gradient(135deg, #090d16 0%, #0f172a 60%, #1e293b 100%);
+      background: linear-gradient(135deg, rgba(11, 21, 30, 0.95) 0%, rgba(17, 34, 46, 0.95) 55%, rgba(22, 54, 44, 0.95) 100%);
       color: white;
       padding: 1.15rem 2rem;
-      box-shadow: 0 4px 20px rgba(15, 23, 42, 0.4);
+      box-shadow: 0 6px 26px rgba(11, 21, 30, 0.28);
       position: sticky;
       top: 0;
       z-index: 100;
-      border-bottom: 1px solid rgba(255, 255, 255, 0.08);
-      backdrop-filter: blur(12px);
+      border-bottom: 1.5px solid rgba(255, 255, 255, 0.1);
+      backdrop-filter: blur(18px);
+      -webkit-backdrop-filter: blur(18px);
     }
     .header-content {
-      max-width: 1200px;
+      max-width: 1220px;
       margin: 0 auto;
       display: flex;
       justify-content: space-between;
@@ -61,17 +72,17 @@
     }
     .brand-icon {
       background: linear-gradient(135deg, #10b981 0%, #059669 100%);
-      width: 42px;
-      height: 42px;
-      border-radius: 12px;
+      width: 44px;
+      height: 44px;
+      border-radius: 13px;
       display: flex;
       align-items: center;
       justify-content: center;
-      font-size: 1.4rem;
-      box-shadow: 0 2px 10px rgba(16, 185, 129, 0.35);
-      border: 1px solid rgba(255, 255, 255, 0.2);
+      font-size: 1.45rem;
+      box-shadow: 0 4px 14px rgba(16, 185, 129, 0.35);
+      border: 1px solid rgba(255, 255, 255, 0.25);
     }
-    .brand h1 { font-size: 1.35rem; font-weight: 800; letter-spacing: -0.02em; color: #ffffff; }
+    .brand h1 { font-size: 1.35rem; font-weight: 800; letter-spacing: -0.025em; color: #ffffff; }
     .brand p { font-size: 0.8rem; color: #94a3b8; font-weight: 500; }
 
     .header-actions { display: flex; align-items: center; gap: 0.75rem; flex-wrap: wrap; }
@@ -80,27 +91,27 @@
       background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
       color: #ffffff;
       text-decoration: none;
-      padding: 0.5rem 1.15rem;
+      padding: 0.5rem 1.2rem;
       border-radius: 9999px;
       font-weight: 700;
       font-size: 0.875rem;
-      transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+      transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
       display: inline-flex;
       align-items: center;
       gap: 0.5rem;
-      box-shadow: 0 2px 10px rgba(245, 158, 11, 0.35);
-      border: 1px solid rgba(255, 255, 255, 0.2);
+      box-shadow: 0 4px 14px rgba(245, 158, 11, 0.4);
+      border: 1px solid rgba(255, 255, 255, 0.25);
     }
     .btn-spray-nav:hover {
       background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%);
       transform: translateY(-2px);
-      box-shadow: 0 4px 16px rgba(245, 158, 11, 0.5);
+      box-shadow: 0 6px 18px rgba(245, 158, 11, 0.55);
     }
 
     .btn-nav-plain {
       background: rgba(255, 255, 255, 0.08);
       border: 1px solid rgba(255, 255, 255, 0.15);
-      color: #e2e8f0;
+      color: #cbd5e1;
       text-decoration: none;
       padding: 0.5rem 1rem;
       border-radius: 9999px;
@@ -115,33 +126,33 @@
       border: 1px solid rgba(255, 255, 255, 0.2);
       color: #f1f5f9;
       border-radius: 9999px;
-      padding: 0.45rem 0.85rem;
+      padding: 0.45rem 0.9rem;
       font-size: 0.825rem;
-      font-weight: 600;
+      font-weight: 700;
       cursor: pointer;
       display: flex;
       align-items: center;
-      gap: 0.4rem;
+      gap: 0.45rem;
       transition: all 0.2s;
     }
     .lang-switcher:hover { background: rgba(255, 255, 255, 0.2); }
 
-    /* Main Content Container */
-    .container { max-width: 1200px; margin: 2rem auto; padding: 0 1.25rem; }
+    /* Main Container */
+    .container { max-width: 1220px; margin: 2.25rem auto; padding: 0 1.25rem; }
 
-    /* Sleek Weather Banner (Dark Slate Blue & Sky Accent) */
+    /* High-Contrast Shaded Weather Widget Banner (Deep Sapphire & Cerulean Gradient) */
     .weather-card-banner {
-      background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
-      border: 1px solid rgba(255, 255, 255, 0.08);
-      border-radius: 20px;
-      padding: 1.35rem 2rem;
-      margin-bottom: 2.25rem;
+      background: linear-gradient(135deg, #0f172a 0%, #1e293b 60%, #0369a1 100%);
+      border: 1.5px solid rgba(255, 255, 255, 0.12);
+      border-radius: 24px;
+      padding: 1.45rem 2.25rem;
+      margin-bottom: 2.5rem;
       display: flex;
       justify-content: space-between;
       align-items: center;
       flex-wrap: wrap;
-      gap: 1.25rem;
-      box-shadow: 0 10px 25px -5px rgba(15, 23, 42, 0.2);
+      gap: 1.35rem;
+      box-shadow: 0 16px 32px -8px rgba(15, 23, 42, 0.35);
       position: relative;
       overflow: hidden;
     }
@@ -150,158 +161,165 @@
       position: absolute;
       top: -60%;
       right: 15%;
-      width: 280px;
-      height: 280px;
-      background: radial-gradient(circle, rgba(56, 189, 248, 0.12) 0%, transparent 70%);
+      width: 320px;
+      height: 320px;
+      background: radial-gradient(circle, rgba(56, 189, 248, 0.18) 0%, transparent 70%);
       border-radius: 50%;
     }
-    .weather-card-banner::after {
-      content: '';
-      position: absolute;
-      bottom: -40%;
-      left: 10%;
-      width: 220px;
-      height: 220px;
-      background: radial-gradient(circle, rgba(245, 158, 11, 0.08) 0%, transparent 70%);
-      border-radius: 50%;
-    }
-    .banner-content { display: flex; align-items: center; gap: 1.25rem; position: relative; z-index: 1; }
+    .banner-content { display: flex; align-items: center; gap: 1.35rem; position: relative; z-index: 1; }
     .banner-badge-icon {
-      font-size: 2.2rem;
-      background: rgba(255, 255, 255, 0.1);
-      width: 60px;
-      height: 60px;
-      border-radius: 16px;
+      font-size: 2.3rem;
+      background: rgba(255, 255, 255, 0.12);
+      width: 64px;
+      height: 64px;
+      border-radius: 18px;
       display: flex;
       align-items: center;
       justify-content: center;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.25);
-      border: 1px solid rgba(255, 255, 255, 0.15);
+      box-shadow: 0 4px 16px rgba(0,0,0,0.3);
+      border: 1px solid rgba(255, 255, 255, 0.2);
       flex-shrink: 0;
     }
-    .banner-title { font-size: 1.1rem; font-weight: 800; color: #ffffff; letter-spacing: -0.01em; }
-    .banner-desc { font-size: 0.875rem; color: #94a3b8; margin-top: 0.2rem; }
+    .banner-title { font-size: 1.15rem; font-weight: 800; color: #ffffff; letter-spacing: -0.015em; }
+    .banner-desc { font-size: 0.875rem; color: #cbd5e1; margin-top: 0.2rem; max-width: 620px; }
     .btn-launch-spray {
       background: linear-gradient(135deg, #0ea5e9 0%, #0284c7 100%);
       color: white;
       text-decoration: none;
-      padding: 0.75rem 1.5rem;
-      border-radius: 12px;
+      padding: 0.8rem 1.6rem;
+      border-radius: 14px;
       font-weight: 700;
       font-size: 0.925rem;
       transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
       display: inline-flex;
       align-items: center;
       gap: 0.5rem;
-      box-shadow: 0 4px 14px rgba(14, 165, 233, 0.4);
+      box-shadow: 0 6px 18px rgba(14, 165, 233, 0.45);
       position: relative;
       z-index: 1;
-      border: 1px solid rgba(255, 255, 255, 0.2);
+      border: 1px solid rgba(255, 255, 255, 0.25);
     }
     .btn-launch-spray:hover {
       background: linear-gradient(135deg, #38bdf8 0%, #0ea5e9 100%);
       transform: translateY(-2px);
-      box-shadow: 0 8px 20px rgba(14, 165, 233, 0.5);
+      box-shadow: 0 10px 24px rgba(14, 165, 233, 0.55);
     }
 
-    /* 2-Column Responsive Dashboard */
+    /* 2-Column Responsive Layout */
     .dashboard-grid {
       display: grid;
       grid-template-columns: 1fr;
-      gap: 2rem;
+      gap: 2.25rem;
       align-items: start;
     }
     @media (min-width: 960px) {
       .dashboard-grid { grid-template-columns: 1.25fr 0.95fr; }
     }
 
-    /* Panels */
+    /* Soft Shaded Frosted Glass Panels (No stark white - gentle warm linen / cool sky tints) */
     .panel-card {
-      background: var(--surface);
-      border-radius: 22px;
-      border: 1px solid var(--border);
-      padding: 1.85rem;
-      box-shadow: var(--shadow-md);
+      border-radius: var(--radius-panel);
+      padding: 2rem;
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
       transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
       position: relative;
     }
-    .panel-card:hover {
-      box-shadow: var(--shadow-lg);
-      border-color: #cbd5e1;
+    .panel-controls {
+      background: linear-gradient(165deg, rgba(254, 253, 249, 0.96) 0%, rgba(244, 248, 244, 0.96) 45%, rgba(235, 243, 238, 0.96) 100%);
+      border: 1.5px solid rgba(175, 206, 188, 0.65);
+      box-shadow: 0 16px 36px -8px rgba(35, 75, 55, 0.08), 0 4px 12px -2px rgba(35, 75, 55, 0.04);
+    }
+    .panel-controls:hover {
+      box-shadow: 0 22px 45px -10px rgba(35, 75, 55, 0.14);
+      border-color: rgba(150, 195, 170, 0.85);
+    }
+
+    .panel-results {
+      background: linear-gradient(165deg, rgba(254, 252, 248, 0.96) 0%, rgba(244, 247, 253, 0.96) 45%, rgba(235, 242, 251, 0.96) 100%);
+      border: 1.5px solid rgba(186, 207, 235, 0.7);
+      box-shadow: 0 16px 36px -8px rgba(30, 64, 115, 0.08), 0 4px 12px -2px rgba(30, 64, 115, 0.04);
+    }
+    .panel-results:hover {
+      box-shadow: 0 22px 45px -10px rgba(30, 64, 115, 0.14);
+      border-color: rgba(160, 190, 225, 0.9);
     }
 
     .panel-header {
       margin-bottom: 1.5rem;
       padding-bottom: 1rem;
-      border-bottom: 1px solid #f1f5f9;
+      border-bottom: 1.5px solid rgba(148, 163, 184, 0.2);
       display: flex;
       justify-content: space-between;
       align-items: flex-start;
     }
     .panel-title {
-      font-size: 1.25rem;
+      font-size: 1.3rem;
       font-weight: 800;
       color: #0f172a;
-      letter-spacing: -0.015em;
+      letter-spacing: -0.02em;
       display: flex;
       align-items: center;
-      gap: 0.6rem;
+      gap: 0.65rem;
     }
-    .panel-subtitle { font-size: 0.85rem; color: var(--text-muted); margin-top: 0.3rem; }
+    .panel-subtitle { font-size: 0.875rem; color: var(--text-muted); margin-top: 0.3rem; font-weight: 500; }
 
-    /* Preset Selection Chips with Colorful Crop Accents */
+    /* Shaded Preset Card with Warm Linen & Wheat Tint */
     .preset-box {
-      background: #f8fafc;
-      border: 1px solid #e2e8f0;
-      border-radius: 16px;
-      padding: 1.15rem;
-      margin-bottom: 1.5rem;
+      background: linear-gradient(135deg, #f6f3eb 0%, #eee8dc 100%);
+      border: 1.5px solid rgba(215, 204, 188, 0.85);
+      border-radius: 18px;
+      padding: 1.25rem;
+      margin-bottom: 1.75rem;
+      box-shadow: inset 0 1px 3px rgba(0,0,0,0.02);
     }
     .preset-title {
       font-size: 0.775rem;
       font-weight: 800;
       text-transform: uppercase;
-      letter-spacing: 0.06em;
-      color: var(--text-muted);
-      margin-bottom: 0.75rem;
+      letter-spacing: 0.07em;
+      color: #475569;
+      margin-bottom: 0.85rem;
       display: flex;
       align-items: center;
-      gap: 0.4rem;
+      gap: 0.45rem;
     }
     .preset-chips {
       display: flex;
       flex-wrap: wrap;
-      gap: 0.55rem;
+      gap: 0.6rem;
     }
+    
+    /* Distinct Tinted Chips with Hover Bounce */
     .chip {
-      background: #ffffff;
-      border: 1.5px solid #cbd5e1;
       border-radius: 12px;
-      padding: 0.45rem 0.85rem;
+      padding: 0.48rem 0.95rem;
       font-size: 0.825rem;
       font-weight: 700;
-      color: #334155;
       cursor: pointer;
       transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
       display: inline-flex;
       align-items: center;
       gap: 0.45rem;
-      box-shadow: 0 1px 3px rgba(0,0,0,0.03);
+      border: 1.5px solid transparent;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.04);
     }
-    .chip:hover {
-      border-color: #0284c7;
-      color: #0369a1;
-      background: #f0f9ff;
-      transform: translateY(-2px);
-      box-shadow: 0 4px 10px rgba(2, 132, 199, 0.15);
-    }
-    .chip.active {
-      background: #0f172a;
-      color: white;
-      border-color: #0f172a;
-    }
+    .chip-rice { background: #e8f9ee; color: #065f46; border-color: #a7f3d0; }
+    .chip-rice:hover { background: #d1fae5; transform: translateY(-2px); box-shadow: 0 6px 14px rgba(5, 150, 105, 0.25); }
 
-    /* Input Groups */
+    .chip-maize { background: #fdfbe8; color: #854d0e; border-color: #fef08a; }
+    .chip-maize:hover { background: #fef9c3; transform: translateY(-2px); box-shadow: 0 6px 14px rgba(202, 138, 4, 0.25); }
+
+    .chip-cotton { background: #ecf3fe; color: #1e40af; border-color: #bfdbfe; }
+    .chip-cotton:hover { background: #dbeafe; transform: translateY(-2px); box-shadow: 0 6px 14px rgba(37, 99, 235, 0.25); }
+
+    .chip-coffee { background: #fdf5ea; color: #9a3412; border-color: #fed7aa; }
+    .chip-coffee:hover { background: #ffedd5; transform: translateY(-2px); box-shadow: 0 6px 14px rgba(234, 88, 12, 0.25); }
+
+    .chip-chickpea { background: #f8f3fe; color: #6b21a8; border-color: #e9d5ff; }
+    .chip-chickpea:hover { background: #f3e8ff; transform: translateY(-2px); box-shadow: 0 6px 14px rgba(147, 51, 234, 0.25); }
+
+    /* Input Rows with Soft Shaded Pastel Identity */
     .inputs-grid {
       display: flex;
       flex-direction: column;
@@ -311,22 +329,40 @@
       display: grid;
       grid-template-columns: 1fr;
       gap: 0.45rem;
-      padding: 0.9rem 1.15rem;
-      background: #ffffff;
-      border: 1.5px solid #e2e8f0;
-      border-radius: 16px;
+      padding: 0.95rem 1.25rem;
+      border-radius: 18px;
       transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-      box-shadow: var(--shadow-sm);
+      box-shadow: 0 2px 6px rgba(0,0,0,0.03);
     }
     .input-row:hover {
-      border-color: #94a3b8;
-      box-shadow: var(--shadow-md);
-      transform: translateY(-1px);
+      box-shadow: 0 8px 18px -4px rgba(15, 23, 42, 0.08);
+      transform: translateY(-2px);
     }
     .input-row:focus-within {
-      border-color: #0284c7;
-      box-shadow: 0 0 0 3px rgba(2, 132, 199, 0.15);
+      box-shadow: 0 0 0 3px rgba(2, 132, 199, 0.2);
     }
+
+    /* Harmonic Pastel Gradient per Parameter */
+    .input-row-n { background: linear-gradient(145deg, #f4faf6 0%, #e6f6ee 100%); border: 1.5px solid #a7f3d0; }
+    .input-row-n:focus-within { border-color: #10b981; }
+
+    .input-row-p { background: linear-gradient(145deg, #f6f5fc 0%, #ede8fe 100%); border: 1.5px solid #ddd6fe; }
+    .input-row-p:focus-within { border-color: #6366f1; }
+
+    .input-row-k { background: linear-gradient(145deg, #fdfaf2 0%, #fef3c7 100%); border: 1.5px solid #fde68a; }
+    .input-row-k:focus-within { border-color: #f59e0b; }
+
+    .input-row-temp { background: linear-gradient(145deg, #fdf7f2 0%, #ffedd5 100%); border: 1.5px solid #fed7aa; }
+    .input-row-temp:focus-within { border-color: #f97316; }
+
+    .input-row-hum { background: linear-gradient(145deg, #f2f8fd 0%, #e0f2fe 100%); border: 1.5px solid #bae6fd; }
+    .input-row-hum:focus-within { border-color: #0ea5e9; }
+
+    .input-row-ph { background: linear-gradient(145deg, #faf5fc 0%, #f3e8ff 100%); border: 1.5px solid #e9d5ff; }
+    .input-row-ph:focus-within { border-color: #8b5cf6; }
+
+    .input-row-rain { background: linear-gradient(145deg, #f2f7fc 0%, #dbeafe 100%); border: 1.5px solid #bfdbfe; }
+    .input-row-rain:focus-within { border-color: #2563eb; }
 
     .input-label-bar {
       display: flex;
@@ -334,39 +370,39 @@
       align-items: center;
     }
     .field-name {
-      font-size: 0.9rem;
+      font-size: 0.925rem;
       font-weight: 700;
       color: #1e293b;
       display: flex;
       align-items: center;
-      gap: 0.5rem;
+      gap: 0.55rem;
     }
     .field-badge {
       font-size: 0.75rem;
       font-weight: 700;
-      padding: 0.2rem 0.6rem;
+      padding: 0.25rem 0.65rem;
       border-radius: 8px;
-      background: #f1f5f9;
+      background: rgba(255, 255, 255, 0.75);
       color: #475569;
-      border: 1px solid #e2e8f0;
+      border: 1px solid rgba(203, 213, 225, 0.8);
       transition: all 0.2s;
     }
 
     .field-controls {
       display: grid;
-      grid-template-columns: 1fr 105px;
+      grid-template-columns: 1fr 110px;
       gap: 1.25rem;
       align-items: center;
       margin-top: 0.35rem;
     }
 
-    /* Individual Color Accents for Sliders */
+    /* Custom Color-Coded Sliders */
     input[type=range] {
       -webkit-appearance: none;
       width: 100%;
       height: 8px;
       border-radius: 6px;
-      background: #e2e8f0;
+      background: rgba(148, 163, 184, 0.35);
       outline: none;
       transition: background 0.2s;
     }
@@ -378,12 +414,11 @@
       border-radius: 50%;
       cursor: pointer;
       border: 2.5px solid #ffffff;
-      box-shadow: 0 2px 6px rgba(0,0,0,0.22);
+      box-shadow: 0 2px 8px rgba(0,0,0,0.22);
       transition: transform 0.15s ease, background 0.15s;
     }
-    input[type=range]::-webkit-slider-thumb:hover { transform: scale(1.2); }
+    input[type=range]::-webkit-slider-thumb:hover { transform: scale(1.22); }
 
-    /* Nutrient Accent Colors */
     #slider-n::-webkit-slider-thumb { background: #10b981; }
     #slider-p::-webkit-slider-thumb { background: #6366f1; }
     #slider-k::-webkit-slider-thumb { background: #f59e0b; }
@@ -392,29 +427,30 @@
     #slider-ph::-webkit-slider-thumb { background: #8b5cf6; }
     #slider-rain::-webkit-slider-thumb { background: #2563eb; }
 
-    /* Number input boxes */
+    /* Number input boxes with Soft Tint */
     .num-input-wrap { position: relative; }
     .num-input {
       width: 100%;
-      padding: 0.55rem 0.7rem;
+      padding: 0.55rem 0.75rem;
       font-size: 0.95rem;
-      font-weight: 700;
+      font-weight: 800;
       color: #0f172a;
-      border: 1.5px solid #cbd5e1;
+      border: 1.5px solid rgba(148, 163, 184, 0.5);
       border-radius: 10px;
       text-align: right;
-      background: #f8fafc;
+      background: rgba(255, 255, 255, 0.88);
       transition: all 0.2s;
+      box-shadow: inset 0 1px 3px rgba(0,0,0,0.03);
     }
     .num-input:focus {
       outline: none;
       border-color: #0284c7;
       background: #ffffff;
-      box-shadow: 0 0 0 2px rgba(2, 132, 199, 0.15);
+      box-shadow: 0 0 0 2px rgba(2, 132, 199, 0.2);
     }
     .unit-tag {
       position: absolute;
-      left: 0.65rem;
+      left: 0.7rem;
       top: 50%;
       transform: translateY(-50%);
       font-size: 0.75rem;
@@ -423,12 +459,12 @@
       pointer-events: none;
     }
 
-    /* Submit Button (Vibrant Indigo-Emerald Gradient) */
+    /* Vibrant Multi-Tone Gradient Submit Button */
     .btn-calculate {
       width: 100%;
-      margin-top: 1.5rem;
-      padding: 1.05rem;
-      background: linear-gradient(135deg, #059669 0%, #0d9488 50%, #0284c7 100%);
+      margin-top: 1.65rem;
+      padding: 1.1rem;
+      background: linear-gradient(135deg, #059669 0%, #0d9488 45%, #0284c7 100%);
       color: white;
       font-size: 1.05rem;
       font-weight: 800;
@@ -440,17 +476,17 @@
       align-items: center;
       justify-content: center;
       gap: 0.65rem;
-      box-shadow: 0 6px 18px rgba(13, 148, 136, 0.35);
+      box-shadow: 0 6px 20px rgba(13, 148, 136, 0.35);
       transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
     }
     .btn-calculate:hover {
       transform: translateY(-2px);
-      box-shadow: 0 10px 25px rgba(13, 148, 136, 0.5);
-      background: linear-gradient(135deg, #10b981 0%, #14b8a6 50%, #0ea5e9 100%);
+      box-shadow: 0 12px 30px rgba(13, 148, 136, 0.5);
+      background: linear-gradient(135deg, #10b981 0%, #14b8a6 45%, #0ea5e9 100%);
     }
     .btn-calculate:active { transform: translateY(0); }
 
-    /* Results Showcase View */
+    /* Results Showcase View (No Flat White) */
     .result-empty {
       display: flex;
       flex-direction: column;
@@ -459,18 +495,18 @@
       min-height: 420px;
       text-align: center;
       color: var(--text-muted);
-      border: 2px dashed #cbd5e1;
+      border: 2px dashed rgba(160, 174, 192, 0.55);
       border-radius: 20px;
       padding: 2.5rem 1.5rem;
-      background: #f8fafc;
+      background: linear-gradient(145deg, rgba(248, 246, 240, 0.88) 0%, rgba(240, 244, 250, 0.88) 100%);
     }
     .result-empty-icon {
       font-size: 3.5rem;
       margin-bottom: 1rem;
-      opacity: 0.7;
+      opacity: 0.75;
       animation: pulse 2.5s infinite ease-in-out;
     }
-    @keyframes pulse { 0%, 100% { transform: scale(1); opacity: 0.7; } 50% { transform: scale(1.08); opacity: 0.95; } }
+    @keyframes pulse { 0%, 100% { transform: scale(1); opacity: 0.75; } 50% { transform: scale(1.08); opacity: 0.95; } }
 
     .result-display {
       display: none;
@@ -478,13 +514,13 @@
     }
     @keyframes slideIn { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } }
 
-    /* Crop Showcase Card (Modern Clean Elevation) */
+    /* Shaded Multi-Tone Crop Showcase Card (Meadow Green + Sunlight Wheat + Sky Blue Mix) */
     .crop-showcase-card {
-      background: #ffffff;
-      border: 2px solid #e2e8f0;
-      border-radius: 20px;
-      padding: 1.85rem;
-      box-shadow: var(--shadow-lg);
+      background: linear-gradient(145deg, #f4fbf6 0%, #fefcf0 45%, #eff6ff 100%);
+      border: 2px solid #86efac;
+      border-radius: 22px;
+      padding: 2rem;
+      box-shadow: 0 16px 36px -6px rgba(16, 185, 129, 0.18), 0 6px 16px -2px rgba(245, 158, 11, 0.1);
       position: relative;
       overflow: hidden;
     }
@@ -495,45 +531,45 @@
       left: 0;
       right: 0;
       height: 6px;
-      background: linear-gradient(90deg, #10b981, #06b6d4, #f59e0b);
+      background: linear-gradient(90deg, #10b981 0%, #06b6d4 50%, #f59e0b 100%);
     }
 
     .crop-showcase-top {
       display: flex;
       align-items: center;
-      gap: 1.25rem;
+      gap: 1.35rem;
       margin-top: 0.25rem;
     }
     .crop-avatar {
-      width: 78px;
-      height: 78px;
-      border-radius: 20px;
-      background: #f8fafc;
-      border: 2px solid #e2e8f0;
+      width: 82px;
+      height: 82px;
+      border-radius: 22px;
+      background: linear-gradient(135deg, #ffffff 0%, #ecfdf5 100%);
+      border: 2.5px solid #a7f3d0;
       display: flex;
       align-items: center;
       justify-content: center;
-      font-size: 3.25rem;
-      box-shadow: var(--shadow-md);
+      font-size: 3.4rem;
+      box-shadow: 0 8px 22px rgba(16, 185, 129, 0.25);
       flex-shrink: 0;
     }
     .crop-title-group h4 {
       font-size: 0.75rem;
       text-transform: uppercase;
       font-weight: 800;
-      letter-spacing: 0.09em;
-      color: #0284c7;
+      letter-spacing: 0.1em;
+      color: #047857;
     }
     .crop-main-name {
-      font-size: 2.35rem;
+      font-size: 2.45rem;
       font-weight: 800;
       letter-spacing: -0.025em;
-      color: #0f172a;
+      color: #064e3b;
       line-height: 1.1;
       margin: 0.2rem 0;
     }
     .crop-kn-name {
-      font-size: 1.2rem;
+      font-size: 1.25rem;
       font-weight: 700;
       color: #059669;
     }
@@ -544,50 +580,59 @@
       flex-wrap: wrap;
       gap: 0.5rem;
       margin-top: 1.35rem;
-      padding-top: 1rem;
-      border-top: 1px dashed #e2e8f0;
+      padding-top: 1.1rem;
+      border-top: 1px dashed rgba(16, 185, 129, 0.4);
     }
     .crop-tag {
       font-size: 0.775rem;
       font-weight: 700;
-      padding: 0.35rem 0.75rem;
+      padding: 0.4rem 0.8rem;
       border-radius: 10px;
-      background: #f8fafc;
-      border: 1px solid #e2e8f0;
-      color: #334155;
+      background: rgba(255, 255, 255, 0.88);
+      border: 1px solid #bbf7d0;
+      color: #14532d;
       display: inline-flex;
       align-items: center;
       gap: 0.35rem;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.03);
     }
 
-    /* Metrics Dual Meter Boxes */
+    /* Shaded Dual Metric Boxes */
     .metrics-summary {
       display: grid;
       grid-template-columns: 1fr 1fr;
       gap: 1rem;
       margin: 1.35rem 0;
     }
-    .metric-box {
-      background: #f8fafc;
-      border: 1.5px solid #e2e8f0;
-      border-radius: 16px;
-      padding: 1.1rem;
+    .metric-box-conf {
+      background: linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%);
+      border: 1.5px solid #86efac;
+      border-radius: 18px;
+      padding: 1.15rem;
+      box-shadow: 0 2px 6px rgba(5, 150, 105, 0.06);
       transition: all 0.2s;
     }
-    .metric-box:hover {
-      background: #ffffff;
-      border-color: #cbd5e1;
-      box-shadow: var(--shadow-sm);
+    .metric-box-conf:hover { transform: translateY(-2px); box-shadow: 0 8px 18px rgba(5, 150, 105, 0.16); }
+
+    .metric-box-risk {
+      background: linear-gradient(135deg, #fffbeb 0%, #fef3c7 100%);
+      border: 1.5px solid #fde68a;
+      border-radius: 18px;
+      padding: 1.15rem;
+      box-shadow: 0 2px 6px rgba(217, 119, 6, 0.06);
+      transition: all 0.2s;
     }
+    .metric-box-risk:hover { transform: translateY(-2px); box-shadow: 0 8px 18px rgba(217, 119, 6, 0.16); }
+
     .metric-box-title {
       font-size: 0.725rem;
       font-weight: 800;
       text-transform: uppercase;
       letter-spacing: 0.06em;
-      color: var(--text-muted);
+      color: #475569;
     }
     .metric-box-val {
-      font-size: 1.6rem;
+      font-size: 1.65rem;
       font-weight: 800;
       color: #0f172a;
       margin: 0.25rem 0 0.55rem 0;
@@ -595,7 +640,7 @@
     .meter-rail {
       width: 100%;
       height: 8px;
-      background: #e2e8f0;
+      background: rgba(0, 0, 0, 0.08);
       border-radius: 9999px;
       overflow: hidden;
     }
@@ -608,42 +653,44 @@
     .fill-amber { background: linear-gradient(90deg, #fbbf24, #d97706); }
     .fill-red { background: linear-gradient(90deg, #f87171, #dc2626); }
 
-    /* SHAP Explanations */
+    /* SHAP Explanations in Shaded Card */
     .explain-card {
-      background: #ffffff;
-      border: 1.5px solid #e2e8f0;
-      border-radius: 16px;
-      padding: 1.25rem;
-      margin-top: 1.25rem;
+      background: linear-gradient(145deg, #faf9f5 0%, #f0f4f9 100%);
+      border: 1.5px solid rgba(203, 213, 225, 0.75);
+      border-radius: 18px;
+      padding: 1.35rem;
+      margin-top: 1.35rem;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.03);
     }
     .explain-header {
       display: flex;
       align-items: center;
       justify-content: space-between;
-      margin-bottom: 0.85rem;
+      margin-bottom: 0.95rem;
     }
     .explain-title {
-      font-size: 0.875rem;
+      font-size: 0.9rem;
       font-weight: 800;
       color: #0f172a;
       display: flex;
       align-items: center;
       gap: 0.45rem;
     }
-    .shap-rows { display: flex; flex-direction: column; gap: 0.65rem; }
+    .shap-rows { display: flex; flex-direction: column; gap: 0.7rem; }
     .shap-row {
       display: flex;
       flex-direction: column;
-      gap: 0.3rem;
-      background: #f8fafc;
-      padding: 0.6rem 0.85rem;
-      border-radius: 10px;
-      border: 1px solid #f1f5f9;
+      gap: 0.35rem;
+      background: rgba(255, 255, 255, 0.88);
+      padding: 0.65rem 0.95rem;
+      border-radius: 12px;
+      border: 1px solid rgba(203, 213, 225, 0.7);
+      box-shadow: 0 1px 3px rgba(0,0,0,0.02);
     }
     .shap-top {
       display: flex;
       justify-content: space-between;
-      font-size: 0.8rem;
+      font-size: 0.825rem;
     }
     .shap-feat { font-weight: 700; color: #1e293b; }
     .shap-pct { font-weight: 800; }
@@ -651,7 +698,7 @@
     .shap-pct.oppose { color: #dc2626; }
     .shap-bar-track {
       width: 100%;
-      height: 6px;
+      height: 7px;
       background: #e2e8f0;
       border-radius: 4px;
       overflow: hidden;
@@ -660,13 +707,13 @@
     .shap-bar-val.support { background: #10b981; }
     .shap-bar-val.oppose { background: #ef4444; }
 
-    /* Details Accordion */
+    /* Details Drawer */
     details.tech-drawer {
       margin-top: 1.25rem;
-      border: 1px solid #e2e8f0;
+      border: 1px solid rgba(203, 213, 225, 0.7);
       border-radius: 12px;
       padding: 0.75rem 1rem;
-      background: #f8fafc;
+      background: rgba(248, 250, 252, 0.8);
     }
     details.tech-drawer summary {
       cursor: pointer;
@@ -686,14 +733,15 @@
       font-family: monospace;
     }
 
-    /* Q&A Section with Blue/Indigo Tech Style */
+    /* Q&A Section with Soft Azure & Lavender Mist Shading */
     .qa-box {
-      margin-top: 2.25rem;
-      background: #ffffff;
-      border-radius: 22px;
-      border: 1.5px solid #e2e8f0;
-      padding: 1.85rem;
-      box-shadow: var(--shadow-md);
+      margin-top: 2.5rem;
+      background: linear-gradient(165deg, rgba(250, 252, 255, 0.96) 0%, rgba(240, 247, 255, 0.96) 50%, rgba(230, 240, 254, 0.96) 100%);
+      border-radius: var(--radius-panel);
+      border: 1.5px solid rgba(147, 197, 253, 0.65);
+      padding: 2rem;
+      box-shadow: 0 16px 36px -8px rgba(2, 132, 199, 0.12);
+      backdrop-filter: blur(14px);
     }
     .qa-input-flex {
       display: flex;
@@ -704,72 +752,76 @@
     .qa-text-input {
       flex: 1;
       min-width: 280px;
-      padding: 0.8rem 1.15rem;
-      border: 1.5px solid #cbd5e1;
-      border-radius: 12px;
+      padding: 0.85rem 1.25rem;
+      border: 1.5px solid #93c5fd;
+      border-radius: 14px;
       font-size: 0.95rem;
+      background: rgba(255, 255, 255, 0.9);
       transition: all 0.2s;
     }
     .qa-text-input:focus {
       outline: none;
       border-color: #0284c7;
-      box-shadow: 0 0 0 3px rgba(2, 132, 199, 0.15);
+      background: #ffffff;
+      box-shadow: 0 0 0 3px rgba(2, 132, 199, 0.2);
     }
     .btn-ask {
       background: linear-gradient(135deg, #0284c7 0%, #0369a1 100%);
       color: white;
       border: none;
-      border-radius: 12px;
-      padding: 0.8rem 1.6rem;
+      border-radius: 14px;
+      padding: 0.85rem 1.75rem;
       font-weight: 700;
       font-size: 0.95rem;
       cursor: pointer;
-      box-shadow: 0 3px 10px rgba(2, 132, 199, 0.3);
+      box-shadow: 0 4px 14px rgba(2, 132, 199, 0.35);
       transition: all 0.2s;
     }
     .btn-ask:hover {
       background: linear-gradient(135deg, #0ea5e9 0%, #0284c7 100%);
-      transform: translateY(-1px);
-      box-shadow: 0 6px 14px rgba(2, 132, 199, 0.4);
+      transform: translateY(-2px);
+      box-shadow: 0 8px 20px rgba(2, 132, 199, 0.45);
     }
 
     .qa-pill-prompts {
       display: flex;
       flex-wrap: wrap;
       gap: 0.5rem;
-      margin-top: 0.85rem;
+      margin-top: 0.9rem;
     }
     .qa-pill {
-      background: #f0f9ff;
-      border: 1px solid #bae6fd;
+      background: rgba(255, 255, 255, 0.9);
+      border: 1.5px solid #93c5fd;
       color: #0369a1;
       border-radius: 9999px;
-      padding: 0.35rem 0.85rem;
+      padding: 0.4rem 0.95rem;
       font-size: 0.775rem;
       font-weight: 700;
       cursor: pointer;
       transition: all 0.15s;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.03);
     }
     .qa-pill:hover {
-      background: #e0f2fe;
-      border-color: #38bdf8;
+      background: #dbeafe;
+      border-color: #0284c7;
       transform: translateY(-1px);
     }
 
     .qa-result-area {
-      margin-top: 1.25rem;
-      padding: 1.35rem;
-      border-radius: 14px;
-      background: #f8fafc;
-      border: 1px solid #e2e8f0;
+      margin-top: 1.35rem;
+      padding: 1.45rem;
+      border-radius: 16px;
+      background: rgba(255, 255, 255, 0.95);
+      border: 1.5px solid #93c5fd;
       font-size: 0.925rem;
+      box-shadow: 0 8px 24px rgba(2, 132, 199, 0.12);
       display: none;
     }
   </style>
 </head>
 <body>
 
-  <!-- Sleek Modern Slate Header -->
+  <!-- Midnight Slate Header -->
   <header>
     <div class="header-content">
       <div class="brand">
@@ -791,7 +843,7 @@
 
   <div class="container">
 
-    <!-- Sleek High-Contrast Weather Card Banner -->
+    <!-- High-Contrast Weather Card Banner -->
     <div class="weather-card-banner">
       <div class="banner-content">
         <div class="banner-badge-icon">🌦️</div>
@@ -807,7 +859,7 @@
     <div class="dashboard-grid">
 
       <!-- LEFT COLUMN: Soil & Climate Controls -->
-      <div class="panel-card">
+      <div class="panel-card panel-controls">
         <div class="panel-header">
           <div>
             <h2 class="panel-title" id="lbl-soil-title">🧪 Soil & Environmental Metrics</h2>
@@ -815,15 +867,15 @@
           </div>
         </div>
 
-        <!-- Preset Chips -->
+        <!-- Shaded Crop Preset Chips -->
         <div class="preset-box">
           <div class="preset-title" id="lbl-preset-header">⚡ One-Click Field Presets:</div>
           <div class="preset-chips">
-            <button type="button" class="chip" onclick="applyPreset(90, 42, 43, 25, 80, 6.5, 202, 'rice')">🌾 Rice / ಭತ್ತ</button>
-            <button type="button" class="chip" onclick="applyPreset(110, 45, 20, 26, 65, 6.8, 85, 'maize')">🌽 Maize / ಮೆಕ್ಕೆಜೋಳ</button>
-            <button type="button" class="chip" onclick="applyPreset(120, 40, 20, 24, 80, 7.0, 75, 'cotton')">🌿 Cotton / ಹತ್ತಿ</button>
-            <button type="button" class="chip" onclick="applyPreset(105, 30, 30, 25, 78, 6.8, 160, 'coffee')">☕ Coffee / ಕಾಫಿ</button>
-            <button type="button" class="chip" onclick="applyPreset(20, 60, 20, 18, 16, 7.2, 80, 'chickpea')">🧆 Chickpea / ಕಡಲೆ</button>
+            <button type="button" class="chip chip-rice" onclick="applyPreset(90, 42, 43, 25, 80, 6.5, 202, 'rice')">🌾 Rice / ಭತ್ತ</button>
+            <button type="button" class="chip chip-maize" onclick="applyPreset(110, 45, 20, 26, 65, 6.8, 85, 'maize')">🌽 Maize / ಮೆಕ್ಕೆಜೋಳ</button>
+            <button type="button" class="chip chip-cotton" onclick="applyPreset(120, 40, 20, 24, 80, 7.0, 75, 'cotton')">🌿 Cotton / ಹತ್ತಿ</button>
+            <button type="button" class="chip chip-coffee" onclick="applyPreset(105, 30, 30, 25, 78, 6.8, 160, 'coffee')">☕ Coffee / ಕಾಫಿ</button>
+            <button type="button" class="chip chip-chickpea" onclick="applyPreset(20, 60, 20, 18, 16, 7.2, 80, 'chickpea')">🧆 Chickpea / ಕಡಲೆ</button>
           </div>
         </div>
 
@@ -832,7 +884,7 @@
           <div class="inputs-grid">
 
             <!-- Nitrogen (Emerald Accent) -->
-            <div class="input-row">
+            <div class="input-row input-row-n">
               <div class="input-label-bar">
                 <span class="field-name"><span style="color:#059669;">🌱</span> <span id="lbl-f-n">Nitrogen (N)</span></span>
                 <span class="field-badge" id="badge-n">Standard: 60 - 120 kg/ha</span>
@@ -847,7 +899,7 @@
             </div>
 
             <!-- Phosphorus (Indigo Accent) -->
-            <div class="input-row">
+            <div class="input-row input-row-p">
               <div class="input-label-bar">
                 <span class="field-name"><span style="color:#6366f1;">🧪</span> <span id="lbl-f-p">Phosphorus (P)</span></span>
                 <span class="field-badge" id="badge-p">Standard: 35 - 60 kg/ha</span>
@@ -862,7 +914,7 @@
             </div>
 
             <!-- Potassium (Amber Accent) -->
-            <div class="input-row">
+            <div class="input-row input-row-k">
               <div class="input-label-bar">
                 <span class="field-name"><span style="color:#f59e0b;">⚡</span> <span id="lbl-f-k">Potassium (K)</span></span>
                 <span class="field-badge" id="badge-k">Standard: 20 - 50 kg/ha</span>
@@ -877,7 +929,7 @@
             </div>
 
             <!-- Temperature (Coral Accent) -->
-            <div class="input-row">
+            <div class="input-row input-row-temp">
               <div class="input-label-bar">
                 <span class="field-name"><span style="color:#f97316;">🌡️</span> <span id="lbl-f-temp">Temperature</span></span>
                 <span class="field-badge" id="badge-temp">Tropical: 20 - 32 °C</span>
@@ -892,7 +944,7 @@
             </div>
 
             <!-- Relative Humidity (Sky Blue Accent) -->
-            <div class="input-row">
+            <div class="input-row input-row-hum">
               <div class="input-label-bar">
                 <span class="field-name"><span style="color:#0ea5e9;">💧</span> <span id="lbl-f-hum">Relative Humidity</span></span>
                 <span class="field-badge" id="badge-hum">Normal: 60 - 85 %</span>
@@ -907,7 +959,7 @@
             </div>
 
             <!-- Soil pH (Purple Accent) -->
-            <div class="input-row">
+            <div class="input-row input-row-ph">
               <div class="input-label-bar">
                 <span class="field-name"><span style="color:#8b5cf6;">⚖️</span> <span id="lbl-f-ph">Soil pH Level</span></span>
                 <span class="field-badge" id="badge-ph">Slightly Acidic: 6.5</span>
@@ -922,7 +974,7 @@
             </div>
 
             <!-- Rainfall (Ocean Blue Accent) -->
-            <div class="input-row">
+            <div class="input-row input-row-rain">
               <div class="input-label-bar">
                 <span class="field-name"><span style="color:#2563eb;">🌧️</span> <span id="lbl-f-rain">Seasonal Rainfall</span></span>
                 <span class="field-badge" id="badge-rain">Wetland: > 180 mm</span>
@@ -945,7 +997,7 @@
       </div>
 
       <!-- RIGHT COLUMN: Results Display -->
-      <div class="panel-card">
+      <div class="panel-card panel-results">
         <div class="panel-header">
           <div>
             <h2 class="panel-title" id="lbl-res-title">🎯 AI Recommendation</h2>
@@ -965,7 +1017,7 @@
         <!-- Live Visual Result View -->
         <div id="view-result" class="result-display">
 
-          <!-- Crop Showcase Hero Card -->
+          <!-- Crop Showcase Hero Card (Warm Sunrise Tint + Soft Sage) -->
           <div class="crop-showcase-card">
             <div class="crop-showcase-top">
               <div class="crop-avatar" id="disp-avatar">🌾</div>
@@ -984,10 +1036,10 @@
             </div>
           </div>
 
-          <!-- Dual Meters Row -->
+          <!-- Shaded Dual Meters Row -->
           <div class="metrics-summary">
-            <!-- Confidence Meter -->
-            <div class="metric-box">
+            <!-- Confidence Meter (Soft Emerald Glaze) -->
+            <div class="metric-box-conf">
               <div class="metric-box-title" id="lbl-conf-heading">Model Confidence</div>
               <div class="metric-box-val" id="disp-conf-val">96.0%</div>
               <div class="meter-rail">
@@ -995,8 +1047,8 @@
               </div>
             </div>
 
-            <!-- Climate Mismatch Risk -->
-            <div class="metric-box">
+            <!-- Climate Mismatch Risk (Soft Amber Glaze) -->
+            <div class="metric-box-risk">
               <div class="metric-box-title" id="lbl-risk-heading">Climate Mismatch Risk</div>
               <div class="metric-box-val" id="disp-risk-val">22 / 100</div>
               <div class="meter-rail">
@@ -1005,7 +1057,7 @@
             </div>
           </div>
 
-          <!-- SHAP Explanations -->
+          <!-- SHAP Explanations in Shaded Card -->
           <div class="explain-card">
             <div class="explain-header">
               <span class="explain-title">📊 <span id="lbl-shap-heading">Key Contributing Factors (SHAP)</span></span>
@@ -1030,7 +1082,7 @@
 
     </div>
 
-    <!-- Verified Agricultural Advisory (Google Gemini Powered) -->
+    <!-- Verified Agricultural Advisory (Google Gemini Powered with Soft Azure Shading) -->
     <div class="qa-box">
       <div class="panel-header" style="margin-bottom: 0.75rem; border: none;">
         <div>
@@ -1040,7 +1092,7 @@
       </div>
 
       {% if pilot_mode %}
-      <div style="background: #fffbeb; border: 1px solid #fde68a; border-radius: 14px; padding: 1rem 1.25rem; color: #92400e; font-size: 0.875rem;">
+      <div style="background: #fffbeb; border: 1.5px solid #fde68a; border-radius: 16px; padding: 1.15rem 1.45rem; color: #92400e; font-size: 0.875rem;">
         <strong>🔒 Strict Field Pilot Mode Active:</strong> Free-text generative chat is restricted in pilot mode to prevent unreviewed field hallucinations.
         For Koleroga fungicide schedules, open the <a href="/spray" style="color: #b45309; font-weight: 700; text-decoration: underline;">Spray Timing Advisor</a>.
       </div>
@@ -1051,7 +1103,7 @@
           <button type="submit" id="btn-ask-gemini" class="btn-ask"><span>Ask Advisor</span></button>
         </div>
         <div class="qa-pill-prompts">
-          <span style="font-size: 0.75rem; font-weight: 700; color: var(--text-muted); align-self: center;">Suggested:</span>
+          <span style="font-size: 0.75rem; font-weight: 700; color: #475569; align-self: center;">Suggested:</span>
           <button type="button" class="qa-pill" onclick="setQAPrompt('How to prepare 1% neutral Bordeaux mixture?')">🧪 1% Bordeaux Recipe</button>
           <button type="button" class="qa-pill" onclick="setQAPrompt('What is the knife test for Bordeaux mixture neutrality?')">🔪 Knife Neutrality Test</button>
           <button type="button" class="qa-pill" onclick="setQAPrompt('ಬೋರ್ಡೋ ದ್ರಾವಣ ಹೇಗೆ ತಯಾರಿಸುವುದು?')">ಕನ್ನಡ: ಬೋರ್ಡೋ ದ್ರಾವಣ</button>
